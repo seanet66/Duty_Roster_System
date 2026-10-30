@@ -237,7 +237,7 @@
   <div class="panel hidden" id="superAdminClassPanel" style="border-left:5px solid #2563eb;background:#f8fafc">
     <div class="toolbar" style="margin-bottom:8px">
       <div>
-        <h2 style="margin-bottom:4px;color:#1e3a8a">👑 多班級總管中心（超級總管理員 skynet99 專屬）</h2>
+        <h2 style="margin-bottom:4px;color:#1e3a8a">👑 多班級總管中心</h2>
         <div class="muted">建立、切換或刪除不同期別／班級空間，或一鍵複製該班專屬連結分享至班級群組。各班級資料完全獨立隔離。</div>
       </div>
       <div class="actions">
@@ -929,8 +929,9 @@ function applyRolePermissions(){
 function renderUsers(){
  const isAdmin=currentUser&&currentUser.role==='admin';
  if(!isAdmin)return;
+ const classDisplayName = (state.settings.subtitle && state.settings.subtitle.trim()) ? state.settings.subtitle.trim() : CURRENT_CLASS_ID;
  document.getElementById('userTotal').textContent=state.users.length;
- document.getElementById('userTable').innerHTML=state.users.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>所屬範圍</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${state.users.map(u=>`<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（超級總管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.username==='skynet99'?'超級總管理員':(u.role==='admin'?'本班管理員':'一般使用者')}</span></td><td>${u.username==='skynet99'?'🌐 跨全班級通用':`🏫 限本班 (${esc(CURRENT_CLASS_ID)})`}</td><td>${u.firstLogin?'<span class="muted" style="color:#b45309;font-weight:700">待首次登入改密碼</span>':'正常使用'}</td><td class="no-print">${u.username==='skynet99'?'<span class="muted">系統總管保留</span>':`<button class="small secondary" data-reset-user="${esc(u.username)}">重置密碼</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>`}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無其他使用者。</div>';
+ document.getElementById('userTable').innerHTML=state.users.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>所屬範圍</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${state.users.map(u=>`<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（超級總管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.username==='skynet99'?'超級總管理員':(u.role==='admin'?'本班管理員':'一般使用者')}</span></td><td>${u.username==='skynet99'?'🌐 跨全班級通用':`🏫 限${esc(classDisplayName)}`}</td><td>${u.firstLogin?'<span class="muted" style="color:#b45309;font-weight:700">待首次登入改密碼</span>':'正常使用'}</td><td class="no-print">${u.username==='skynet99'?'<span class="muted">系統總管保留</span>':`<button class="small secondary" data-reset-user="${esc(u.username)}">重置密碼</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>`}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無其他使用者。</div>';
 }
 function openChangePwdModal(isFirstLogin=false,forcedUser=null){
  const modal=document.getElementById('changePwdModal');
@@ -968,7 +969,8 @@ function renderHeader(){
   document.getElementById('courseRangePill').textContent=state.settings.startDate&&state.settings.endDate?`${fmt(state.settings.startDate)} ～ ${fmt(state.settings.endDate)}`:'尚未設定課程期間';
   document.getElementById('studentCountPill').textContent=`${state.students.length} 位學員`;
   const cb = document.getElementById('classBadgePill');
-  if(cb) cb.textContent = `🏫 班級：${CURRENT_CLASS_ID}`;
+  const cName = (state.settings.subtitle && state.settings.subtitle.trim()) ? `${CURRENT_CLASS_ID}｜${state.settings.subtitle.trim()}` : CURRENT_CLASS_ID;
+  if(cb) cb.textContent = `🏫 班級：${cName}`;
 }
 function renderFirstStudent(){const sel=document.getElementById('firstStudent'),old=state.settings.firstStudentId;sel.innerHTML=eligibleStudents().map(s=>`<option value="${esc(s.id)}">${esc(s.id)}｜${esc(s.name)}${s.role!=='學員'?'（'+esc(s.role)+'）':''}</option>`).join('')||'<option value="">請先新增學員</option>';if(eligibleStudents().some(s=>s.id===old))sel.value=old}
 function renderStudents(){const q=document.getElementById('studentSearch').value.trim().toLowerCase(),list=sortedStudents().filter(s=>`${s.id} ${s.name} ${s.role}`.toLowerCase().includes(q));document.getElementById('studentTotal').textContent=state.students.length;document.getElementById('statStudents').textContent=state.students.length;document.getElementById('studentTable').innerHTML=list.length?`<table><thead><tr><th>學號</th><th>姓名</th><th>職稱</th><th class="no-print">操作</th></tr></thead><tbody>${list.map(s=>`<tr><td>${esc(s.id)}</td><td>${esc(s.name)}</td><td><span class="badge">${esc(s.role)}</span></td><td class="no-print"><button class="small secondary" data-edit-student="${esc(s.id)}">編輯</button> <button class="small danger" data-delete-student="${esc(s.id)}">刪除</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無學員資料，請新增或匯入學員名單。</div>';renderFirstStudent()}

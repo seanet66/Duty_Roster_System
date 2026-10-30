@@ -433,7 +433,7 @@ async function supabaseFetch(tableAndQuery, options = {}) {
 // 取得雲端所有班級清單並更新下拉選單與管理列表
 async function fetchAllClassesList(){
   try {
-    const res = await supabaseFetch('roster_classes?select=class_id,title,subtitle,start_date,end_date,updated_at&order=created_at.asc');
+    const res = await supabaseFetch('roster_classes?select=class_id,title,subtitle,start_date,end_date,updated_at&order=class_id.asc');
     if(res.ok){
       const list = await res.json();
       allCloudClasses = Array.isArray(list) ? list : [];
@@ -1282,10 +1282,13 @@ if(classListTableEl){
         ]);
         localStorage.removeItem(`offlineDutyRoster_v1_${cid}`);
       } catch(err){}
+      allCloudClasses = allCloudClasses.filter(c => c.class_id !== cid);
       if(CURRENT_CLASS_ID === cid){
         await switchClass('default', true);
       } else {
         await fetchAllClassesList();
+        renderClassSelectors();
+        renderClassManagementTable();
       }
       alert(`班級【${cid}】已成功刪除。`);
     }

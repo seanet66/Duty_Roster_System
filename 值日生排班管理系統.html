@@ -74,8 +74,8 @@
 .login-desc { font-size: 13px; color: #64748b; margin: 0 0 22px; line-height: 1.5; }
 .login-field { text-align: left; margin-bottom: 15px; }
 .login-field label { font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px; display: block; }
-.login-field input { width: 100%; border: 1px solid #cbd5e1; border-radius: 9px; padding: 11px 13px; font-size: 14px; box-sizing: border-box; }
-.login-field input:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+.login-field input, .login-field select { width: 100%; border: 1px solid #cbd5e1; border-radius: 9px; padding: 11px 13px; font-size: 14px; box-sizing: border-box; background: #fff; }
+.login-field input:focus, .login-field select:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
 .login-btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 9px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 6px; transition: background .15s; }
 .login-btn:hover { background: #1d4ed8; }
 .login-err { background: #fee2e2; color: #991b1b; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; text-align: left; display: none; }
@@ -187,7 +187,7 @@
   <div class="eyebrow">CLASS DUTY ROSTER · CLOUD POWERED</div>
   <h1 id="headerTitle">值日生排班管理系統</h1>
   <p id="headerSubtitle">依上課日期自動排班，避開週末與設定的國定假日</p>
-  <div class="hero-meta"><span class="pill" id="courseRangePill">尚未設定課程期間</span><span class="pill" id="studentCountPill">0 位學員</span><span class="pill" id="appClockPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:0.5px" title="目前西元日期與時間">🕒 2026/10/30 (星期五) 00:00:00</span><span class="pill" id="idleTimerPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:600;font-size:13px" title="閒置計時器：顯示目前未操作時間與自動登出倒數">⏳ 閒置：0秒</span><span class="pill" id="classBadgePill" title="目前班級代號">🏫 班級：default</span><span class="pill" id="cloudSyncPill" style="cursor:pointer" title="點擊立即手動與雲端同步">⚡ 雲端狀態：連線中...</span><span class="pill">雲端即時連線 · 本機雙軌防護</span><span class="pill" id="userSessionPill">未登入</span><button class="small secondary no-print" id="headerChangePwdBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#ffffff22;color:white;border:1px solid #ffffff44">修改密碼</button><button class="small danger no-print" id="logoutBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#fee2e233;color:#fecaca;border:1px solid #fecaca44">登出</button></div>
+  <div class="hero-meta"><span class="pill" id="courseRangePill">尚未設定課程期間</span><span class="pill" id="studentCountPill">0 位學員</span><span class="pill" id="appClockPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:0.5px" title="目前西元日期與時間">🕒 2026/10/30 (星期五) 00:00:00</span><span class="pill" id="idleTimerPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:600;font-size:13px" title="閒置計時器：顯示目前未操作時間與自動登出倒數">⏳ 閒置：0秒</span><span class="pill" id="classBadgePill" title="目前班級代號">🏫 班級：default</span><select id="heroQuickClassSelect" class="no-print hidden" style="width:auto;padding:4px 10px;font-size:12px;border-radius:99px;background:#ffffff25;color:#ffffff;border:1px solid #ffffff55;font-weight:700;cursor:pointer" title="超級總管理員快速切換班級"></select><span class="pill" id="cloudSyncPill" style="cursor:pointer" title="點擊立即手動與雲端同步">⚡ 雲端狀態：連線中...</span><span class="pill">雲端即時連線 · 本機雙軌防護</span><span class="pill" id="userSessionPill">未登入</span><button class="small secondary no-print" id="headerChangePwdBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#ffffff22;color:white;border:1px solid #ffffff44">修改密碼</button><button class="small danger no-print" id="logoutBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#fee2e233;color:#fecaca;border:1px solid #fecaca44">登出</button></div>
   <div class="credit">Designed by 林永松</div>
 </header>
 <nav class="tabs no-print" aria-label="系統功能">
@@ -234,6 +234,39 @@
   </div>
 </section>
 <section id="settingsPage" class="tab-page hidden">
+  <div class="panel hidden" id="superAdminClassPanel" style="border-left:5px solid #2563eb;background:#f8fafc">
+    <div class="toolbar" style="margin-bottom:8px">
+      <div>
+        <h2 style="margin-bottom:4px;color:#1e3a8a">👑 多班級總管中心（超級總管理員 skynet99 專屬）</h2>
+        <div class="muted">建立、切換或刪除不同期別／班級空間，或一鍵複製該班專屬連結分享至班級群組。各班級資料完全獨立隔離。</div>
+      </div>
+      <div class="actions">
+        <button type="button" class="secondary small" id="copyCurrentClassLinkBtn">🔗 複製目前班級專屬連結</button>
+      </div>
+    </div>
+    <form id="createClassForm" class="grid four" style="margin-top:12px">
+      <div class="field">
+        <label for="newClassIdInput">新班級代號（英文或數字）*</label>
+        <input id="newClassIdInput" required maxlength="40" placeholder="例如：cloud03">
+      </div>
+      <div class="field">
+        <label for="newClassTitleInput">網頁主標題 *</label>
+        <input id="newClassTitleInput" required maxlength="160" value="勞動力發展署桃竹苗分署">
+      </div>
+      <div class="field">
+        <label for="newClassSubInput">班級／期別名稱（副標題）*</label>
+        <input id="newClassSubInput" required maxlength="180" placeholder="例如：雲端網管與資安(幼獅)第3期">
+      </div>
+      <div class="field" style="display:flex;align-items:end;gap:7px">
+        <button type="submit">＋ 建立並切換至此班級</button>
+      </div>
+    </form>
+    <div class="divider"></div>
+    <div>
+      <h3>已建立的班級列表（<span id="classTotalCount">1</span> 班）</h3>
+      <div id="classListTable" class="table-wrap" style="margin-top:8px"></div>
+    </div>
+  </div>
   <div class="panel">
     <h2>系統設定</h2>
     <form id="settingsForm">
@@ -318,8 +351,10 @@
 (() => {
 // 多班級支援：從網址參數 ?class=xxx 取得班級代號，預設為 default
 const urlParams = new URLSearchParams(window.location.search);
-const CURRENT_CLASS_ID = (urlParams.get('class') || 'default').trim();
-const KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
+const LAST_CLASS_KEY = 'offlineDutyRoster_lastClass';
+let CURRENT_CLASS_ID = (urlParams.get('class') || localStorage.getItem(LAST_CLASS_KEY) || 'default').trim() || 'default';
+let KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
+let allCloudClasses = [];
 
 // 雲端同步配置
 const SUPABASE_CONFIG = {
@@ -393,6 +428,135 @@ async function supabaseFetch(tableAndQuery, options = {}) {
     headers
   });
   return res;
+}
+
+// 取得雲端所有班級清單並更新下拉選單與管理列表
+async function fetchAllClassesList(){
+  try {
+    const res = await supabaseFetch('roster_classes?select=class_id,title,subtitle,start_date,end_date,updated_at&order=created_at.asc');
+    if(res.ok){
+      const list = await res.json();
+      allCloudClasses = Array.isArray(list) ? list : [];
+    }
+  } catch(e){}
+  if(!allCloudClasses.some(c => c.class_id === 'default')){
+    allCloudClasses.unshift({
+      class_id: 'default',
+      title: state.settings.title || defaults.settings.title,
+      subtitle: state.settings.subtitle || defaults.settings.subtitle,
+      start_date: state.settings.startDate || '',
+      end_date: state.settings.endDate || ''
+    });
+  }
+  if(!allCloudClasses.some(c => c.class_id === CURRENT_CLASS_ID)){
+    allCloudClasses.push({
+      class_id: CURRENT_CLASS_ID,
+      title: state.settings.title || defaults.settings.title,
+      subtitle: state.settings.subtitle || '',
+      start_date: state.settings.startDate || '',
+      end_date: state.settings.endDate || ''
+    });
+  }
+  renderClassSelectors();
+  renderClassManagementTable();
+}
+
+function getClassShareUrl(cid){
+  const baseUrl = window.location.href.split('?')[0].split('#')[0];
+  return cid === 'default' ? baseUrl : `${baseUrl}?class=${encodeURIComponent(cid)}`;
+}
+
+async function copyClassLink(cid){
+  const url = getClassShareUrl(cid);
+  try {
+    await navigator.clipboard.writeText(url);
+    alert(`已複製【${cid}】班級專屬連結：\n${url}\n\n您可以直接貼上分享至該班級群組！`);
+  } catch(e){
+    prompt('請手動複製以下班級專屬連結：', url);
+  }
+}
+
+function renderClassSelectors(){
+  // 1. 登入畫面班級下拉選單
+  const loginSel = document.getElementById('loginClassSelect');
+  const customInp = document.getElementById('loginCustomClass');
+  if(loginSel){
+    const currentVal = loginSel.value && loginSel.value !== '__custom__' ? loginSel.value : CURRENT_CLASS_ID;
+    loginSel.innerHTML = allCloudClasses.map(c => {
+      const label = c.subtitle ? `${c.class_id}｜${c.subtitle}` : `${c.class_id}（${c.title || '未命名班級'}）`;
+      return `<option value="${esc(c.class_id)}">${esc(label)}</option>`;
+    }).join('') + '<option value="__custom__">➕ 手動輸入其他班級代號...</option>';
+    if(allCloudClasses.some(c => c.class_id === CURRENT_CLASS_ID)){
+      loginSel.value = CURRENT_CLASS_ID;
+      if(customInp) customInp.classList.add('hidden');
+    } else if(allCloudClasses.some(c => c.class_id === currentVal)){
+      loginSel.value = currentVal;
+    }
+  }
+  // 2. 頁首超級總管理員快速切換下拉選單
+  const heroSel = document.getElementById('heroQuickClassSelect');
+  const isSuperAdmin = currentUser && currentUser.username === 'skynet99' && currentUser.role === 'admin';
+  if(heroSel){
+    heroSel.classList.toggle('hidden', !isSuperAdmin);
+    if(isSuperAdmin){
+      heroSel.innerHTML = allCloudClasses.map(c => {
+        const label = c.subtitle ? `🔀 切換：${c.class_id} (${c.subtitle})` : `🔀 切換：${c.class_id}`;
+        return `<option value="${esc(c.class_id)}" style="color:#0f172a;background:#fff" ${c.class_id===CURRENT_CLASS_ID?'selected':''}>${esc(label)}</option>`;
+      }).join('');
+      heroSel.value = CURRENT_CLASS_ID;
+    }
+  }
+}
+
+function renderClassManagementTable(){
+  const isSuperAdmin = currentUser && currentUser.username === 'skynet99' && currentUser.role === 'admin';
+  const panel = document.getElementById('superAdminClassPanel');
+  if(panel) panel.classList.toggle('hidden', !isSuperAdmin);
+  if(!isSuperAdmin) return;
+  const countEl = document.getElementById('classTotalCount');
+  if(countEl) countEl.textContent = allCloudClasses.length;
+  const wrap = document.getElementById('classListTable');
+  if(!wrap) return;
+  wrap.innerHTML = `<table><thead><tr><th>班級代號</th><th>主標題</th><th>班級／期別名稱</th><th>課程期間</th><th class="no-print">操作</th></tr></thead><tbody>${allCloudClasses.map(c => {
+    const isCurrent = c.class_id === CURRENT_CLASS_ID;
+    const range = (c.start_date && c.end_date) ? `${fmt(c.start_date)} ～ ${fmt(c.end_date)}` : '<span class="muted">未設定</span>';
+    return `<tr class="${isCurrent?'today':''}">
+      <td><strong>${esc(c.class_id)}</strong> ${isCurrent?'<span class="badge" style="background:#dcfce7;color:#166534">目前所在班級</span>':''}</td>
+      <td>${esc(c.title || '—')}</td>
+      <td>${esc(c.subtitle || '—')}</td>
+      <td>${range}</td>
+      <td class="no-print">
+        ${isCurrent ? '<button type="button" class="small secondary" disabled>使用中</button>' : `<button type="button" class="small" data-switch-class="${esc(c.class_id)}">切換至此班</button>`}
+        <button type="button" class="small secondary" data-copy-class="${esc(c.class_id)}">複製專屬連結</button>
+        ${c.class_id === 'default' ? '' : `<button type="button" class="small danger" data-delete-class="${esc(c.class_id)}">刪除班級</button>`}
+      </td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+async function switchClass(targetClassId, keepSession = false){
+  const cid = String(targetClassId || '').trim();
+  if(!cid) return;
+  CURRENT_CLASS_ID = cid;
+  KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
+  try { localStorage.setItem(LAST_CLASS_KEY, CURRENT_CLASS_ID); } catch(e){}
+  // 更新網址列參數但不重新整理網頁
+  try {
+    const newUrl = cid === 'default'
+      ? window.location.pathname
+      : `${window.location.pathname}?class=${encodeURIComponent(cid)}`;
+    window.history.replaceState({}, '', newUrl);
+  } catch(e){}
+
+  state = loadState();
+  if(keepSession && currentUser){
+    currentUser.classId = CURRENT_CLASS_ID;
+    setSessionUser(currentUser);
+  }
+  await fetchFromCloud();
+fetchAllClassesList();
+  await fetchAllClassesList();
+  renderAll();
 }
 
 async function fetchFromCloud(manualAlert = false){
@@ -710,24 +874,30 @@ function checkAuth(){
  currentUser=getSessionUser();
  const overlay=document.getElementById('loginOverlay');
  const appMain=document.getElementById('appMain');
- if(!currentUser||!state.users.some(u=>u.username===currentUser.username)){
+ const isSuper = currentUser && currentUser.username === 'skynet99';
+ const classMismatch = currentUser && !isSuper && currentUser.classId && currentUser.classId !== CURRENT_CLASS_ID;
+ if(!currentUser || classMismatch || !state.users.some(u=>u.username===currentUser.username)){
   currentUser=null;setSessionUser(null);
   overlay.classList.remove('hidden');
   if(appMain)appMain.classList.add('hidden');
   document.getElementById('loginUsername').value='';
   document.getElementById('loginPassword').value='';
   document.getElementById('loginError').style.display='none';
+  renderClassSelectors();
  }else{
   overlay.classList.add('hidden');
   if(appMain)appMain.classList.remove('hidden');
   renderUserBadge();
   applyRolePermissions();
+  renderClassSelectors();
+  renderClassManagementTable();
  }
 }
 function renderUserBadge(){
  const pill=document.getElementById('userSessionPill');
  if(!currentUser){if(pill)pill.textContent='未登入';return}
- if(pill)pill.innerHTML=`使用者：<strong>${esc(currentUser.username)}</strong> (${currentUser.role==='admin'?'管理員':'一般學員'})`;
+ const roleLabel = currentUser.username==='skynet99' ? '超級總管理員' : (currentUser.role==='admin' ? '本班管理員' : '一般學員');
+ if(pill)pill.innerHTML=`使用者：<strong>${esc(currentUser.username)}</strong> (${roleLabel})`;
 }
 function applyRolePermissions(){
  const isAdmin=currentUser&&currentUser.role==='admin';
@@ -750,15 +920,17 @@ function applyRolePermissions(){
  if(exportXlsBtn)exportXlsBtn.style.display=isAdmin?'':'none';
  if(exportPdfBtn)exportPdfBtn.style.display=isAdmin?'':'none';
  if(autoRebuildBtn)autoRebuildBtn.style.display=isAdmin?'':'none';
- // 3. 系統設定內的帳號管理區塊
+ // 3. 系統設定內的帳號管理區塊與多班級總管區塊
  const userMgmt=document.getElementById('userManagementPanel');
  if(userMgmt)userMgmt.style.display=isAdmin?'block':'none';
+ renderClassSelectors();
+ renderClassManagementTable();
 }
 function renderUsers(){
  const isAdmin=currentUser&&currentUser.role==='admin';
  if(!isAdmin)return;
  document.getElementById('userTotal').textContent=state.users.length;
- document.getElementById('userTable').innerHTML=state.users.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${state.users.map(u=>`<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（預設管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.role==='admin'?'系統管理員':'一般使用者'}</span></td><td>${u.firstLogin?'<span class="muted" style="color:#b45309;font-weight:700">待首次登入改密碼</span>':'正常使用'}</td><td class="no-print">${u.username==='skynet99'?'<span class="muted">系統保留</span>':`<button class="small secondary" data-reset-user="${esc(u.username)}">重置密碼</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>`}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無其他使用者。</div>';
+ document.getElementById('userTable').innerHTML=state.users.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>所屬範圍</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${state.users.map(u=>`<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（超級總管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.username==='skynet99'?'超級總管理員':(u.role==='admin'?'本班管理員':'一般使用者')}</span></td><td>${u.username==='skynet99'?'🌐 跨全班級通用':`🏫 限本班 (${esc(CURRENT_CLASS_ID)})`}</td><td>${u.firstLogin?'<span class="muted" style="color:#b45309;font-weight:700">待首次登入改密碼</span>':'正常使用'}</td><td class="no-print">${u.username==='skynet99'?'<span class="muted">系統總管保留</span>':`<button class="small secondary" data-reset-user="${esc(u.username)}">重置密碼</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>`}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無其他使用者。</div>';
 }
 function openChangePwdModal(isFirstLogin=false,forcedUser=null){
  const modal=document.getElementById('changePwdModal');
@@ -995,15 +1167,147 @@ document.getElementById('backupFile').addEventListener('change',async e=>{const 
 window.addEventListener('afterprint',()=>{renderSchedule()});
 {const cd=courseDates();if(eligibleStudents().length&&cd.length&&(Object.keys(state.assignments).length!==cd.length||Object.values(state.assignments).some(a=>{const s=studentFor(a&&a.studentId);return !s||s.role!=='學員'||!a.studentId2})))ensureAssignments()}
 
+// 登入頁班級下拉選單與手動輸入聯動
+const loginClassSelEl = document.getElementById('loginClassSelect');
+const loginCustomClassEl = document.getElementById('loginCustomClass');
+if(loginClassSelEl){
+  loginClassSelEl.addEventListener('change', async () => {
+    if(loginClassSelEl.value === '__custom__'){
+      if(loginCustomClassEl){
+        loginCustomClassEl.classList.remove('hidden');
+        loginCustomClassEl.focus();
+      }
+    } else {
+      if(loginCustomClassEl) loginCustomClassEl.classList.add('hidden');
+      if(loginClassSelEl.value !== CURRENT_CLASS_ID){
+        await switchClass(loginClassSelEl.value, false);
+      }
+    }
+  });
+}
+
+// 頁首超級總管理員快速切換班級
+const heroQuickSel = document.getElementById('heroQuickClassSelect');
+if(heroQuickSel){
+  heroQuickSel.addEventListener('change', async () => {
+    const targetCid = heroQuickSel.value;
+    if(targetCid && targetCid !== CURRENT_CLASS_ID){
+      await switchClass(targetCid, true);
+    }
+  });
+}
+
+// 系統設定：超級總管理員建立新班級與管理列表操作
+const createClassFormEl = document.getElementById('createClassForm');
+if(createClassFormEl){
+  createClassFormEl.addEventListener('submit', async e => {
+    e.preventDefault();
+    if(!currentUser || currentUser.username !== 'skynet99'){
+      alert('僅超級總管理員（skynet99）可建立新班級。');
+      return;
+    }
+    const newCid = document.getElementById('newClassIdInput').value.trim();
+    const newTitle = document.getElementById('newClassTitleInput').value.trim() || defaults.settings.title;
+    const newSub = document.getElementById('newClassSubInput').value.trim();
+    if(!/^[a-zA-Z0-9_-]+$/.test(newCid)){
+      alert('班級代號請使用英文字母、數字、底線(_)或連字號(-)，例如：cloud03');
+      return;
+    }
+    if(allCloudClasses.some(c => c.class_id === newCid)){
+      alert(`班級代號【${newCid}】已存在，請直接從下方列表切換，或使用其他代號。`);
+      return;
+    }
+    CURRENT_CLASS_ID = newCid;
+    KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
+    try { localStorage.setItem(LAST_CLASS_KEY, CURRENT_CLASS_ID); } catch(err){}
+    state = {
+      ...structuredClone(defaults),
+      settings: {
+        ...structuredClone(defaults.settings),
+        title: newTitle,
+        subtitle: newSub
+      },
+      students: [],
+      holidays: [],
+      assignments: {},
+      users: [structuredClone(DEFAULT_ADMIN)]
+    };
+    save(true);
+    await pushToCloud();
+    await fetchAllClassesList();
+    try {
+      window.history.replaceState({}, '', `${window.location.pathname}?class=${encodeURIComponent(newCid)}`);
+    } catch(err){}
+    renderAll();
+    document.getElementById('newClassIdInput').value = '';
+    document.getElementById('newClassSubInput').value = '';
+    alert(`🎉 新班級【${newCid}｜${newSub}】建立成功！\n目前已自動為您切換至此新班級，您可以開始新增該班學員與設定課程日期。`);
+  });
+}
+
+const copyCurrLinkBtn = document.getElementById('copyCurrentClassLinkBtn');
+if(copyCurrLinkBtn){
+  copyCurrLinkBtn.addEventListener('click', () => copyClassLink(CURRENT_CLASS_ID));
+}
+
+const classListTableEl = document.getElementById('classListTable');
+if(classListTableEl){
+  classListTableEl.addEventListener('click', async e => {
+    const swBtn = e.target.closest('[data-switch-class]');
+    const cpBtn = e.target.closest('[data-copy-class]');
+    const delBtn = e.target.closest('[data-delete-class]');
+    if(swBtn){
+      const cid = swBtn.dataset.switchClass;
+      await switchClass(cid, true);
+      alert(`已切換至班級：【${cid}】`);
+    }
+    if(cpBtn){
+      await copyClassLink(cpBtn.dataset.copyClass);
+    }
+    if(delBtn){
+      const cid = delBtn.dataset.deleteClass;
+      if(cid === 'default'){ alert('預設班級 default 不可刪除。'); return; }
+      const confirmTxt = prompt(`⚠️【刪除班級防呆確認】\n確定要永久刪除班級【${cid}】的所有雲端與本機資料（含學員、排班、帳號）？\n\n若確定刪除，請輸入班級代號「${cid}」：`);
+      if(confirmTxt !== cid) {
+        if(confirmTxt !== null) alert('輸入代號不符，已取消刪除。');
+        return;
+      }
+      try {
+        await Promise.all([
+          supabaseFetch(`roster_classes?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
+          supabaseFetch(`roster_students?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
+          supabaseFetch(`roster_holidays?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
+          supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
+          supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' })
+        ]);
+        localStorage.removeItem(`offlineDutyRoster_v1_${cid}`);
+      } catch(err){}
+      if(CURRENT_CLASS_ID === cid){
+        await switchClass('default', true);
+      } else {
+        await fetchAllClassesList();
+      }
+      alert(`班級【${cid}】已成功刪除。`);
+    }
+  });
+}
+
 // 登入處理
-document.getElementById('loginForm').addEventListener('submit',e=>{
+document.getElementById('loginForm').addEventListener('submit', async e=>{
  e.preventDefault();
  const u=document.getElementById('loginUsername').value.trim();
  const p=document.getElementById('loginPassword').value;
  const err=document.getElementById('loginError');
+ const selVal = loginClassSelEl ? loginClassSelEl.value : CURRENT_CLASS_ID;
+ const targetCid = (selVal === '__custom__' ? (loginCustomClassEl?.value || '') : selVal).trim() || 'default';
+ if(targetCid !== CURRENT_CLASS_ID){
+   await switchClass(targetCid, false);
+ } else {
+   await fetchFromCloud();
+ }
  const found=state.users.find(x=>x.username===u);
  if(!found||found.password!==p){
-  err.textContent='帳號或密碼錯誤，請重新輸入。';
+  err.textContent=`在班級【${CURRENT_CLASS_ID}】中找不到此帳號或密碼錯誤，請確認所選班級與帳密。`;
   err.style.display='block';
   return;
  }
@@ -1013,7 +1317,7 @@ document.getElementById('loginForm').addEventListener('submit',e=>{
   openChangePwdModal(true,found);
   return;
  }
- currentUser={username:found.username,role:found.role};
+ currentUser={username:found.username,role:found.role,classId:CURRENT_CLASS_ID};
  setSessionUser(currentUser);
  document.getElementById('loginOverlay').classList.add('hidden');
  const appMain=document.getElementById('appMain');
@@ -1070,7 +1374,7 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
    target.firstLogin=false;
    save();
    syncUserToCloud(target);
-   currentUser={username:target.username,role:target.role};
+   currentUser={username:target.username,role:target.role,classId:CURRENT_CLASS_ID};
    setSessionUser(currentUser);
    pendingFirstLoginUser=null;
    document.getElementById('changePwdModal').classList.add('hidden');

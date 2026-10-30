@@ -19,17 +19,17 @@
  .pc-month{page-break-after:always;page-break-inside:avoid}
  .pc-month:last-child{page-break-after:auto}
  .pc-head{text-align:center;margin-bottom:2.5mm}
- .pc-title{font-size:16pt;font-weight:800;line-height:1.15}
+ .pc-title{font-size:16pt;font-weight:800;line-height:1.15;color:#000!important}
  .pc-sub{font-size:10.5pt;color:#444;margin-top:.8mm}
- .pc-mtitle{font-size:13pt;font-weight:700;margin-top:1mm}
+ .pc-mtitle{font-size:13pt;font-weight:700;margin-top:1mm;color:#000!important}
  .pc-range{font-size:9.5pt;color:#333;margin-top:.6mm}
  .pc-table{width:100%;border-collapse:collapse;table-layout:fixed;border-bottom:1.2px solid #999;margin-bottom:2mm}
  .pc-table th{border:1.2px solid #666;background:#e8eef8;font-size:10pt;padding:1mm}
  .pc-table td{border:1px solid #999;vertical-align:top}
  .pc-table tbody tr:last-child td{border-bottom:1.2px solid #999}
- .pc-day{height:var(--rowh,30mm);padding:1.2mm 1.5mm;background:#fff;overflow:hidden}
- .pc-no{font-size:13pt;font-weight:700}
- .pc-stu{font-size:12pt;font-weight:600;margin-top:.8mm;line-height:1.15}
+ .pc-day{height:var(--rowh,30mm);padding:1.2mm 1.5mm;background:#fff!important;color:#000!important;overflow:hidden}
+ .pc-no{font-size:13pt;font-weight:700;color:#000!important}
+ .pc-stu{font-size:12pt;font-weight:600;margin-top:.8mm;line-height:1.15;color:#000!important}
  .pc-off{font-size:10pt;color:#777;margin-top:1.5mm}
  .pc-offday{background:#f2f2f2}
  .pc-sat{background:#d6f0d6}
@@ -95,101 +95,7 @@
 .modal-box p { margin: 0 0 16px; font-size: 13px; color: #64748b; line-height: 1.5; }
 
 
-/* 深色主題變數與樣式 */
-body.dark-theme {
-  --bg: #0f172a;
-  --panel: #1e293b;
-  --ink: #f8fafc;
-  --muted: #94a3b8;
-  --line: #334155;
-  --brand: #3b82f6;
-  --brand2: #2563eb;
-  --soft: #1e293b;
-}
-body.dark-theme input, body.dark-theme select, body.dark-theme textarea {
-  background: #0f172a;
-  color: #f8fafc;
-  border-color: #475569;
-}
-body.dark-theme table {
-  background: #1e293b;
-  color: #f8fafc;
-}
-body.dark-theme th {
-  background: #0f172a;
-  color: #cbd5e1;
-}
-body.dark-theme tr.today {
-  background: #1e3a8a40;
-}
-body.dark-theme tr.holiday {
-  background: #451a0340;
-}
-body.dark-theme .stat {
-  background: #1e293b;
-  border-color: #334155;
-}
-body.dark-theme .cal-day {
-  background: #1e293b;
-  border-color: #334155;
-  color: #f8fafc;
-}
-body.dark-theme .cal-day.off {
-  background: #0f172a;
-  color: #64748b;
-}
-body.dark-theme button.secondary {
-  background: #334155;
-  color: #f8fafc;
-}
-body.dark-theme .notice {
-  background: #1e3a8a30;
-  color: #93c5fd;
-  border: 1px solid #1d4ed850;
-}
-body.dark-theme .tabs button {
-  background: #334155;
-  color: #cbd5e1;
-}
-body.dark-theme .tabs button.active {
-  background: var(--brand);
-  color: #fff;
-}
-body.dark-theme .modal-box {
-  background: #1e293b;
-  color: #f8fafc;
-  border: 1px solid #334155;
-}
-body.dark-theme .modal-box h3 {
-  color: #f8fafc;
-}
-
-/* 登入卡片深色適配 */
-body.dark-theme .login-card {
-  background: #1e293b;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-body.dark-theme .login-title {
-  color: #f8fafc;
-}
-body.dark-theme .login-desc {
-  color: #94a3b8;
-}
-body.dark-theme .login-field label {
-  color: #cbd5e1;
-}
-body.dark-theme .login-field input {
-  background: #0f172a;
-  color: #f8fafc;
-  border-color: #334155;
-}
-body.dark-theme .login-field input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-
-/* 登入頁右上角時鐘與主題開關 */
+/* 登入頁右上角時鐘 */
 .login-top-bar {
   position: absolute;
   top: 18px;
@@ -217,49 +123,6 @@ body.dark-theme .login-field input:focus {
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
-.theme-toggle-btn {
-  background: rgba(15,23,42,0.65);
-  border: 1px solid rgba(255,255,255,0.25);
-  color: #ffffff;
-  padding: 8px 15px;
-  border-radius: 99px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: all .2s;
-}
-.theme-toggle-btn:hover {
-  background: rgba(30,41,59,0.85);
-  border-color: rgba(255,255,255,0.4);
-}
-.theme-toggle-btn {
-  background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(255,255,255,0.3);
-  color: white;
-  padding: 5px 12px;
-  border-radius: 99px;
-  font-size: 13px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all .2s;
-}
-.theme-toggle-btn:hover {
-  background: rgba(255,255,255,0.3);
-}
-
-/* 首頁頂部的主題切換鈕與時鐘藥丸 */
-.header-top-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-}
 
 </style>
 </head>
@@ -271,9 +134,6 @@ body.dark-theme .login-field input:focus {
     <div class="login-clock-box">
       <span>🕒</span><span id="loginClock">2026/10/30 (星期五) 00:00:00</span>
     </div>
-    <button type="button" class="theme-toggle-btn" id="loginThemeToggle" title="切換深色/淺色主題">
-      <span class="theme-icon">🌙</span><span class="theme-text">深色模式</span>
-    </button>
   </div>
 
   <div class="login-card">
@@ -327,7 +187,7 @@ body.dark-theme .login-field input:focus {
   <div class="eyebrow">CLASS DUTY ROSTER · CLOUD POWERED</div>
   <h1 id="headerTitle">值日生排班管理系統</h1>
   <p id="headerSubtitle">依上課日期自動排班，避開週末與設定的國定假日</p>
-  <div class="hero-meta"><span class="pill" id="courseRangePill">尚未設定課程期間</span><span class="pill" id="studentCountPill">0 位學員</span><span class="pill" id="appClockPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:0.5px" title="目前西元日期與時間">🕒 2026/10/30 (星期五) 00:00:00</span><span class="pill" id="idleTimerPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:600;font-size:13px" title="閒置計時器：顯示目前未操作時間與自動登出倒數">⏳ 閒置：0秒</span><span class="pill" id="classBadgePill" title="目前班級代號">🏫 班級：default</span><span class="pill" id="cloudSyncPill" style="cursor:pointer" title="點擊立即手動與雲端同步">⚡ 雲端狀態：連線中...</span><span class="pill">雲端即時連線 · 本機雙軌防護</span><span class="pill" id="userSessionPill">未登入</span><button class="small secondary no-print" id="headerChangePwdBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#ffffff22;color:white;border:1px solid #ffffff44">修改密碼</button><button class="small danger no-print" id="logoutBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#fee2e233;color:#fecaca;border:1px solid #fecaca44">登出</button><button class="small secondary no-print theme-toggle-btn" id="appThemeToggle" style="padding:4px 10px;font-size:12px;border-radius:99px;background:#ffffff22;color:white;border:1px solid #ffffff44"><span class="theme-icon">🌙</span><span class="theme-text">深色</span></button></div>
+  <div class="hero-meta"><span class="pill" id="courseRangePill">尚未設定課程期間</span><span class="pill" id="studentCountPill">0 位學員</span><span class="pill" id="appClockPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:0.5px" title="目前西元日期與時間">🕒 2026/10/30 (星期五) 00:00:00</span><span class="pill" id="idleTimerPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:600;font-size:13px" title="閒置計時器：顯示目前未操作時間與自動登出倒數">⏳ 閒置：0秒</span><span class="pill" id="classBadgePill" title="目前班級代號">🏫 班級：default</span><span class="pill" id="cloudSyncPill" style="cursor:pointer" title="點擊立即手動與雲端同步">⚡ 雲端狀態：連線中...</span><span class="pill">雲端即時連線 · 本機雙軌防護</span><span class="pill" id="userSessionPill">未登入</span><button class="small secondary no-print" id="headerChangePwdBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#ffffff22;color:white;border:1px solid #ffffff44">修改密碼</button><button class="small danger no-print" id="logoutBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#fee2e233;color:#fecaca;border:1px solid #fecaca44">登出</button></div>
   <div class="credit">Designed by 林永松</div>
 </header>
 <nav class="tabs no-print" aria-label="系統功能">
@@ -1297,48 +1157,8 @@ function updateClock(){
 setInterval(updateClock, 1000);
 updateClock();
 
-// 深色 / 淺色 主題切換 (支援 localStorage 持久化)
-const THEME_KEY = 'offlineDutyRoster_theme';
-function applyTheme(isDark){
-  document.body.classList.toggle('dark-theme', isDark);
-  const icon = isDark ? '☀️' : '🌙';
-  const text = isDark ? '淺色模式' : '深色模式';
-  const textShort = isDark ? '淺色' : '深色';
-  
-  const lBtn = document.getElementById('loginThemeToggle');
-  if(lBtn){
-    const ic = lBtn.querySelector('.theme-icon'); if(ic) ic.textContent = icon;
-    const tx = lBtn.querySelector('.theme-text'); if(tx) tx.textContent = text;
-  }
-  const aBtn = document.getElementById('appThemeToggle');
-  if(aBtn){
-    const ic = aBtn.querySelector('.theme-icon'); if(ic) ic.textContent = icon;
-    const tx = aBtn.querySelector('.theme-text'); if(tx) tx.textContent = textShort;
-  }
-  try{ localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light'); }catch(e){}
-}
-
-function initTheme(){
-  let saved = null;
-  try{ saved = localStorage.getItem(THEME_KEY); }catch(e){}
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const isDark = saved ? (saved === 'dark') : prefersDark;
-  applyTheme(isDark);
-}
-
-function toggleTheme(e){
-  if(e) e.preventDefault();
-  const isDark = document.body.classList.contains('dark-theme');
-  applyTheme(!isDark);
-}
-
-const loginThemeBtn = document.getElementById('loginThemeToggle');
-if(loginThemeBtn) loginThemeBtn.addEventListener('click', toggleTheme);
-
-const appThemeBtn = document.getElementById('appThemeToggle');
-if(appThemeBtn) appThemeBtn.addEventListener('click', toggleTheme);
-
-initTheme();
+// 確保清除舊版深色模式設定
+try { localStorage.removeItem("offlineDutyRoster_theme"); document.body.classList.remove("dark-theme"); } catch(e){}
 
 // 閒置自動登出機制 (預設 10 分鐘，可設定 0-99 分鐘，0 為停用)
 let lastUserActivityTime = Date.now();

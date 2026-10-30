@@ -528,6 +528,24 @@ async function fetchFromCloud(manualAlert = false){
  }
 }
 
+// 單一使用者密碼更新同步 (支援一般學員首次登入或自行修改密碼)
+async function syncUserToCloud(userObj){
+  if(!userObj) return;
+  try {
+    await supabaseFetch('roster_users?on_conflict=class_id,username', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify([{
+        class_id: CURRENT_CLASS_ID,
+        username: userObj.username,
+        password: userObj.password,
+        role: userObj.role || 'user',
+        first_login: Boolean(userObj.firstLogin)
+      }])
+    });
+  } catch(e){}
+}
+
 async function pushToCloud(){
  if(!currentUser || currentUser.role !== 'admin') return;
  const pill = document.getElementById('cloudSyncPill');
@@ -556,7 +574,8 @@ async function pushToCloud(){
   await Promise.all([
     supabaseFetch(`roster_students?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' }),
     supabaseFetch(`roster_holidays?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' }),
-    supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' })
+    supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' }),
+    supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' })
   ]);
 
   // 批次插入學員
@@ -617,7 +636,7 @@ async function pushToCloud(){
       role: u.role || 'user',
       first_login: Boolean(u.firstLogin)
     }));
-    await supabaseFetch('roster_users', {
+    await supabaseFetch('roster_users?on_conflict=class_id,username', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates' },
       body: JSON.stringify(uPayload)
@@ -1050,6 +1069,7 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
    target.password=newP;
    target.firstLogin=false;
    save();
+   syncUserToCloud(target);
    currentUser={username:target.username,role:target.role};
    setSessionUser(currentUser);
    pendingFirstLoginUser=null;
@@ -1070,6 +1090,7 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
  }
  target.password=newP;
  save();
+ syncUserToCloud(target);
  document.getElementById('changePwdModal').classList.add('hidden');
  alert('密碼修改成功！');
 });

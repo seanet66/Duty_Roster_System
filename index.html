@@ -284,7 +284,7 @@
   <div class="credit">Designed by 林永松</div>
 </header>
 <nav class="tabs no-print" aria-label="系統功能">
-<button class="active" data-tab="homePage">首頁／值日生班表</button><button data-tab="studentsPage">學員資料</button><button data-tab="settingsPage">系統設定</button><button data-tab="holidayPage">假日管理</button><button data-tab="auditLogPage" id="auditLogTabBtn" class="hidden">活動紀錄 LOG</button><button data-tab="dataPage">匯入／匯出</button>
+<button class="active" data-tab="homePage" id="tabHomeBtn">首頁／值日生班表</button><button data-tab="studentsPage" id="tabStudentsBtn">學員資料</button><button data-tab="settingsPage">系統設定</button><button data-tab="holidayPage">假日管理</button><button data-tab="auditLogPage" id="auditLogTabBtn" class="hidden">活動紀錄 LOG</button><button data-tab="dataPage">匯入／匯出</button>
 </nav>
 <main>
 <section id="homePage" class="tab-page">
@@ -308,7 +308,61 @@
     <div class="stat"><div class="muted">本月休假日</div><div class="num" id="statOff">0</div></div>
     <div class="stat"><div class="muted">學員人數</div><div class="num" id="statStudents">0</div></div>
   </div>
-  <div class="panel">
+  <!-- 主系統總控台專屬：全班級動態監控看板與班表查閱 (方案 A) -->
+  <div id="superDashboardWrap" class="hidden">
+    <div class="panel" style="background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);border-top:4px solid #2563eb;margin-bottom:18px">
+      <div class="toolbar" style="margin-bottom:12px">
+        <div>
+          <h2 style="margin-bottom:4px;color:#1e3a8a;display:flex;align-items:center;gap:8px">
+            <span>📢 今日各班值日生即時動態</span>
+            <span class="badge" id="dashTodayDateBadge" style="font-size:13px;background:#eff6ff;color:#1d4ed8;font-weight:700"></span>
+          </h2>
+          <div class="muted">一覽全分署所有開班之今日值日生輪替狀態；點擊班級卡片可直接下方載入班表或進入管理。</div>
+        </div>
+        <div class="actions no-print">
+          <button type="button" class="secondary small" id="refreshDashboardBtn" style="padding:6px 12px;font-size:12px">🔄 重新整理動態看板</button>
+        </div>
+      </div>
+      <div id="superTodayCardsGrid" class="grid" style="grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:12px">
+        <!-- 動態渲染各班今日值日生小卡 -->
+      </div>
+    </div>
+
+    <!-- 下方快速班級班表切換抽屜 -->
+    <div class="panel" style="border-top:4px solid #059669">
+      <div class="toolbar" style="margin-bottom:12px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h2 style="margin-bottom:4px;color:#065f46" id="dashViewerTitle">📅 分班班表即時瀏覽</h2>
+          <div class="muted">點選下方班級標籤快速切換查閱班表，或直接點擊「進入代排」進行完整排班維護。</div>
+        </div>
+        <div class="actions no-print" id="dashClassActionBtns">
+          <button type="button" class="small" id="dashEnterClassBtn" style="background:#2563eb;color:#fff;border-color:#1d4ed8;font-weight:700">✏️ 進入該班代排班表</button>
+          <button type="button" class="secondary small" id="dashExportXlsBtn">📊 匯出該班 Excel</button>
+          <button type="button" class="secondary small" id="dashExportPdfBtn">🖨️ 列印該班 PDF</button>
+        </div>
+      </div>
+
+      <!-- 班級快速切換標籤列 -->
+      <div id="dashClassPillsBar" class="no-print" style="display:flex;flex-wrap:wrap;gap:8px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid #e2e8f0">
+        <!-- 動態渲染班級切換按鈕 -->
+      </div>
+
+      <div class="toolbar no-print" style="margin-bottom:12px;background:#f8fafc;padding:8px 12px;border-radius:10px">
+        <div class="muted" id="dashClassInfoText" style="font-size:13px;font-weight:600">載入班級資料中...</div>
+        <div class="month-nav" style="display:flex;align-items:center;gap:6px">
+          <button class="secondary small" id="dashPrevMonth" title="上個月" style="padding:5px 9px">◀</button>
+          <input type="month" id="dashMonthPicker" style="width:auto;min-width:130px;font-weight:700;font-size:14px;padding:4px 8px;cursor:pointer">
+          <button class="secondary small" id="dashNextMonth" title="下個月" style="padding:5px 9px">▶</button>
+          <button class="secondary small" id="dashCurrMonthBtn" title="本月" style="padding:5px 9px;font-size:12px">本月</button>
+        </div>
+      </div>
+
+      <div id="dashScheduleTableWrap" class="table-wrap"></div>
+    </div>
+  </div>
+
+  <!-- 分班內部獨立排班視圖 -->
+  <div class="panel" id="classSchedulePanel">
     <div class="toolbar">
       <div><h2 style="margin-bottom:4px">本月值日生班表</h2><div class="muted">切換月份查看排班；可在表格中直接修改指定日期。</div></div>
       <div class="month-nav no-print" style="display:flex;align-items:center;gap:6px">
@@ -421,24 +475,34 @@
       <div class="grid two">
         <div class="field"><label for="classTitle">網頁上方標題</label><input id="classTitle" placeholder="例如：勞動力發展署桃竹苗分署 或 網路工程班" maxlength="160"></div>
         <div class="field"><label for="classSubtitle">副標題（選填）</label><input id="classSubtitle" maxlength="180" placeholder="依上課日期自動排班"></div>
-        <div class="field"><label for="startDate">開始日 *</label><input type="date" id="startDate" required></div>
-        <div class="field"><label for="endDate">結束日 *</label><input type="date" id="endDate" required></div>
-        <div class="field"><label for="firstStudent">第一位值日生 *</label><select id="firstStudent" required><option value="">請先新增學員</option></select></div>
-        <div class="field"><label for="dailyCount">每日值日生人數</label><select id="dailyCount"><option value="2">每日 2 位學員（預設）</option><option value="1">每日 1 位學員</option></select></div>
         <div class="field"><label for="autoLogoutMinutes">閒置自動登出時間（分鐘）</label><input type="number" id="autoLogoutMinutes" min="0" max="99" value="10" placeholder="0-99，0表示不自動登出"><div class="muted" style="font-size:11px;margin-top:4px">預設 10 分鐘，可設定 0～99 分鐘（設為 0 表示停用自動登出）</div></div>
-        <div class="field"><label for="editMode">手動修改後的排班方式</label><select id="editMode"><option value="A">A．自動接續（手動值日生後，依學號往後接續）</option><option value="B">B．固定指定（保留手動指定日期，其餘日期順序重排）</option><option value="C">C．完全重新排序（修改後整張表重新依學號排班）</option></select></div>
         <div class="field" id="settingsDeidentifyField"><label for="deidentifyMode">🛡️ 姓名去識別化保護（全系統資安隱私遮罩 — 主系統總控）</label><select id="deidentifyMode"><option value="true">開啟（全系統列表與匯出檔自動遮罩中間字為 ○ — 預設）</option><option value="false">關閉（顯示完整真實姓名 — 需輸入管理員密碼驗證）</option></select><div class="muted" style="font-size:11px;margin-top:4px">預設開啟並同步套用至主系統與所有分班（2 字顯示「王○」、3 字顯示「林○松」、4 字顯示「歐○○菲」）；關閉時須驗證主系統管理員密碼</div></div>
-        <div class="field" id="settingsAutoDeleteField">
-          <label for="autoDeleteDate">🗑️ 本班自動回收日與時間（結訓自動刪除，唯讀檢視）</label>
-          <div style="display:flex;gap:8px">
-            <input type="date" id="autoDeleteDate" style="flex:1.4;background:#f1f5f9;color:#475569;cursor:not-allowed" disabled>
-            <input type="time" id="autoDeleteTime" value="23:00" style="flex:1;background:#f1f5f9;color:#475569;cursor:not-allowed" disabled>
-          </div>
-          <div id="autoDeleteHintText" class="muted" style="font-size:11px;margin-top:4px">此回收時間由主系統分班時設定（唯讀），時間到達後系統將自動回收清除本班級資料</div>
-        </div>
       </div>
-      <div class="notice"><strong>排班規則：</strong>只在開始日與結束日（含）之間的上課日排班。週六、週日及假日管理中設定的休假日會跳過；職稱非「學員」的幹部（班長、副班長、服務股長）不列入值日生輪替，系統會自動跳過。學員依學號排序，每日安排 1 或 2 位值日生並循環，直到結束日。若要將週末設為上課日，請在「假日管理」勾選該日為上課日。</div>
-      <div class="actions"><button type="submit">儲存設定並產生班表</button><button type="button" class="secondary" id="rebuildSettings">套用設定並重新排班</button></div>
+
+      <!-- 分班專屬排班欄位（主系統總控台自動隱藏，僅在獨立分班顯示） -->
+      <div id="classSpecificSettingsSection">
+        <div class="grid two" style="margin-top:12px">
+          <div class="field"><label for="startDate">開始日 *</label><input type="date" id="startDate" required></div>
+          <div class="field"><label for="endDate">結束日 *</label><input type="date" id="endDate" required></div>
+          <div class="field"><label for="firstStudent">第一位值日生 *</label><select id="firstStudent" required><option value="">請先新增學員</option></select></div>
+          <div class="field"><label for="dailyCount">每日值日生人數</label><select id="dailyCount"><option value="2">每日 2 位學員（預設）</option><option value="1">每日 1 位學員</option></select></div>
+          <div class="field"><label for="editMode">手動修改後的排班方式</label><select id="editMode"><option value="A">A．自動接續（手動值日生後，依學號往後接續）</option><option value="B">B．固定指定（保留手動指定日期，其餘日期順序重排）</option><option value="C">C．完全重新排序（修改後整張表重新依學號排班）</option></select></div>
+          <div class="field" id="settingsAutoDeleteField">
+            <label for="autoDeleteDate">🗑️ 本班自動回收日與時間（結訓自動刪除，唯讀檢視）</label>
+            <div style="display:flex;gap:8px">
+              <input type="date" id="autoDeleteDate" style="flex:1.4;background:#f1f5f9;color:#475569;cursor:not-allowed" disabled>
+              <input type="time" id="autoDeleteTime" value="23:00" style="flex:1;background:#f1f5f9;color:#475569;cursor:not-allowed" disabled>
+            </div>
+            <div id="autoDeleteHintText" class="muted" style="font-size:11px;margin-top:4px">此回收時間由主系統分班時設定（唯讀），時間到達後系統將自動回收清除本班級資料</div>
+          </div>
+        </div>
+        <div class="notice" style="margin-top:12px"><strong>排班規則：</strong>只在開始日與結束日（含）之間的上課日排班。週六、週日及假日管理中設定的休假日會跳過；職稱非「學員」的幹部（班長、副班長、服務股長）不列入值日生輪替，系統會自動跳過。學員依學號排序，每日安排 1 或 2 位值日生並循環，直到結束日。若要將週末設為上課日，請在「假日管理」勾選該日為上課日。</div>
+      </div>
+
+      <div class="actions" style="margin-top:14px">
+        <button type="submit" id="saveSettingsBtn">儲存設定</button>
+        <button type="button" class="secondary" id="rebuildSettings">套用設定並重新排班</button>
+      </div>
     </form>
   </div>
   
@@ -559,9 +623,13 @@
 </section>
 <section id="dataPage" class="tab-page hidden">
   <div class="panel">
-    <h2>學員資料匯入／匯出</h2>
-    <div class="grid two">
-      <div><h3>匯入學員資料（CSV）</h3><p class="muted">支援 UTF-8 CSV，欄位為「學號、姓名、職稱」。可使用 Excel 編輯後另存為 CSV UTF-8。若學號重複，會以新資料更新該學號。</p><div class="actions"><button class="secondary" id="downloadTemplate">下載 CSV 範本</button><input type="file" id="studentFile" accept=".csv,.txt,text/csv" style="max-width:280px"></div><div id="importPreview" class="muted" style="margin-top:10px"></div><button id="confirmImport" class="hidden" style="margin-top:10px">確認匯入預覽資料</button></div>
+    <div id="superDataHintNotice" class="notice hidden" style="background:#eff6ff;border-color:#bfdbfe;color:#1e40af;margin-bottom:14px">
+      <strong>ℹ️ 總控台模式提示：</strong>主系統專責於全機關管理與系統級備份；個別分班之「學員名單匯入」及「分班班表匯出」請至首頁或多班級總管中心點擊<strong>「進入該班代排班表」</strong>後進行。
+    </div>
+    <div id="classDataSection">
+      <h2>學員資料匯入／匯出</h2>
+      <div class="grid two">
+        <div><h3>匯入學員資料（CSV）</h3><p class="muted">支援 UTF-8 CSV，欄位為「學號、姓名、職稱」。可使用 Excel 編輯後另存為 CSV UTF-8。若學號重複，會以新資料更新該學號。</p><div class="actions"><button class="secondary" id="downloadTemplate">下載 CSV 範本</button><input type="file" id="studentFile" accept=".csv,.txt,text/csv" style="max-width:280px"></div><div id="importPreview" class="muted" style="margin-top:10px"></div><button id="confirmImport" class="hidden" style="margin-top:10px">確認匯入預覽資料</button></div>
       <div><h3>匯出資料</h3><p class="muted">匯出學員名單與完整課程班表。</p><div class="actions" style="margin-bottom:8px"><button id="exportStudentsCsv">學員資料 CSV</button><button id="exportStudentsXls" class="secondary">學員資料 Excel</button></div><div class="actions" style="margin-bottom:8px"><button id="exportFullXls">完整課程班表 Excel</button><button id="exportFullPdf" class="secondary">完整課程班表 PDF</button></div>
       <div id="dataJsonBackupSection">
         <button id="exportBackup">完整備份 JSON</button>
@@ -571,7 +639,7 @@
         <input type="file" id="backupFile" accept=".json,application/json">
       </div>
       </div>
-    </div>
+    </div></div>
     
   <div id="dataNotice" class="notice">Excel 匯出採用 Excel 可開啟的 XML Spreadsheet 格式（.xls）；學員匯入支援 CSV。PDF 匯出為每月一頁的月曆式班表（A4 橫向），使用瀏覽器列印視窗，可選擇「另存為 PDF」。</div>
   </div>
@@ -588,6 +656,10 @@ const IS_DEDICATED_CLASS_URL = Boolean((urlParams.get('class') || '').trim() && 
 let CURRENT_CLASS_ID = (urlParams.get('class') || 'default').trim() || 'default';
 let KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
 let allCloudClasses = [];
+// 總控台多班級看板狀態
+let dashboardSelectedClassId = '';
+let dashboardCache = {};
+let dashboardViewMonth = todayISO().slice(0, 7);
 
 // 雲端同步配置
 const SUPABASE_CONFIG = {
@@ -1924,6 +1996,10 @@ function applyRolePermissions(){
  const dataJsonSection = document.getElementById('dataJsonBackupSection');
  if(settingsJsonPanel) settingsJsonPanel.classList.toggle('hidden', !isDefaultClass);
  if(dataJsonSection) dataJsonSection.classList.toggle('hidden', !isDefaultClass);
+  const superDataNotice = document.getElementById('superDataHintNotice');
+  const classDataSec = document.getElementById('classDataSection');
+  if(superDataNotice) superDataNotice.classList.toggle('hidden', !isDefaultClass);
+  if(classDataSec) classDataSec.classList.toggle('hidden', isDefaultClass);
  // 5. 去識別化開關僅在 default 主系統顯示（分班自動隱藏此欄位，統一由主系統全域管控）
  const deidField = document.getElementById('settingsDeidentifyField');
  if(deidField) deidField.classList.toggle('hidden', !isDefaultClass);
@@ -2054,11 +2130,33 @@ function openChangePwdModal(isFirstLogin=false,forcedUser=null){
 function renderHeader(){
   document.getElementById('headerTitle').textContent=state.settings.title||'勞動力發展署桃竹苗分署';
   document.getElementById('headerSubtitle').textContent=state.settings.subtitle||(CURRENT_CLASS_ID==='default'?'值日生排班系統（總控台）':'');
-  document.getElementById('courseRangePill').textContent=state.settings.startDate&&state.settings.endDate?`${fmt(state.settings.startDate)} ～ ${fmt(state.settings.endDate)}`:'尚未設定課程期間';
-  document.getElementById('studentCountPill').textContent=`${state.students.length} 位學員`;
+  const isDefaultClass = (CURRENT_CLASS_ID === 'default');
+  const coursePill = document.getElementById('courseRangePill');
+  const stuPill = document.getElementById('studentCountPill');
+  if(coursePill){
+    if(isDefaultClass){
+      coursePill.textContent = '👑 機構多班級總控台';
+    } else {
+      coursePill.textContent = state.settings.startDate&&state.settings.endDate?`${fmt(state.settings.startDate)} ～ ${fmt(state.settings.endDate)}`:'尚未設定課程期間';
+    }
+  }
+  if(stuPill){
+    if(isDefaultClass){
+      const totalSubClasses = allCloudClasses.filter(c => c.class_id !== 'default').length;
+      stuPill.textContent = `🏫 共 ${totalSubClasses} 個已建立分班`;
+    } else {
+      stuPill.textContent = `${state.students.length} 位學員`;
+    }
+  }
   const cb = document.getElementById('classBadgePill');
-  const cName = (state.settings.subtitle && state.settings.subtitle.trim()) ? `${CURRENT_CLASS_ID}｜${state.settings.subtitle.trim()}` : CURRENT_CLASS_ID;
-  if(cb) cb.textContent = `🏫 班級：${cName}`;
+  if(cb){
+    if(isDefaultClass){
+      cb.textContent = '🏫 主系統總控台';
+    } else {
+      const cName = (state.settings.subtitle && state.settings.subtitle.trim()) ? `${CURRENT_CLASS_ID}｜${state.settings.subtitle.trim()}` : CURRENT_CLASS_ID;
+      cb.textContent = `🏫 班級：${cName}`;
+    }
+  }
 }
 function renderFirstStudent(){const sel=document.getElementById('firstStudent'),old=state.settings.firstStudentId;sel.innerHTML=eligibleStudents().map(s=>`<option value="${esc(s.id)}">${esc(s.id)}｜${esc(maskStudentName(s.name))}${s.role!=='學員'?'（'+esc(s.role)+'）':''}</option>`).join('')||'<option value="">請先新增學員</option>';if(eligibleStudents().some(s=>s.id===old))sel.value=old}
 function renderStudents(){const q=document.getElementById('studentSearch').value.trim().toLowerCase(),list=sortedStudents().filter(s=>`${s.id} ${s.name} ${maskStudentName(s.name)} ${s.role}`.toLowerCase().includes(q));document.getElementById('studentTotal').textContent=state.students.length;document.getElementById('statStudents').textContent=state.students.length;document.getElementById('studentTable').innerHTML=list.length?`<table><thead><tr><th>學號</th><th>姓名${state.settings.deidentify?' <span class="badge" style="font-size:11px;background:#dbeafe;color:#1e40af">已去識別化</span>':''}</th><th>職稱</th><th class="no-print">操作</th></tr></thead><tbody>${list.map(s=>`<tr><td>${esc(s.id)}</td><td>${esc(maskStudentName(s.name))}</td><td><span class="badge">${esc(s.role)}</span></td><td class="no-print"><button class="small secondary" data-edit-student="${esc(s.id)}">編輯</button> <button class="small danger" data-delete-student="${esc(s.id)}">刪除</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無學員資料，請新增或匯入學員名單。</div>';renderFirstStudent()}
@@ -2091,10 +2189,39 @@ function renderSettings(){
     }
   }
   renderFirstStudent();
+  // 主系統總控台 vs. 獨立分班排班設定切換
+  const isDef = (CURRENT_CLASS_ID === 'default');
+  const classSec = document.getElementById('classSpecificSettingsSection');
+  const rebuildBtn = document.getElementById('rebuildSettings');
+  const saveBtn = document.getElementById('saveSettingsBtn');
+  const startInp = document.getElementById('startDate');
+  const endInp = document.getElementById('endDate');
+  const firstSel = document.getElementById('firstStudent');
+  if(classSec) classSec.classList.toggle('hidden', isDef);
+  if(rebuildBtn) rebuildBtn.classList.toggle('hidden', isDef);
+  if(saveBtn) saveBtn.textContent = isDef ? '儲存主控台設定' : '儲存設定並產生班表';
+  if(startInp) startInp.required = !isDef;
+  if(endInp) endInp.required = !isDef;
+  if(firstSel) firstSel.required = !isDef;
 }
 function renderHolidays(){const list=[...state.holidays].sort((a,b)=>a.date.localeCompare(b.date));document.getElementById('holidayTable').innerHTML=list.length?`<table><thead><tr><th>日期</th><th>星期</th><th>名稱／備註</th><th>類型</th><th class="no-print">操作</th></tr></thead><tbody>${list.map((h,i)=>`<tr><td>${fmt(h.date)}</td><td>${weekday(h.date)}</td><td>${esc(h.name)}${h.source==='api'?' <span class="muted" style="font-size:12px">(自動)</span>':''}</td><td><span class="badge ${h.type==='holiday'?'holiday':''}">${h.type==='workday'?'上課日':'休假／不排班'}</span></td><td class="no-print"><button class="small danger" data-delete-holiday="${esc(h.date)}">刪除</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">目前沒有自訂假日。週末預設不排班。</div>'}
 function studentFor(id){return state.students.find(s=>s.id===id)}
-function renderSchedule(){const all=courseDates(),month=state.viewMonth||todayISO().slice(0,7),visible=showFull?all:all.filter(d=>d.startsWith(month));const mp=document.getElementById('monthPicker');if(mp)mp.value=month;document.getElementById('homeNotice').textContent=(!state.settings.startDate||!state.settings.endDate)?'請先到「系統設定」設定開始日、結束日。':(!state.students.length?'請先到「學員資料」新增或匯入學員。':`已排定 ${all.length} 個上課日（每日 ${Number(state.settings.dailyCount)||2} 位值日生${state.settings.deidentify?' · 🛡️姓名已去識別化':''}），期間 ${fmt(state.settings.startDate)} 至 ${fmt(state.settings.endDate)}；目前顯示${showFull?'完整課程':'本月'}班表。`);
+function renderSchedule(){
+  const isDefaultClass = (CURRENT_CLASS_ID === 'default');
+  const superDashWrap = document.getElementById('superDashboardWrap');
+  const classSchedPanel = document.getElementById('classSchedulePanel');
+  const homeStatsWrap = document.querySelector('.stats');
+
+  if(superDashWrap) superDashWrap.classList.toggle('hidden', !isDefaultClass);
+  if(classSchedPanel) classSchedPanel.classList.toggle('hidden', isDefaultClass);
+  if(homeStatsWrap) homeStatsWrap.classList.toggle('hidden', isDefaultClass);
+
+  if(isDefaultClass){
+    renderSuperDashboard();
+    return;
+  }
+
+  const all=courseDates(),month=state.viewMonth||todayISO().slice(0,7),visible=showFull?all:all.filter(d=>d.startsWith(month));const mp=document.getElementById('monthPicker');if(mp)mp.value=month;document.getElementById('homeNotice').textContent=(!state.settings.startDate||!state.settings.endDate)?'請先到「系統設定」設定開始日、結束日。':(!state.students.length?'請先到「學員資料」新增或匯入學員。':`已排定 ${all.length} 個上課日（每日 ${Number(state.settings.dailyCount)||2} 位值日生${state.settings.deidentify?' · 🛡️姓名已去識別化':''}），期間 ${fmt(state.settings.startDate)} 至 ${fmt(state.settings.endDate)}；目前顯示${showFull?'完整課程':'本月'}班表。`);
  const holidays=holidayMap();let off=0;for(let d=parseDate(month+'-01'),end=new Date(d.getFullYear(),d.getMonth()+1,0,12);d<=end;d=addDays(d,1)){const k=iso(d);if(state.settings.startDate&&state.settings.endDate&&k>=state.settings.startDate&&k<=state.settings.endDate&&!isWorkday(k))off++}
  document.getElementById('statDays').textContent=visible.length;document.getElementById('statAssigned').textContent=visible.filter(d=>state.assignments[d]).length;document.getElementById('statOff').textContent=off;
  const isDaily1=Number(state.settings.dailyCount)===1;
@@ -2114,6 +2241,7 @@ function setTab(id){
  const isAdmin=currentUser&&currentUser.role==='admin';
  if(!isAdmin&&id!=='homePage'){alert('您的帳號權限僅能檢視值日生班表，無權訪問此頁面。');id='homePage';}
  if(id==='auditLogPage'&&CURRENT_CLASS_ID!=='default'){id='homePage';}
+ if(id==='studentsPage'&&CURRENT_CLASS_ID==='default'){alert('總控台專責於全機關管理，學員名單隸屬各獨立分班。請點擊分班「進入代排」後管理該班學員。');id='homePage';}
  document.querySelectorAll('.tab-page').forEach(x=>x.classList.toggle('hidden',x.id!==id));
  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));
  if(id==='homePage')renderSchedule();
@@ -2257,8 +2385,10 @@ if(deidentifyModeEl){
 
 document.getElementById('settingsForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  const start=document.getElementById('startDate').value,end=document.getElementById('endDate').value;
-  if(start&&end&&start>end){alert('開始日不能晚於結束日。');return}
+  const isDef = (CURRENT_CLASS_ID === 'default');
+  const start=document.getElementById('startDate')?.value || '';
+  const end=document.getElementById('endDate')?.value || '';
+  if(!isDef && start && end && start > end){alert('開始日不能晚於結束日。');return}
   // 分班的自動回收日與時間為唯讀，強制保留原本分班時設定好的值
   const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (state.settings.autoDeleteDate || '');
   const autoDelTimeVal = state.settings.autoDeleteTime || '23:00';
@@ -2434,6 +2564,115 @@ document.getElementById('prevMonth').addEventListener('click',()=>{const [y,m]=s
 document.getElementById('nextMonth').addEventListener('click',()=>{const [y,m]=state.viewMonth.split('-').map(Number),d=new Date(y,m,1,12);state.viewMonth=iso(d).slice(0,7);showFull=false;renderSchedule();save()});
 document.getElementById('monthPicker').addEventListener('change',e=>{const val=e.target.value;if(val){state.viewMonth=val;showFull=false;renderSchedule();save();}});
 document.getElementById('currMonthBtn').addEventListener('click',()=>{state.viewMonth=todayISO().slice(0,7);showFull=false;renderSchedule();save();});
+
+// 總控台多班級動態看板事件綁定
+const superDashWrapEl = document.getElementById('superDashboardWrap');
+if(superDashWrapEl){
+  superDashWrapEl.addEventListener('click', async e => {
+    const cardOrPill = e.target.closest('[data-dash-select]');
+    if(cardOrPill){
+      const cid = cardOrPill.dataset.dashSelect;
+      if(cid && cid !== dashboardSelectedClassId){
+        dashboardSelectedClassId = cid;
+        renderSuperDashboard();
+      }
+    }
+  });
+}
+
+const refreshDashBtn = document.getElementById('refreshDashboardBtn');
+if(refreshDashBtn){
+  refreshDashBtn.addEventListener('click', async () => {
+    await fetchAllClassesList();
+    await loadSuperDashboardData(true);
+    renderSuperDashboard();
+  });
+}
+
+const dashEnterBtn = document.getElementById('dashEnterClassBtn');
+if(dashEnterBtn){
+  dashEnterBtn.addEventListener('click', async () => {
+    if(dashboardSelectedClassId){
+      await switchClass(dashboardSelectedClassId, true);
+    }
+  });
+}
+
+const dashPrevBtn = document.getElementById('dashPrevMonth');
+if(dashPrevBtn){
+  dashPrevBtn.addEventListener('click', () => {
+    const [y, m] = dashboardViewMonth.split('-').map(Number);
+    const d = new Date(y, m - 2, 1, 12);
+    dashboardViewMonth = iso(d).slice(0, 7);
+    renderSuperDashboardViewer();
+  });
+}
+
+const dashNextBtn = document.getElementById('dashNextMonth');
+if(dashNextBtn){
+  dashNextBtn.addEventListener('click', () => {
+    const [y, m] = dashboardViewMonth.split('-').map(Number);
+    const d = new Date(y, m, 1, 12);
+    dashboardViewMonth = iso(d).slice(0, 7);
+    renderSuperDashboardViewer();
+  });
+}
+
+const dashCurrBtn = document.getElementById('dashCurrMonthBtn');
+if(dashCurrBtn){
+  dashCurrBtn.addEventListener('click', () => {
+    dashboardViewMonth = todayISO().slice(0, 7);
+    renderSuperDashboardViewer();
+  });
+}
+
+const dashMonthPicker = document.getElementById('dashMonthPicker');
+if(dashMonthPicker){
+  dashMonthPicker.addEventListener('change', e => {
+    if(e.target.value){
+      dashboardViewMonth = e.target.value;
+      renderSuperDashboardViewer();
+    }
+  });
+}
+
+const dashExportXlsBtn = document.getElementById('dashExportXlsBtn');
+if(dashExportXlsBtn){
+  dashExportXlsBtn.addEventListener('click', () => {
+    const cid = dashboardSelectedClassId;
+    const cData = dashboardCache[cid];
+    if(!cData || !cData.assignments){ alert('尚未載入該班班表資料。'); return; }
+    const dates = Object.keys(cData.assignments).filter(d => d.startsWith(dashboardViewMonth)).sort();
+    if(!dates.length){ alert('該月份沒有已排定的班表。'); return; }
+    const stuMap = new Map((cData.students || []).map(s => [s.id, s]));
+    const who = id => { const s = stuMap.get(id); return s ? `${s.id}　${maskStudentName(s.name)}（${s.role}）` : ''; };
+    const isDaily1 = Number(cData.info?.daily_count) === 1;
+    const rows = isDaily1
+      ? [['日期','星期','值日生','排班方式'], ...dates.map(d => [fmt(d), '星期' + weekday(d), who(cData.assignments[d]?.studentId), cData.assignments[d]?.manual ? '手動指定' : '自動排班'])]
+      : [['日期','星期','第一位值日生','第二位值日生','排班方式'], ...dates.map(d => [fmt(d), '星期' + weekday(d), who(cData.assignments[d]?.studentId), who(cData.assignments[d]?.studentId2), cData.assignments[d]?.manual ? '手動指定' : '自動排班'])];
+    const cName = cData.info?.subtitle || cid;
+    addAuditLog('資料匯出', `主系統總控台匯出【${cid}】${dashboardViewMonth} 月班表 Excel`);
+    exportXls(`${cid}_值日生班表_${dashboardViewMonth}.xls`, [['班級', cData.info?.title || '值日生排班系統', cName], ...rows], '值日生班表');
+  });
+}
+
+const dashExportPdfBtn = document.getElementById('dashExportPdfBtn');
+if(dashExportPdfBtn){
+  dashExportPdfBtn.addEventListener('click', async () => {
+    const cid = dashboardSelectedClassId;
+    if(cid){
+      await switchClass(cid, true);
+      setTimeout(() => {
+        const all = guardExport();
+        if(all){
+          const md = monthOrFull(all);
+          printRoster(md.dates, md.label);
+        }
+      }, 300);
+    }
+  });
+}
+
 document.getElementById('showFullSchedule').addEventListener('click',()=>{showFull=!showFull;renderSchedule()});
 document.getElementById('autoRebuild').addEventListener('click',()=>{if(confirm('重新自動排班會依目前規則重算班表，手動指定可能被覆蓋。確定？')){state.assignments={};generate();addAuditLog('設定與排班','於首頁執行「重新自動排班」')}});
 function guardExport(){if(!state.settings.startDate||!state.settings.endDate){alert('請先到「系統設定」設定開始日與結束日，再匯出班表。');return null}const all=courseDates();if(!all.length){alert('課程期間內沒有可排班的上課日，請檢查開始／結束日與假日設定。');return null}return all}
@@ -2484,6 +2723,226 @@ if(heroBackBtn){
   heroBackBtn.addEventListener('click', async () => {
     await switchClass('default', true);
   });
+}
+
+
+// =========================================================================
+// 方案 A：主系統總控台「今日值日生各班即時動態」＋「各班班表快速抽屜」
+// =========================================================================
+async function loadSuperDashboardData(forceRefresh = false){
+  const subClasses = allCloudClasses.filter(c => c.class_id !== 'default');
+  if(!subClasses.length) return;
+
+  // 優先嘗試從雲端一次拉取所有分班的學員與排班
+  try {
+    const [studRes, assnRes] = await Promise.all([
+      supabaseFetch('roster_students?class_id=neq.default&select=*'),
+      supabaseFetch('roster_assignments?class_id=neq.default&select=*')
+    ]);
+    const studList = (studRes && studRes.ok) ? await studRes.json() : [];
+    const assnList = (assnRes && assnRes.ok) ? await assnRes.json() : [];
+
+    subClasses.forEach(c => {
+      const cid = c.class_id;
+      const cStudents = Array.isArray(studList) ? studList.filter(s => s.class_id === cid).map(s => ({ id: s.student_id, name: s.name, role: s.role || '學員' })) : [];
+      const cAssignments = {};
+      if(Array.isArray(assnList)){
+        assnList.filter(a => a.class_id === cid).forEach(a => {
+          cAssignments[a.date] = { studentId: a.student_id, studentId2: a.student_id2, manual: Boolean(a.manual) };
+        });
+      }
+      dashboardCache[cid] = {
+        info: c,
+        students: cStudents,
+        assignments: cAssignments
+      };
+    });
+  } catch(e) {
+    // 離線保底：若雲端未通，嘗試從 localStorage 讀取快取的分班資料
+    subClasses.forEach(c => {
+      if(!dashboardCache[c.class_id]){
+        try {
+          const raw = localStorage.getItem('offlineDutyRoster_v1_' + c.class_id);
+          if(raw){
+            const obj = JSON.parse(raw);
+            dashboardCache[c.class_id] = {
+              info: c,
+              students: obj.students || [],
+              assignments: obj.assignments || {}
+            };
+          }
+        } catch(err){}
+      }
+    });
+  }
+}
+
+async function renderSuperDashboard(){
+  const today = todayISO();
+  const dateBadge = document.getElementById('dashTodayDateBadge');
+  if(dateBadge) dateBadge.textContent = `📅 今天：${fmt(today)} 星期${weekday(today)}`;
+
+  const subClasses = allCloudClasses.filter(c => c.class_id !== 'default');
+  const cardsGrid = document.getElementById('superTodayCardsGrid');
+  const pillsBar = document.getElementById('dashClassPillsBar');
+
+  if(!subClasses.length){
+    if(cardsGrid) cardsGrid.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:24px;background:#f8fafc;border-radius:12px;border:1px dashed #cbd5e1">🏫 目前尚未建立任何分班。<br>請至<strong>「系統設定 ➔ 👑 多班級總管中心」</strong>建立期別分班，建立後此處將自動呈現各班即時值日生動態！</div>';
+    if(pillsBar) pillsBar.innerHTML = '<span class="muted">尚未建立分班</span>';
+    const infoText = document.getElementById('dashClassInfoText');
+    if(infoText) infoText.textContent = '尚無分班班表';
+    const wrap = document.getElementById('dashScheduleTableWrap');
+    if(wrap) wrap.innerHTML = '<div class="empty">尚無分班資料</div>';
+    return;
+  }
+
+  // 1. 確保快取資料載入
+  await loadSuperDashboardData();
+
+  // 2. 渲染頂部「今日各班值日生動態卡片」
+  if(cardsGrid){
+    cardsGrid.innerHTML = subClasses.map(c => {
+      const cid = c.class_id;
+      const cData = dashboardCache[cid] || { students: [], assignments: {} };
+      const stuMap = new Map((cData.students || []).map(s => [s.id, s]));
+      const assnToday = cData.assignments ? cData.assignments[today] : null;
+
+      let dutyDisplay = '';
+      let statusTag = '';
+      const range = (c.start_date && c.end_date) ? `${fmt(c.start_date)} ～ ${fmt(c.end_date)}` : '未設定期間';
+      const isDateInRange = (c.start_date && c.end_date && today >= c.start_date && today <= c.end_date);
+
+      if(!c.start_date || !c.end_date){
+        statusTag = '<span class="badge" style="background:#f1f5f9;color:#64748b">尚未設定課程</span>';
+        dutyDisplay = '<span class="muted" style="font-size:13px">班級尚未排定課程期間</span>';
+      } else if(today < c.start_date){
+        statusTag = '<span class="badge" style="background:#fef3c7;color:#92400e">未開訓</span>';
+        dutyDisplay = `<span class="muted" style="font-size:13px">預計 ${fmt(c.start_date)} 開訓</span>`;
+      } else if(today > c.end_date){
+        statusTag = '<span class="badge" style="background:#f1f5f9;color:#475569">已結訓</span>';
+        dutyDisplay = '<span class="muted" style="font-size:13px">課程已結束</span>';
+      } else if(!assnToday){
+        const dayOfWeek = parseDate(today)?.getDay();
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+        statusTag = isWeekend ? '<span class="badge" style="background:#f1f5f9;color:#64748b">週末放假</span>' : '<span class="badge holiday">今日休假</span>';
+        dutyDisplay = isWeekend ? '<span style="color:#64748b;font-weight:600">🌴 週末不上課／不排班</span>' : '<span style="color:#b91c1c;font-weight:600">🌴 休假日／未安排值日</span>';
+      } else {
+        const s1 = stuMap.get(assnToday.studentId);
+        const s2 = stuMap.get(assnToday.studentId2);
+        const name1 = s1 ? maskStudentName(s1.name) : (assnToday.studentId ? `學號 ${assnToday.studentId}` : '未指派');
+        const name2 = s2 ? maskStudentName(s2.name) : (assnToday.studentId2 ? `學號 ${assnToday.studentId2}` : '');
+        statusTag = '<span class="badge" style="background:#dcfce7;color:#166534;font-weight:700">上課值日中</span>';
+        dutyDisplay = `<div style="font-size:16px;font-weight:800;color:#1e3a8a;letter-spacing:0.5px">
+          🧹 ${esc(name1)}${name2 ? '　＋　' + esc(name2) : ''}
+        </div>`;
+      }
+
+      const isSelected = (cid === dashboardSelectedClassId);
+      return `<div class="stat" style="text-align:left;padding:14px;border-radius:12px;background:#ffffff;border:2px solid ${isSelected ? '#2563eb' : '#e2e8f0'};box-shadow:${isSelected ? '0 4px 12px rgba(37,99,235,0.15)' : '0 2px 6px rgba(15,23,42,0.03)'};transition:all 0.15s ease;cursor:pointer" data-dash-select="${esc(cid)}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <span style="font-weight:800;font-size:15px;color:#0f172a">${esc(c.subtitle || c.class_id)}</span>
+            <span class="muted" style="font-size:11px;margin-left:4px">(${esc(c.class_id)})</span>
+          </div>
+          ${statusTag}
+        </div>
+        <div style="margin:8px 0;min-height:32px;display:flex;align-items:center">
+          ${dutyDisplay}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#64748b;border-top:1px dashed #e2e8f0;padding-top:8px;margin-top:6px">
+          <span>📅 ${range}</span>
+          <span style="color:#2563eb;font-weight:700">查閱班表 ➔</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // 3. 確保預設選中第一個分班
+  if(!dashboardSelectedClassId || !subClasses.some(c => c.class_id === dashboardSelectedClassId)){
+    dashboardSelectedClassId = subClasses[0].class_id;
+  }
+
+  // 4. 渲染快速切換標籤列 (Pill Tabs)
+  if(pillsBar){
+    pillsBar.innerHTML = subClasses.map(c => {
+      const isSel = (c.class_id === dashboardSelectedClassId);
+      const style = isSel
+        ? 'padding:6px 14px;border-radius:99px;font-size:13px;font-weight:800;background:#2563eb;color:#ffffff;border:1px solid #1d4ed8;cursor:pointer;box-shadow:0 2px 4px rgba(37,99,235,0.2)'
+        : 'padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;cursor:pointer';
+      const label = c.subtitle ? `${c.class_id}｜${c.subtitle}` : c.class_id;
+      return `<button type="button" class="dash-pill-btn" data-dash-select="${esc(c.class_id)}" style="${style}">${esc(label)}</button>`;
+    }).join('');
+  }
+
+  // 5. 渲染下方所選分班班表
+  renderSuperDashboardViewer();
+}
+
+function renderSuperDashboardViewer(){
+  const cid = dashboardSelectedClassId;
+  const cData = dashboardCache[cid];
+  const info = cData ? cData.info : allCloudClasses.find(c => c.class_id === cid);
+  const wrap = document.getElementById('dashScheduleTableWrap');
+  const infoText = document.getElementById('dashClassInfoText');
+  const monthPicker = document.getElementById('dashMonthPicker');
+  const titleEl = document.getElementById('dashViewerTitle');
+
+  if(monthPicker) monthPicker.value = dashboardViewMonth;
+  if(titleEl && info){
+    titleEl.textContent = `📅 ${info.subtitle || info.class_id} 值日生班表`;
+  }
+  if(infoText && info){
+    const range = (info.start_date && info.end_date) ? `${fmt(info.start_date)} ～ ${fmt(info.end_date)}` : '尚未設定課程期間';
+    const sCount = cData ? (cData.students?.length || 0) : 0;
+    infoText.innerHTML = `所屬班級：<strong style="color:#0f172a">${esc(info.class_id)}</strong> ｜ 課程期間：<strong>${range}</strong> ｜ 學員人數：<strong>${sCount} 位</strong>`;
+  }
+
+  if(!cData || !info || !info.start_date || !info.end_date){
+    if(wrap) wrap.innerHTML = `<div class="empty">班級【${esc(cid)}】尚未設定課程期間或尚未產生班表。<br><button type="button" class="small" onclick="switchClass('${esc(cid)}', true)" style="margin-top:8px;background:#2563eb;color:#fff;border-color:#1d4ed8">✏️ 進入該班設定與排班</button></div>`;
+    return;
+  }
+
+  const stuMap = new Map((cData.students || []).map(s => [s.id, s]));
+  const assns = cData.assignments || {};
+
+  // 取得該月該班排班日期
+  const dates = Object.keys(assns).filter(d => d.startsWith(dashboardViewMonth)).sort();
+
+  if(!dates.length){
+    if(wrap) wrap.innerHTML = `<div class="empty">班級【${esc(cid)}】在 ${dashboardViewMonth} 月份沒有排定的上課日班表。請切換月份或點擊上方「進入代排班表」查看完整課程。</div>`;
+    return;
+  }
+
+  const isDaily1 = Number(info.daily_count) === 1;
+  const thHtml = isDaily1
+    ? '<th>日期</th><th>星期</th><th>值日生</th><th>排班方式</th>'
+    : '<th>日期</th><th>星期</th><th>第一位值日生</th><th>第二位值日生</th><th>排班方式</th>';
+
+  const labelStu = id => {
+    if(!id) return '未指派';
+    const s = stuMap.get(id);
+    return s ? `${s.id}　${maskStudentName(s.name)}` : `學號 ${id}`;
+  };
+
+  const tbodyHtml = dates.map(d => {
+    const a = assns[d];
+    const s1 = a ? a.studentId : null;
+    const s2 = a ? a.studentId2 : null;
+    const dutyCols = isDaily1
+      ? `<td>${esc(labelStu(s1))}</td>`
+      : `<td>${esc(labelStu(s1))}</td><td>${esc(labelStu(s2))}</td>`;
+    const isToday = (d === todayISO());
+    return `<tr class="${isToday ? 'today' : ''}">
+      <td>${fmt(d)}</td>
+      <td>星期${weekday(d)}</td>
+      ${dutyCols}
+      <td>${a?.manual ? '<span class="badge manual">手動指定</span>' : '自動排班'}</td>
+    </tr>`;
+  }).join('');
+
+  if(wrap){
+    wrap.innerHTML = `<table><thead><tr>${thHtml}</tr></thead><tbody>${tbodyHtml}</tbody></table>`;
+  }
 }
 
 // 頁首超級總管理員快速切換班級

@@ -280,7 +280,7 @@
   <div class="eyebrow">CLASS DUTY ROSTER · CLOUD POWERED</div>
   <h1 id="headerTitle">值日生排班管理系統</h1>
   <p id="headerSubtitle">依上課日期自動排班，避開週末與設定的國定假日</p>
-  <div class="hero-meta"><span class="pill" id="courseRangePill">尚未設定課程期間</span><span class="pill" id="studentCountPill">0 位學員</span><span class="pill" id="appClockPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:0.5px" title="目前西元日期與時間">🕒 2026/10/30 (星期五) 00:00:00</span><span class="pill" id="idleTimerPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:600;font-size:13px" title="閒置計時器：顯示目前未操作時間與自動登出倒數">⏳ 閒置：0秒</span><span class="pill" id="classBadgePill" title="目前班級代號">🏫 班級：default</span><select id="heroQuickClassSelect" class="no-print hidden" style="width:auto;padding:4px 10px;font-size:12px;border-radius:99px;background:#ffffff25;color:#ffffff;border:1px solid #ffffff55;font-weight:700;cursor:pointer" title="超級總管理員快速切換班級"></select><span class="pill" id="cloudSyncPill" style="cursor:pointer" title="點擊立即手動與雲端同步">⚡ 雲端狀態：連線中...</span><span class="pill" style="background:rgba(16,185,129,0.22);border-color:rgba(16,185,129,0.55);font-weight:700" title="1. 高強度密碼複雜度規範｜2. 單一帳號連續錯誤5次自動鎖定｜3. 單一IP/設備1分鐘逾20次失敗自動封鎖1小時">🛡️ 三層立體資安防護網</span><span class="pill" id="userSessionPill">未登入</span><button class="small secondary no-print" id="headerChangePwdBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#ffffff22;color:white;border:1px solid #ffffff44">修改密碼</button><button class="small danger no-print" id="logoutBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#fee2e233;color:#fecaca;border:1px solid #fecaca44">登出</button></div>
+  <div class="hero-meta"><span class="pill" id="courseRangePill">尚未設定課程期間</span><span class="pill" id="studentCountPill">0 位學員</span><span class="pill" id="appClockPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:0.5px" title="目前西元日期與時間">🕒 2026/10/30 (星期五) 00:00:00</span><span class="pill" id="idleTimerPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:600;font-size:13px" title="閒置計時器：顯示目前未操作時間與自動登出倒數">⏳ 閒置：0秒</span><span class="pill" id="classBadgePill" title="目前班級代號">🏫 班級：default</span><select id="heroQuickClassSelect" class="no-print hidden" style="width:auto;padding:4px 10px;font-size:12px;border-radius:99px;background:#ffffff25;color:#ffffff;border:1px solid #ffffff55;font-weight:700;cursor:pointer" title="超級總管理員快速切換班級"></select><span class="pill" id="cloudSyncPill" style="cursor:pointer" title="點擊立即手動與雲端同步">⚡ 雲端狀態：連線中...</span><span class="pill" style="background:rgba(16,185,129,0.22);border-color:rgba(16,185,129,0.55);font-weight:700" title="1. 高強度密碼複雜度規範｜2. 單一帳號連續錯誤5次自動鎖定｜3. 單一IP/設備1分鐘逾20次失敗自動封鎖1小時">🛡️ 三層立體資安防護網</span><span class="pill" id="userSessionPill">未登入</span><button class="small secondary no-print" id="headerChangePwdBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#ffffff22;color:white;border:1px solid #ffffff44">修改密碼</button><button class="small secondary no-print hidden" id="heroBackDefaultBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#fef3c733;color:#fef08a;border:1px solid #fef08a55" title="返回主系統總控台">🔙 返回主控台</button><button class="small danger no-print" id="logoutBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#fee2e233;color:#fecaca;border:1px solid #fecaca44">登出</button></div>
   <div class="credit">Designed by 林永松</div>
 </header>
 <nav class="tabs no-print" aria-label="系統功能">
@@ -370,7 +370,7 @@
         </div>
         <div class="field">
           <label for="newClassSubInput">班級／期別名稱（副標題）*</label>
-          <input id="newClassSubInput" required maxlength="180" placeholder="例如：雲端網管與資安(幼獅)第3期">
+          <input id="newClassSubInput" required maxlength="180" placeholder="例如：網路工程與資安實務第1期">
         </div>
       </div>
       <div class="grid four" style="margin-top:10px">
@@ -419,7 +419,7 @@
     <h2>系統設定</h2>
     <form id="settingsForm">
       <div class="grid two">
-        <div class="field"><label for="classTitle">網頁上方標題</label><input id="classTitle" placeholder="例如：職前訓練網雲端網管與資安（幼獅）第 2 期" maxlength="160"></div>
+        <div class="field"><label for="classTitle">網頁上方標題</label><input id="classTitle" placeholder="例如：勞動力發展署桃竹苗分署 或 網路工程班" maxlength="160"></div>
         <div class="field"><label for="classSubtitle">副標題（選填）</label><input id="classSubtitle" maxlength="180" placeholder="依上課日期自動排班"></div>
         <div class="field"><label for="startDate">開始日 *</label><input type="date" id="startDate" required></div>
         <div class="field"><label for="endDate">結束日 *</label><input type="date" id="endDate" required></div>
@@ -603,7 +603,7 @@ const DEFAULT_ADMIN={username:'skynet99',password:'iamagoodstudent',role:'admin'
 /* SEED_DATA_START */
 const EMBEDDED_SEED_DATA = null;
 /* SEED_DATA_END */
-const defaults={settings:{title:'勞動力發展署桃竹苗分署',subtitle:'雲端網管與資安(幼獅)第2期',startDate:'',endDate:'',firstStudentId:'',editMode:'A',dailyCount:2,autoLogoutMinutes:10,deidentify:true,autoDeleteDate:'',autoDeleteTime:'23:00'},students:[],holidays:[],assignments:{},users:[DEFAULT_ADMIN],viewMonth:todayISO().slice(0,7)};
+const defaults={settings:{title:'勞動力發展署桃竹苗分署',subtitle:'值日生排班系統（總控台）',startDate:'',endDate:'',firstStudentId:'',editMode:'A',dailyCount:2,autoLogoutMinutes:10,deidentify:true,autoDeleteDate:'',autoDeleteTime:'23:00'},students:[],holidays:[],assignments:{},users:[DEFAULT_ADMIN],viewMonth:todayISO().slice(0,7)};
 let state=loadState(),editingId=null,editingUser=null,importRows=null,showFull=false,currentUser=null,pendingFirstLoginUser=null;
 
 function parseEditModeField(raw){
@@ -1094,7 +1094,7 @@ function loadState(){
   if(x&&x.settings){
    const s={...defaults.settings,...x.settings};
    if(!s.title||s.title==='值日生排班管理系統')s.title=defaults.settings.title;
-   if(!s.subtitle||s.subtitle==='依上課日期自動排班，避開週末與設定的國定假日')s.subtitle=defaults.settings.subtitle;
+   if(!s.subtitle||s.subtitle==='依上課日期自動排班，避開週末與設定的國定假日'||(CURRENT_CLASS_ID==='default'&&s.subtitle==='雲端網管與資安(幼獅)第2期'))s.subtitle=(CURRENT_CLASS_ID==='default'?'值日生排班系統（總控台）':defaults.settings.subtitle);
    if(!s.dailyCount)s.dailyCount=2;
    if(s.autoLogoutMinutes===undefined||s.autoLogoutMinutes===null||s.autoLogoutMinutes==='')s.autoLogoutMinutes=10;
    else s.autoLogoutMinutes=Math.min(99,Math.max(0,parseInt(s.autoLogoutMinutes,10)||0));
@@ -1283,7 +1283,7 @@ function renderClassSelectors(){
   const subName = clsObj?.subtitle || state.settings.subtitle || '';
   if(loginBadge){
     if(CURRENT_CLASS_ID === 'default'){
-      loginBadge.textContent = subName ? `🏫 所屬班級：主系統｜${subName}` : '🏫 所屬班級：default 主系統';
+      loginBadge.textContent = (subName && subName !== '雲端網管與資安(幼獅)第2期') ? `🏫 所屬系統：${subName}` : '🏫 所屬系統：桃竹苗分署值日生排班系統（總控台）';
     } else {
       loginBadge.textContent = subName ? `🏫 所屬班級：${CURRENT_CLASS_ID}｜${subName}` : `🏫 所屬班級：${CURRENT_CLASS_ID}`;
     }
@@ -1306,6 +1306,11 @@ function renderClassSelectors(){
     }
   }
   // 2. 頁首快速切換下拉選單：分出去的班級（非 default）絕對不顯示切換班級選單，範圍僅限自己班級
+  const backBtn = document.getElementById('heroBackDefaultBtn');
+  if(backBtn){
+    const canShowBack = (CURRENT_CLASS_ID !== 'default') && currentUser && currentUser.role === 'admin' && isGlobalSuperUser(currentUser);
+    backBtn.classList.toggle('hidden', !canShowBack);
+  }
   const heroSel = document.getElementById('heroQuickClassSelect');
   const canShowHeroSwitch = (CURRENT_CLASS_ID === 'default') && currentUser && currentUser.role === 'admin' && isGlobalSuperUser(currentUser);
   if(heroSel){
@@ -1345,7 +1350,7 @@ function renderClassManagementTable(){
       <td>${range}</td>
       <td>${autoDelLabel}</td>
       <td class="no-print">
-        ${c.class_id === 'default' ? '<button type="button" class="small secondary" disabled>主系統</button>' : `<button type="button" class="small" data-open-class="${esc(c.class_id)}">🔗 開啟該班網頁</button>`}
+        ${c.class_id === 'default' ? '<button type="button" class="small secondary" disabled>主系統</button>' : `<button type="button" class="small" data-switch-class="${esc(c.class_id)}" style="background:#2563eb;color:#fff;border-color:#1d4ed8;font-weight:700">📅 檢視／管理班表</button> <button type="button" class="small secondary" data-open-class="${esc(c.class_id)}">🔗 開啟該班網頁</button>`}
         <button type="button" class="small secondary" data-copy-class="${esc(c.class_id)}">複製專屬連結</button>
         <button type="button" class="small secondary" data-qr-class="${esc(c.class_id)}" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe">📱 生成 QR Code</button>
         ${c.class_id === 'default' ? '' : `<button type="button" class="small danger" data-delete-class="${esc(c.class_id)}">刪除班級</button>`}
@@ -1516,7 +1521,8 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
   if(classData){
     const parsedMode = parseEditModeField(classData.edit_mode);
     s.title = classData.title || defaults.settings.title;
-    s.subtitle = classData.subtitle ?? defaults.settings.subtitle;
+    s.subtitle = classData.subtitle ?? (CURRENT_CLASS_ID==='default'?'值日生排班系統（總控台）':defaults.settings.subtitle);
+    if(CURRENT_CLASS_ID==='default' && s.subtitle==='雲端網管與資安(幼獅)第2期') s.subtitle='值日生排班系統（總控台）';
     s.startDate = classData.start_date || '';
     s.endDate = classData.end_date || '';
     s.firstStudentId = classData.first_student_id || '';
@@ -2047,7 +2053,7 @@ function openChangePwdModal(isFirstLogin=false,forcedUser=null){
 
 function renderHeader(){
   document.getElementById('headerTitle').textContent=state.settings.title||'勞動力發展署桃竹苗分署';
-  document.getElementById('headerSubtitle').textContent=state.settings.subtitle||'雲端網管與資安(幼獅)第2期';
+  document.getElementById('headerSubtitle').textContent=state.settings.subtitle||(CURRENT_CLASS_ID==='default'?'值日生排班系統（總控台）':'');
   document.getElementById('courseRangePill').textContent=state.settings.startDate&&state.settings.endDate?`${fmt(state.settings.startDate)} ～ ${fmt(state.settings.endDate)}`:'尚未設定課程期間';
   document.getElementById('studentCountPill').textContent=`${state.students.length} 位學員`;
   const cb = document.getElementById('classBadgePill');
@@ -2469,6 +2475,14 @@ if(loginClassSelEl){
         await switchClass(loginClassSelEl.value, false);
       }
     }
+  });
+}
+
+// 返回主控台按鈕
+const heroBackBtn = document.getElementById('heroBackDefaultBtn');
+if(heroBackBtn){
+  heroBackBtn.addEventListener('click', async () => {
+    await switchClass('default', true);
   });
 }
 
@@ -3118,6 +3132,14 @@ if(cancelExpiryModalBtnEl){
 const classListTableEl = document.getElementById('classListTable');
 if(classListTableEl){
   classListTableEl.addEventListener('click', async e => {
+    const switchBtn = e.target.closest('[data-switch-class]');
+    if(switchBtn){
+      const cid = switchBtn.dataset.switchClass;
+      if(cid){
+        await switchClass(cid, true);
+        return;
+      }
+    }
     const openBtn = e.target.closest('[data-open-class]');
     const editExpBtn = e.target.closest('[data-edit-expiry]');
     const cpBtn = e.target.closest('[data-copy-class]');

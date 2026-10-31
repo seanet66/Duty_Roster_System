@@ -462,6 +462,10 @@
           <input type="checkbox" id="accIsGlobal" style="width:16px;height:16px;margin:0;cursor:pointer">
           <span>🌐 設為「跨全班級通用」總管理員</span>
         </label>
+        <label id="accMfaWrap" class="hidden" style="display:flex;align-items:center;gap:6px;margin-top:8px;font-weight:700;color:#166534;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="accRequireMfa" style="width:16px;height:16px;margin:0;cursor:pointer">
+          <span>📱 要求啟用 MFA 雙因素驗證（首次登入由使用者掃碼綁定）</span>
+        </label>
       </div>
       <div class="field" style="display:flex;align-items:end;gap:7px"><button type="submit" id="saveUserBtn">新增帳號</button><button type="button" class="secondary hidden" id="cancelUserEdit">取消</button></div>
     </form>
@@ -668,16 +672,21 @@ function parseUserRoleField(rawRole, username){
   let failedAttempts = 0;
   let locked = false;
   let mfaSecret = '';
+  let mfaRequired = false;
   for(let i=1; i<parts.length; i++){
     if(parts[i] === 'LOCKED') locked = true;
     else if(/^F\d+$/.test(parts[i])) failedAttempts = parseInt(parts[i].slice(1), 10) || 0;
-    else if(parts[i].startsWith('MFA:')) mfaSecret = parts[i].slice(4).trim().toUpperCase();
+    else if(parts[i] === 'MFA_REQUIRED') mfaRequired = true;
+    else if(parts[i].startsWith('MFA:')) {
+      mfaSecret = parts[i].slice(4).trim().toUpperCase();
+      mfaRequired = true;
+    }
   }
   if(String(username || '').toLowerCase() === 'skynet99'){
     locked = false;
     failedAttempts = 0;
   }
-  return { role, isGlobal, failedAttempts, locked, mfaSecret };
+  return { role, isGlobal, failedAttempts, locked, mfaSecret, mfaRequired };
 }
 
 function packUserRoleField(u){
@@ -687,7 +696,12 @@ function packUserRoleField(u){
   const fCount = Math.min(99, Math.max(0, parseInt(u.failedAttempts, 10) || 0));
   const fPart = fCount > 0 ? `|F${fCount}` : '';
   const lPart = u.locked ? '|LOCKED' : '';
-  const mfaPart = (u.mfaSecret && /^[A-Z2-7]{16,32}$/.test(u.mfaSecret)) ? `|MFA:${u.mfaSecret}` : '';
+  let mfaPart = '';
+  if(u.mfaSecret && /^[A-Z2-7]{16,32}$/.test(u.mfaSecret)){
+    mfaPart = `|MFA:${u.mfaSecret}`;
+  } else if(u.mfaRequired){
+    mfaPart = '|MFA_REQUIRED';
+  }
   return `${base}${fPart}${lPart}${mfaPart}`;
 }
 
@@ -1465,7 +1479,8 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
       classId: userClassId,
       failedAttempts: parsedRole.failedAttempts || 0,
       locked: Boolean(parsedRole.locked),
-      mfaSecret: parsedRole.mfaSecret || ''
+      mfaSecret: parsedRole.mfaSecret || '',
+      mfaRequired: Boolean(parsedRole.mfaRequired)
     };
     const prev = userMap.get(uKey);
     if(!prev || isGlobal || String(userClassId).toLowerCase() === CURRENT_CLASS_ID.toLowerCase()){
@@ -1844,13 +1859,21 @@ function updateGlobalCheckboxVisibility(){
  const roleSel = document.getElementById('accRole');
  const wrap = document.getElementById('accGlobalWrap');
  const chk = document.getElementById('accIsGlobal');
- if(!wrap || !roleSel) return;
- // 分出去的班級（非 default）不允許建立跨班通用管理員，僅限本班使用
- if(isMainSuper && roleSel.value === 'admin'){
-  wrap.classList.remove('hidden');
- } else {
-  wrap.classList.add('hidden');
-  if(chk) chk.checked = false;
+ const mfaWrap = document.getElementById('accMfaWrap');
+ const mfaChk = document.getElementById('accRequireMfa');
+ if(wrap && roleSel){
+  // 分出去的班級（非 default）不允許建立跨班通用管理員，僅限本班使用
+  if(isMainSuper && roleSel.value === 'admin'){
+   wrap.classList.remove('hidden');
+  } else {
+   wrap.classList.add('hidden');
+   if(chk) chk.checked = false;
+  }
+ }
+ // MFA 設定勾選框：僅在 default 主系統對管理員開放
+ if(mfaWrap){
+  mfaWrap.classList.toggle('hidden', !isMainSuper);
+  if(!isMainSuper && mfaChk) mfaChk.checked = false;
  }
 }
 function applyRolePermissions(){
@@ -1966,17 +1989,19 @@ function renderUsers(){
     statusHtml = `<span style="color:#d97706;font-weight:700">正常（已錯誤 ${failCnt}/5 次）</span>`;
   }
   if(u.mfaSecret){
-    statusHtml += ' <span class="badge" style="background:#dcfce7;color:#166534;font-weight:700;font-size:11px" title="已啟用 Authenticator App 雙因素動態密碼防護">🛡️ MFA啟用</span>';
+    statusHtml += ' <span class="badge" style="background:#dcfce7;color:#166534;font-weight:700;font-size:11px" title="已完成 Authenticator App 綁定並啟用雙因素動態密碼防護">🛡️ MFA已綁定</span>';
+  } else if(u.mfaRequired){
+    statusHtml += ' <span class="badge" style="background:#fef3c7;color:#92400e;font-weight:700;font-size:11px" title="已要求啟用 MFA，待使用者下次登入時由其手機掃碼綁定">⏳ 待綁定MFA</span>';
   }
   const resetBtnTxt = isLocked ? '🔓 解鎖並重置密碼' : '重置密碼';
   const resetBtnCls = isLocked ? 'small' : 'small secondary';
-  // MFA 管理按鈕：僅在 default 主系統對管理員開放
+  // MFA 策略開關按鈕：僅在 default 主系統對管理員開放（管理員單純開啟要求或解除重置，不親自掃碼）
   let mfaBtnHtml = '';
   if(isDefaultClass && isCurrSuper && u.username !== 'skynet99'){
-    if(u.mfaSecret){
-      mfaBtnHtml = ` <button class="small danger" data-disable-mfa="${esc(u.username)}" data-user-class="${esc(uCid)}" style="background:#fef2f2;color:#b91c1c;border-color:#fca5a5" title="解除並停用此帳號的 MFA 雙因素防護">🔕 解除MFA</button>`;
+    if(u.mfaSecret || u.mfaRequired){
+      mfaBtnHtml = ` <button class="small danger" data-disable-mfa="${esc(u.username)}" data-user-class="${esc(uCid)}" style="background:#fef2f2;color:#b91c1c;border-color:#fca5a5" title="解除並停用此帳號的 MFA 雙因素防護，或清除既有綁定供重置">🔕 停用／重置MFA</button>`;
     } else {
-      mfaBtnHtml = ` <button class="small" data-enable-mfa="${esc(u.username)}" data-user-class="${esc(uCid)}" style="background:#f0fdf4;color:#166534;border-color:#86efac" title="產生 QR Code 綁定 Authenticator App">📱 設定MFA</button>`;
+      mfaBtnHtml = ` <button class="small" data-enable-mfa="${esc(u.username)}" data-user-class="${esc(uCid)}" style="background:#f0fdf4;color:#166534;border-color:#86efac" title="要求此帳號啟用 MFA 雙因素驗證（待使用者登入時自行掃碼綁定）">📱 要求啟用MFA</button>`;
     }
   }
   const actionHtml = u.username==='skynet99'
@@ -3298,7 +3323,14 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
   return;
  }
 
- // 5. 若該帳號有啟用 MFA 雙因素驗證，切換至輸入 6 位數 TOTP 驗證碼步驟
+ // 5. 若該帳號已要求啟用 MFA 但尚未綁定私鑰（由使用者登入時自行手機掃碼綁定）
+ if(found.mfaRequired && !found.mfaSecret){
+  document.getElementById('loginOverlay').classList.add('hidden');
+  openMfaSetupModal(found, true);
+  return;
+ }
+
+ // 6. 若該帳號有啟用 MFA 雙因素驗證，切換至輸入 6 位數 TOTP 驗證碼步驟
  if(found.mfaSecret){
   pendingMfaUser = found;
   document.getElementById('loginCredFields')?.classList.add('hidden');
@@ -3375,6 +3407,12 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
    lastLocalChangeTime = Date.now();
    save();
    syncUserToCloud(target);
+   // 檢查是否需要接續進行 MFA 首次綁定流程
+   if(target.mfaRequired && !target.mfaSecret){
+    document.getElementById('changePwdModal').classList.add('hidden');
+    openMfaSetupModal(target, true);
+    return;
+   }
    currentUser={username:target.username,role:target.role,isGlobal:isGlobalSuperUser(target),classId:CURRENT_CLASS_ID};
    setSessionUser(currentUser);
    pendingFirstLoginUser=null;
@@ -3436,19 +3474,20 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
  if(dupExists){
   alert('此帳號在本班或跨班通用名單中已存在（帳號不分大小寫），請使用其他帳號名稱。');return;
  }
- const newUser={username,password,role,firstLogin:true,isGlobal:isGlobalChecked,classId:CURRENT_CLASS_ID,failedAttempts:0,locked:false};
+ const isMfaReqChecked = Boolean((CURRENT_CLASS_ID === 'default') && isGlobalSuperUser(currentUser) && document.getElementById('accRequireMfa')?.checked);
+ const newUser={username,password,role,firstLogin:true,isGlobal:isGlobalChecked,classId:CURRENT_CLASS_ID,failedAttempts:0,locked:false,mfaSecret:'',mfaRequired:isMfaReqChecked};
  state.users.push(newUser);
  lastLocalChangeTime = Date.now();
  save();
  syncUserToCloud(newUser);
  renderUsers();
  const roleDesc = isGlobalChecked ? '跨全班級通用總管理員' : (role === 'admin' ? '本班管理員' : '一般使用者');
- addAuditLog('帳號管理', `新增使用者帳號【${username}】（角色：${roleDesc}）`);
+ addAuditLog('帳號管理', `新增使用者帳號【${username}】（角色：${roleDesc}${isMfaReqChecked ? '，已要求啟用MFA' : ''}）`);
  e.target.reset();
  const accPwdInp = document.getElementById('accPassword');
  if(accPwdInp) accPwdInp.value = 'aA123456@';
  updateGlobalCheckboxVisibility();
- alert(`帳號【${username}】（${isGlobalChecked ? '🌐 跨全班級通用總管理員' : (role === 'admin' ? '🏫 本班管理員' : '🏫 一般使用者')}）建立成功！\n該使用者首次登入時系統會強制要求其修改密碼。`);
+ alert(`帳號【${username}】（${isGlobalChecked ? '🌐 跨全班級通用總管理員' : (role === 'admin' ? '🏫 本班管理員' : '🏫 一般使用者')}）建立成功！\n該使用者首次登入時系統會強制要求其修改密碼${isMfaReqChecked ? '，並由使用者手機掃碼綁定 MFA 雙因素驗證' : ''}。`);
 });
 
 // ---------------------------------------------------------
@@ -3456,19 +3495,23 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
 // ---------------------------------------------------------
 let currentMfaSetupTarget = null;
 let currentMfaSetupSecret = '';
+let isSelfMfaBindingDuringLogin = false;
 
-function openMfaSetupModal(userObj){
+function openMfaSetupModal(userObj, isSelfLogin = false){
   if(!userObj) return;
   currentMfaSetupTarget = userObj;
   currentMfaSetupSecret = generateRandomBase32Secret(16);
+  isSelfMfaBindingDuringLogin = isSelfLogin;
   const titleEl = document.getElementById('mfaModalTitle');
   const subEl = document.getElementById('mfaModalSubtitle');
   const secretEl = document.getElementById('mfaSecretText');
   const inp = document.getElementById('mfaVerifyInput');
-  if(titleEl) titleEl.textContent = `📱 為【${userObj.username}】綁定 MFA`;
-  if(subEl) subEl.textContent = `請使用 Google Authenticator 或 Microsoft Authenticator App 掃描 QR Code`;
+  const cancelBtn = document.getElementById('cancelMfaModalBtn');
+  if(titleEl) titleEl.textContent = isSelfLogin ? '📱 綁定您的 Authenticator App (MFA)' : `📱 為【${userObj.username}】綁定 MFA`;
+  if(subEl) subEl.textContent = '請開啟 Google Authenticator 或 Microsoft Authenticator App 掃描 QR Code';
   if(secretEl) secretEl.textContent = currentMfaSetupSecret.replace(/(.{4})/g, '$1 ').trim();
   if(inp) inp.value = '';
+  if(cancelBtn) cancelBtn.textContent = isSelfLogin ? '返回登入' : '取消';
 
   const label = encodeURIComponent(`DutyRoster:${userObj.username}`);
   const issuer = encodeURIComponent('桃竹苗分署排班系統');
@@ -3505,8 +3548,16 @@ const cancelMfaModalBtn = document.getElementById('cancelMfaModalBtn');
 if(cancelMfaModalBtn){
   cancelMfaModalBtn.addEventListener('click', () => {
     document.getElementById('mfaSetupModal')?.classList.add('hidden');
+    if(isSelfMfaBindingDuringLogin){
+      document.getElementById('loginOverlay')?.classList.remove('hidden');
+      const appMain = document.getElementById('appMain');
+      if(appMain) appMain.classList.add('hidden');
+      currentUser = null;
+      setSessionUser(null);
+    }
     currentMfaSetupTarget = null;
     currentMfaSetupSecret = '';
+    isSelfMfaBindingDuringLogin = false;
   });
 }
 
@@ -3527,6 +3578,7 @@ if(mfaVerifyForm){
     }
     // 綁定成功，儲存至 user 物件與雲端
     currentMfaSetupTarget.mfaSecret = currentMfaSetupSecret;
+    currentMfaSetupTarget.mfaRequired = true;
     lastLocalChangeTime = Date.now();
     save();
     await syncUserToCloud(currentMfaSetupTarget);
@@ -3540,17 +3592,36 @@ if(mfaVerifyForm){
           const subObj = JSON.parse(rawSub);
           if(subObj && Array.isArray(subObj.users)){
             const su = subObj.users.find(x => String(x.username||'').toLowerCase() === currentMfaSetupTarget.username.toLowerCase());
-            if(su){ su.mfaSecret = currentMfaSetupSecret; localStorage.setItem(subKey, JSON.stringify(subObj)); }
+            if(su){ su.mfaSecret = currentMfaSetupSecret; su.mfaRequired = true; localStorage.setItem(subKey, JSON.stringify(subObj)); }
           }
         }
       } catch(err){}
     }
-    addAuditLog('MFA驗證', `為帳號【${currentMfaSetupTarget.username}】成功設定並啟用 MFA 雙因素驗證`);
+    addAuditLog('MFA驗證', `帳號【${currentMfaSetupTarget.username}】完成 Authenticator App 綁定並正式啟用 MFA 雙因素防護`);
     document.getElementById('mfaSetupModal')?.classList.add('hidden');
+
+    if(isSelfMfaBindingDuringLogin){
+      const verifiedUser = currentMfaSetupTarget;
+      currentMfaSetupTarget = null;
+      currentMfaSetupSecret = '';
+      isSelfMfaBindingDuringLogin = false;
+      const roleTitle = verifiedUser.username === 'skynet99' ? '超級總管理員' : (isGlobalSuperUser(verifiedUser) ? '跨班總管理員' : (verifiedUser.role === 'admin' ? '本班管理員' : '一般學員'));
+      currentUser={username:verifiedUser.username,role:verifiedUser.role,isGlobal:isGlobalSuperUser(verifiedUser),classId:CURRENT_CLASS_ID};
+      setSessionUser(currentUser);
+      addAuditLog('登入成功', `成功登入班級【${CURRENT_CLASS_ID}】系統（已完成首次 MFA 綁定）`, verifiedUser.username, roleTitle);
+      document.getElementById('loginOverlay').classList.add('hidden');
+      const appMain=document.getElementById('appMain');
+      if(appMain)appMain.classList.remove('hidden');
+      renderAll(true);
+      alert(`🎉 恭喜！您已成功綁定 Authenticator App！\n未來登入時請使用該 App 產生之 6 位數動態密碼。`);
+      return;
+    }
+
     renderUsers();
-    alert(`🎉 帳號【${currentMfaSetupTarget.username}】已成功啟用 MFA 雙因素驗證防護！\n未來登入時將需要輸入手機 Authenticator 產生的 6 位數動態驗證碼。`);
+    alert(`🎉 帳號【${currentMfaSetupTarget.username}】已成功啟用 MFA 雙因素驗證防護！`);
     currentMfaSetupTarget = null;
     currentMfaSetupSecret = '';
+    isSelfMfaBindingDuringLogin = false;
   });
 }
 
@@ -3571,21 +3642,12 @@ document.getElementById('userTable').addEventListener('click', async e=>{
   const targetCid=enableMfa.dataset.userClass || CURRENT_CLASS_ID;
   const target=state.users.find(u=>u.username===uname && (isGlobalSuperUser(u) ? targetCid==='default' : String(u.classId||CURRENT_CLASS_ID).toLowerCase()===String(targetCid).toLowerCase())) || state.users.find(u=>u.username===uname);
   if(!target) return;
-  openMfaSetupModal(target);
-  return;
- }
-
- if(disableMfa){
-  if(CURRENT_CLASS_ID !== 'default' || !isGlobalSuperUser(currentUser)){
-    alert('僅在主系統之總管理員具備設定與解除 MFA 雙因素驗證權限。');
+  if(target.username === 'skynet99'){
+    alert('超級總管理員帳號 skynet99 不可變更。');
     return;
   }
-  const uname=disableMfa.dataset.disableMfa;
-  const targetCid=disableMfa.dataset.userClass || CURRENT_CLASS_ID;
-  const target=state.users.find(u=>u.username===uname && (isGlobalSuperUser(u) ? targetCid==='default' : String(u.classId||CURRENT_CLASS_ID).toLowerCase()===String(targetCid).toLowerCase())) || state.users.find(u=>u.username===uname);
-  if(!target) return;
-  if(!confirm(`⚠️ 確定要解除並停用帳號【${uname}】的 MFA 雙因素驗證防護？\n解除後該使用者僅需輸入密碼即可登入。`)) return;
-  target.mfaSecret = '';
+  target.mfaRequired = true;
+  target.mfaSecret = ''; // 重置私鑰，等待使用者首次登入自己手機掃碼
   lastLocalChangeTime = Date.now();
   save();
   await syncUserToCloud(target);
@@ -3598,14 +3660,53 @@ document.getElementById('userTable').addEventListener('click', async e=>{
         const subObj = JSON.parse(rawSub);
         if(subObj && Array.isArray(subObj.users)){
           const su = subObj.users.find(x => String(x.username||'').toLowerCase() === uname.toLowerCase());
-          if(su){ su.mfaSecret = ''; localStorage.setItem(subKey, JSON.stringify(subObj)); }
+          if(su){ su.mfaRequired = true; su.mfaSecret = ''; localStorage.setItem(subKey, JSON.stringify(subObj)); }
         }
       }
     } catch(err){}
   }
-  addAuditLog('MFA驗證', `已解除帳號【${uname}】之 MFA 雙因素動態密碼防護`);
+  addAuditLog('MFA驗證', `管理員要求帳號【${uname}】啟用 MFA 雙因素驗證（待使用者登入時自行綁定）`);
   renderUsers();
-  alert(`✅ 已成功解除帳號【${uname}】的 MFA 雙因素驗證防護！`);
+  alert(`✅ 已為帳號【${uname}】啟用 MFA 雙因素驗證要求！\n\n該使用者於下次登入輸入密碼後，系統會自動跳出 QR Code，由其使用本人的手機 Authenticator App 進行掃碼綁定。`);
+  return;
+ }
+
+ if(disableMfa){
+  if(CURRENT_CLASS_ID !== 'default' || !isGlobalSuperUser(currentUser)){
+    alert('僅在主系統之總管理員具備設定與解除 MFA 雙因素驗證權限。');
+    return;
+  }
+  const uname=disableMfa.dataset.disableMfa;
+  const targetCid=disableMfa.dataset.userClass || CURRENT_CLASS_ID;
+  const target=state.users.find(u=>u.username===uname && (isGlobalSuperUser(u) ? targetCid==='default' : String(u.classId||CURRENT_CLASS_ID).toLowerCase()===String(targetCid).toLowerCase())) || state.users.find(u=>u.username===uname);
+  if(!target) return;
+  const wasBound = Boolean(target.mfaSecret);
+  const confirmMsg = wasBound
+    ? `⚠️ 確定要停用／重置帳號【${uname}】的 MFA 雙因素驗證防護？\n停用後該使用者僅需密碼即可登入；若要重新綁定可再點擊「要求啟用MFA」。`
+    : `確定要取消帳號【${uname}】的 MFA 雙因素驗證要求？`;
+  if(!confirm(confirmMsg)) return;
+  target.mfaSecret = '';
+  target.mfaRequired = false;
+  lastLocalChangeTime = Date.now();
+  save();
+  await syncUserToCloud(target);
+  const actualCid = target.isGlobal ? 'default' : (target.classId || targetCid || CURRENT_CLASS_ID);
+  if(!target.isGlobal && actualCid !== CURRENT_CLASS_ID){
+    try {
+      const subKey = `offlineDutyRoster_v1_${actualCid}`;
+      const rawSub = localStorage.getItem(subKey);
+      if(rawSub){
+        const subObj = JSON.parse(rawSub);
+        if(subObj && Array.isArray(subObj.users)){
+          const su = subObj.users.find(x => String(x.username||'').toLowerCase() === uname.toLowerCase());
+          if(su){ su.mfaSecret = ''; su.mfaRequired = false; localStorage.setItem(subKey, JSON.stringify(subObj)); }
+        }
+      }
+    } catch(err){}
+  }
+  addAuditLog('MFA驗證', `管理員已停用／重置帳號【${uname}】之 MFA 雙因素驗證`);
+  renderUsers();
+  alert(`✅ 已成功停用／重置帳號【${uname}】的 MFA 雙因素驗證！`);
   return;
  }
  if(rst){

@@ -3536,9 +3536,9 @@ function openMfaSetupModal(userObj, isSelfLogin = false){
   if(inp) inp.value = '';
   if(cancelBtn) cancelBtn.textContent = isSelfLogin ? '返回登入' : '取消';
 
-  const label = encodeURIComponent(`DutyRoster:${userObj.username}`);
-  const issuer = 'DutyRoster';
-  const otpAuthUrl = `otpauth://totp/${label}?secret=${currentMfaSetupSecret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
+  const issuer = encodeURIComponent('桃竹苗分署');
+  const service = encodeURIComponent('值日生排班系統');
+  const otpAuthUrl = `otpauth://totp/${issuer}:${service}?secret=${currentMfaSetupSecret}&issuer=${issuer}`;
 
   const canvas = document.getElementById('mfaQrCanvas');
   if(canvas){

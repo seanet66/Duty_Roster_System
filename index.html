@@ -182,6 +182,23 @@
   </div>
 </div>
 
+<!-- 班級專屬 QR Code 預覽與 PNG 下載 Modal -->
+<div id="qrCodeModal" class="modal-overlay hidden no-print">
+  <div class="modal-box" style="max-width:440px;text-align:center">
+    <h3 id="qrModalTitle" style="margin-bottom:4px;color:#1e3a8a">📱 班級專屬 QR Code</h3>
+    <p id="qrModalSubtitle" class="muted" style="margin-bottom:12px;font-weight:700;color:#0f172a">掃描即可直接進入該班級值日生排班系統</p>
+    <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:14px;padding:14px;display:inline-block;margin-bottom:10px">
+      <canvas id="qrCanvas" width="380" height="440" style="width:100%;max-width:320px;height:auto;display:block;margin:0 auto;border-radius:8px;background:#fff"></canvas>
+    </div>
+    <div id="qrModalUrl" class="muted" style="font-size:12px;word-break:break-all;background:#f1f5f9;padding:8px 10px;border-radius:8px;margin-bottom:14px;font-family:ui-monospace,monospace"></div>
+    <div class="actions" style="justify-content:center;gap:10px">
+      <button type="button" id="downloadQrPngBtn">⬇️ 下載 PNG 圖片</button>
+      <button type="button" class="secondary" id="copyQrUrlBtn">🔗 複製網址</button>
+      <button type="button" class="secondary" id="closeQrModalBtn">關閉</button>
+    </div>
+  </div>
+</div>
+
 <div class="app hidden" id="appMain">
 <header class="hero">
   <div class="eyebrow">CLASS DUTY ROSTER · CLOUD POWERED</div>
@@ -241,6 +258,7 @@
         <div class="muted">建立、切換或刪除不同期別／班級空間，或一鍵複製該班專屬連結分享至班級群組。各班級資料完全獨立隔離。</div>
       </div>
       <div class="actions">
+        <button type="button" class="secondary small" id="qrCurrentClassBtn">📱 生成目前班級 QR Code</button>
         <button type="button" class="secondary small" id="copyCurrentClassLinkBtn">🔗 複製目前班級專屬連結</button>
       </div>
     </div>
@@ -273,11 +291,15 @@
         <div class="field">
           <label for="newClassEndDate">預設課程結束日（選填）</label>
           <input type="date" id="newClassEndDate">
+          <div class="muted" style="font-size:11px;margin-top:4px">選取後將自動帶入下方「自動回收日」</div>
         </div>
         <div class="field">
-          <label for="newClassAutoDeleteDate">🗑️ 自動回收（結訓刪除）日（選填）</label>
-          <input type="date" id="newClassAutoDeleteDate">
-          <div class="muted" style="font-size:11px;margin-top:4px">到達此日期當天起，系統自動刪除該班級所有資料</div>
+          <label for="newClassAutoDeleteDate">🗑️ 自動回收（結訓刪除）日與時間</label>
+          <div style="display:flex;gap:6px">
+            <input type="date" id="newClassAutoDeleteDate" style="flex:1.3">
+            <input type="time" id="newClassAutoDeleteTime" value="23:00" style="flex:1">
+          </div>
+          <div class="muted" style="font-size:11px;margin-top:4px">預設帶入課程結束日 23:00，時間到自動刪除該班資料</div>
         </div>
         <div class="field" style="display:flex;align-items:end;gap:7px">
           <button type="submit">＋ 建立班級（支援單班／批次）</button>
@@ -303,7 +325,14 @@
         <div class="field"><label for="autoLogoutMinutes">閒置自動登出時間（分鐘）</label><input type="number" id="autoLogoutMinutes" min="0" max="99" value="10" placeholder="0-99，0表示不自動登出"><div class="muted" style="font-size:11px;margin-top:4px">預設 10 分鐘，可設定 0～99 分鐘（設為 0 表示停用自動登出）</div></div>
         <div class="field"><label for="editMode">手動修改後的排班方式</label><select id="editMode"><option value="A">A．自動接續（手動值日生後，依學號往後接續）</option><option value="B">B．固定指定（保留手動指定日期，其餘日期順序重排）</option><option value="C">C．完全重新排序（修改後整張表重新依學號排班）</option></select></div>
         <div class="field"><label for="deidentifyMode">🛡️ 姓名去識別化保護（資安隱私遮罩）</label><select id="deidentifyMode"><option value="false">關閉（顯示完整真實姓名 — 預設）</option><option value="true">開啟（全系統列表與匯出檔自動遮罩中間字為 ○）</option></select><div class="muted" style="font-size:11px;margin-top:4px">開啟後：2 字姓名顯示「王○」、3 字顯示「林○松」、4 字顯示「歐○○菲」（含畫面與 Excel/PDF/CSV 匯出）</div></div>
-        <div class="field"><label for="autoDeleteDate">🗑️ 本班自動回收日（結訓自動刪除日，選填）</label><input type="date" id="autoDeleteDate"><div class="muted" style="font-size:11px;margin-top:4px">留空表永久保留；若設定日期，到達該日當天起系統將自動清除本班級（預設 default 主班級受保護不回收）</div></div>
+        <div class="field">
+          <label for="autoDeleteDate">🗑️ 本班自動回收日與時間（結訓自動刪除，選填）</label>
+          <div style="display:flex;gap:8px">
+            <input type="date" id="autoDeleteDate" style="flex:1.4">
+            <input type="time" id="autoDeleteTime" value="23:00" style="flex:1">
+          </div>
+          <div class="muted" style="font-size:11px;margin-top:4px">預設自動帶入「結束日」當天 23:00；時間到達後系統將自動清除本班級（主班級 default 受保護不回收）</div>
+        </div>
       </div>
       <div class="notice"><strong>排班規則：</strong>只在開始日與結束日（含）之間的上課日排班。週六、週日及假日管理中設定的休假日會跳過；職稱非「學員」的幹部（班長、副班長、服務股長）不列入值日生輪替，系統會自動跳過。學員依學號排序，每日安排 1 或 2 位值日生並循環，直到結束日。若要將週末設為上課日，請在「假日管理」勾選該日為上課日。</div>
       <div class="actions"><button type="submit">儲存設定並產生班表</button><button type="button" class="secondary" id="rebuildSettings">套用設定並重新排班</button></div>
@@ -402,7 +431,7 @@ const DEFAULT_ADMIN={username:'skynet99',password:'iamagoodstudent',role:'admin'
 /* SEED_DATA_START */
 const EMBEDDED_SEED_DATA = null;
 /* SEED_DATA_END */
-const defaults={settings:{title:'勞動力發展署桃竹苗分署',subtitle:'雲端網管與資安(幼獅)第2期',startDate:'',endDate:'',firstStudentId:'',editMode:'A',dailyCount:2,autoLogoutMinutes:10,deidentify:false,autoDeleteDate:''},students:[],holidays:[],assignments:{},users:[DEFAULT_ADMIN],viewMonth:todayISO().slice(0,7)};
+const defaults={settings:{title:'勞動力發展署桃竹苗分署',subtitle:'雲端網管與資安(幼獅)第2期',startDate:'',endDate:'',firstStudentId:'',editMode:'A',dailyCount:2,autoLogoutMinutes:10,deidentify:false,autoDeleteDate:'',autoDeleteTime:'23:00'},students:[],holidays:[],assignments:{},users:[DEFAULT_ADMIN],viewMonth:todayISO().slice(0,7)};
 let state=loadState(),editingId=null,editingUser=null,importRows=null,showFull=false,currentUser=null,pendingFirstLoginUser=null;
 
 function parseEditModeField(raw){
@@ -411,18 +440,34 @@ function parseEditModeField(raw){
   const mode = ['A','B','C'].includes(parts[0]) ? parts[0] : 'A';
   let deidentify = false;
   let autoDeleteDate = '';
+  let autoDeleteTime = '23:00';
   for(let i=1; i<parts.length; i++){
     if(parts[i] === 'D1') deidentify = true;
-    else if(parts[i].startsWith('EXP:')) autoDeleteDate = parts[i].slice(4);
+    else if(parts[i].startsWith('EXP:')){
+      const expStr = parts[i].slice(4);
+      const [dPart, tPart] = expStr.split('@');
+      if(/^\d{4}-\d{2}-\d{2}$/.test(dPart || '')) autoDeleteDate = dPart;
+      if(/^\d{2}:\d{2}$/.test(tPart || '')) autoDeleteTime = tPart;
+    }
   }
-  return { editMode: mode, deidentify, autoDeleteDate };
+  return { editMode: mode, deidentify, autoDeleteDate, autoDeleteTime };
 }
 
 function packEditModeField(s){
   const mode = ['A','B','C'].includes(s.editMode) ? s.editMode : 'A';
   const deid = s.deidentify ? 'D1' : 'D0';
-  const exp = (s.autoDeleteDate && /^\d{4}-\d{2}-\d{2}$/.test(s.autoDeleteDate)) ? `|EXP:${s.autoDeleteDate}` : '';
+  const tVal = /^\d{2}:\d{2}$/.test(s.autoDeleteTime || '') ? s.autoDeleteTime : '23:00';
+  const exp = (s.autoDeleteDate && /^\d{4}-\d{2}-\d{2}$/.test(s.autoDeleteDate)) ? `|EXP:${s.autoDeleteDate}@${tVal}` : '';
   return `${mode}|${deid}${exp}`;
+}
+
+function isClassExpired(autoDelDate, autoDelTime = '23:00'){
+  if(!autoDelDate || !/^\d{4}-\d{2}-\d{2}$/.test(autoDelDate)) return false;
+  const tStr = /^\d{2}:\d{2}$/.test(autoDelTime || '') ? autoDelTime : '23:00';
+  const [y, m, d] = autoDelDate.split('-').map(Number);
+  const [hh, mm] = tStr.split(':').map(Number);
+  const targetMs = new Date(y, m - 1, d, hh, mm, 0).getTime();
+  return Date.now() >= targetMs;
 }
 
 function getLocalGlobalUsers(){
@@ -458,6 +503,7 @@ function loadState(){
    else s.autoLogoutMinutes=Math.min(99,Math.max(0,parseInt(s.autoLogoutMinutes,10)||0));
    s.deidentify = Boolean(s.deidentify);
    s.autoDeleteDate = s.autoDeleteDate || '';
+   s.autoDeleteTime = /^\d{2}:\d{2}$/.test(s.autoDeleteTime || '') ? s.autoDeleteTime : '23:00';
    let uList=Array.isArray(x.users)&&x.users.length?x.users:[DEFAULT_ADMIN];
    // 合併本機快取的跨全班級通用帳號
    const globalCached = getLocalGlobalUsers();
@@ -531,9 +577,8 @@ async function purgeClassEverywhere(cid){
   try { localStorage.removeItem(`offlineDutyRoster_v1_${cid}`); } catch(e){}
 }
 
-// 取得雲端所有班級清單並執行「自動回收日」到期檢查與清理
+// 取得雲端所有班級清單並執行「自動回收日與時間」到期檢查與清理
 async function fetchAllClassesList(){
-  const today = todayISO();
   let rawList = [];
   try {
     const res = await supabaseFetch('roster_classes?select=class_id,title,subtitle,start_date,end_date,edit_mode,updated_at&order=class_id.asc');
@@ -543,13 +588,14 @@ async function fetchAllClassesList(){
     }
   } catch(e){}
 
-  // 自動檢查是否有已到達或超過「自動回收日」的班級，若有則自動從雲端與本機刪除
+  // 自動檢查是否有已到達或超過「自動回收日＋時間」的班級，若有則自動從雲端與本機刪除
   const validList = [];
   const expiredIds = [];
   for(const c of rawList){
     const parsed = parseEditModeField(c.edit_mode);
     c.auto_delete_date = parsed.autoDeleteDate || '';
-    if(c.class_id !== 'default' && c.auto_delete_date && today >= c.auto_delete_date){
+    c.auto_delete_time = parsed.autoDeleteTime || '23:00';
+    if(c.class_id !== 'default' && c.auto_delete_date && isClassExpired(c.auto_delete_date, c.auto_delete_time)){
       expiredIds.push(c.class_id);
     } else {
       validList.push(c);
@@ -575,7 +621,8 @@ async function fetchAllClassesList(){
       subtitle: state.settings.subtitle || defaults.settings.subtitle,
       start_date: state.settings.startDate || '',
       end_date: state.settings.endDate || '',
-      auto_delete_date: ''
+      auto_delete_date: '',
+      auto_delete_time: '23:00'
     });
   }
   if(!allCloudClasses.some(c => c.class_id === CURRENT_CLASS_ID)){
@@ -585,7 +632,8 @@ async function fetchAllClassesList(){
       subtitle: state.settings.subtitle || '',
       start_date: state.settings.startDate || '',
       end_date: state.settings.endDate || '',
-      auto_delete_date: state.settings.autoDeleteDate || ''
+      auto_delete_date: state.settings.autoDeleteDate || '',
+      auto_delete_time: state.settings.autoDeleteTime || '23:00'
     });
   } else {
     // 確保目前所在班級在列表中的名稱與回收日即時同步
@@ -596,6 +644,7 @@ async function fetchAllClassesList(){
       currItem.start_date = state.settings.startDate || currItem.start_date;
       currItem.end_date = state.settings.endDate || currItem.end_date;
       currItem.auto_delete_date = state.settings.autoDeleteDate || '';
+      currItem.auto_delete_time = state.settings.autoDeleteTime || '23:00';
     }
   }
   renderClassSelectors();
@@ -663,12 +712,12 @@ function renderClassManagementTable(){
   if(countEl) countEl.textContent = allCloudClasses.length;
   const wrap = document.getElementById('classListTable');
   if(!wrap) return;
-  wrap.innerHTML = `<table><thead><tr><th>班級代號</th><th>主標題</th><th>班級／期別名稱</th><th>課程期間</th><th>自動回收日</th><th class="no-print">操作</th></tr></thead><tbody>${allCloudClasses.map(c => {
+  wrap.innerHTML = `<table><thead><tr><th>班級代號</th><th>主標題</th><th>班級／期別名稱</th><th>課程期間</th><th>自動回收日與時間</th><th class="no-print">操作</th></tr></thead><tbody>${allCloudClasses.map(c => {
     const isCurrent = c.class_id === CURRENT_CLASS_ID;
     const range = (c.start_date && c.end_date) ? `${fmt(c.start_date)} ～ ${fmt(c.end_date)}` : '<span class="muted">未設定</span>';
     const autoDelLabel = c.class_id === 'default'
       ? '<span class="muted">系統保護</span>'
-      : (c.auto_delete_date ? `<span style="color:#b45309;font-weight:700">🗑️ ${fmt(c.auto_delete_date)}</span>` : '<span class="muted">永久保留</span>');
+      : (c.auto_delete_date ? `<span style="color:#b45309;font-weight:700">🗑️ ${fmt(c.auto_delete_date)} ${esc(c.auto_delete_time || '23:00')}</span>` : '<span class="muted">永久保留</span>');
     return `<tr class="${isCurrent?'today':''}">
       <td><strong>${esc(c.class_id)}</strong> ${isCurrent?'<span class="badge" style="background:#dcfce7;color:#166534">目前所在班級</span>':''}</td>
       <td>${esc(c.title || '—')}</td>
@@ -678,6 +727,7 @@ function renderClassManagementTable(){
       <td class="no-print">
         ${isCurrent ? '<button type="button" class="small secondary" disabled>使用中</button>' : `<button type="button" class="small" data-switch-class="${esc(c.class_id)}">切換至此班</button>`}
         <button type="button" class="small secondary" data-copy-class="${esc(c.class_id)}">複製專屬連結</button>
+        <button type="button" class="small secondary" data-qr-class="${esc(c.class_id)}" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe">📱 生成 QR Code</button>
         ${c.class_id === 'default' ? '' : `<button type="button" class="small danger" data-delete-class="${esc(c.class_id)}">刪除班級</button>`}
       </td>
     </tr>`;
@@ -813,10 +863,11 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     s.editMode = parsedMode.editMode;
     s.deidentify = parsedMode.deidentify;
     s.autoDeleteDate = parsedMode.autoDeleteDate;
+    s.autoDeleteTime = parsedMode.autoDeleteTime || '23:00';
     s.autoLogoutMinutes = Number(classData.auto_logout_minutes ?? 10);
 
-    // 若本班已達自動回收日（且非 default），立即執行自動回收並切回 default
-    if(CURRENT_CLASS_ID !== 'default' && s.autoDeleteDate && todayISO() >= s.autoDeleteDate){
+    // 若本班已達自動回收日與時間（且非 default），立即執行自動回收並切回 default
+    if(CURRENT_CLASS_ID !== 'default' && s.autoDeleteDate && isClassExpired(s.autoDeleteDate, s.autoDeleteTime)){
       await purgeClassEverywhere(CURRENT_CLASS_ID);
       isSyncing = false;
       await switchClass('default', true);
@@ -1233,7 +1284,12 @@ function renderSettings(){
   const deidEl = document.getElementById('deidentifyMode');
   if(deidEl) deidEl.value = s.deidentify ? 'true' : 'false';
   const autoDelEl = document.getElementById('autoDeleteDate');
+  const autoDelTimeEl = document.getElementById('autoDeleteTime');
   if(autoDelEl) autoDelEl.disabled = (CURRENT_CLASS_ID === 'default');
+  if(autoDelTimeEl){
+    autoDelTimeEl.value = s.autoDeleteTime || '23:00';
+    autoDelTimeEl.disabled = (CURRENT_CLASS_ID === 'default');
+  }
   renderFirstStudent();
 }
 function renderHolidays(){const list=[...state.holidays].sort((a,b)=>a.date.localeCompare(b.date));document.getElementById('holidayTable').innerHTML=list.length?`<table><thead><tr><th>日期</th><th>星期</th><th>名稱／備註</th><th>類型</th><th class="no-print">操作</th></tr></thead><tbody>${list.map((h,i)=>`<tr><td>${fmt(h.date)}</td><td>${weekday(h.date)}</td><td>${esc(h.name)}${h.source==='api'?' <span class="muted" style="font-size:12px">(自動)</span>':''}</td><td><span class="badge ${h.type==='holiday'?'holiday':''}">${h.type==='workday'?'上課日':'休假／不排班'}</span></td><td class="no-print"><button class="small danger" data-delete-holiday="${esc(h.date)}">刪除</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">目前沒有自訂假日。週末預設不排班。</div>'}
@@ -1317,13 +1373,39 @@ document.getElementById('clearAllStudentsBtn').addEventListener('click',()=>{
  }
 });
 document.getElementById('studentTable').addEventListener('click',e=>{const ed=e.target.closest('[data-edit-student]'),del=e.target.closest('[data-delete-student]');if(ed){const s=studentFor(ed.dataset.editStudent);if(!s)return;editingId=s.id;document.getElementById('studentId').value=s.id;document.getElementById('studentName').value=s.name;document.getElementById('studentRole').value=s.role;document.getElementById('saveStudentBtn').textContent='儲存修改';document.getElementById('cancelStudentEdit').classList.remove('hidden');document.getElementById('studentId').focus()}if(del){const id=del.dataset.deleteStudent;if(!confirm(`確定刪除學號 ${id}？相關排班也會重新計算。`))return;state.students=state.students.filter(s=>s.id!==id);if(state.settings.firstStudentId===id)state.settings.firstStudentId=eligibleStudents()[0]?.id||'';Object.keys(state.assignments).forEach(d=>{const a=state.assignments[d];if(a.studentId===id||a.studentId2===id)delete state.assignments[d]});ensureAssignments();renderAll()}});
+// 課程結束日變更時，自動帶入自動回收（結訓刪除）日與預設 23:00
+const endDateInputEl = document.getElementById('endDate');
+if(endDateInputEl){
+  endDateInputEl.addEventListener('change', () => {
+    if(CURRENT_CLASS_ID === 'default') return;
+    const autoDelEl = document.getElementById('autoDeleteDate');
+    const autoDelTimeEl = document.getElementById('autoDeleteTime');
+    if(autoDelEl && endDateInputEl.value){
+      autoDelEl.value = endDateInputEl.value;
+      if(autoDelTimeEl && !autoDelTimeEl.value) autoDelTimeEl.value = '23:00';
+    }
+  });
+}
+const newClassEndDateEl = document.getElementById('newClassEndDate');
+if(newClassEndDateEl){
+  newClassEndDateEl.addEventListener('change', () => {
+    const newAutoDelEl = document.getElementById('newClassAutoDeleteDate');
+    const newAutoDelTimeEl = document.getElementById('newClassAutoDeleteTime');
+    if(newAutoDelEl && newClassEndDateEl.value){
+      newAutoDelEl.value = newClassEndDateEl.value;
+      if(newAutoDelTimeEl && !newAutoDelTimeEl.value) newAutoDelTimeEl.value = '23:00';
+    }
+  });
+}
+
 document.getElementById('settingsForm').addEventListener('submit',e=>{
   e.preventDefault();
   const start=document.getElementById('startDate').value,end=document.getElementById('endDate').value;
   if(start&&end&&start>end){alert('開始日不能晚於結束日。');return}
   const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (document.getElementById('autoDeleteDate')?.value || '');
-  if(autoDelVal && autoDelVal <= todayISO()){
-    if(!confirm(`⚠️ 您設定的「本班自動回收日（${fmt(autoDelVal)}）」為今天或過去的日期，儲存後系統將會在下次載入時自動回收刪除本班級！\n\n確定要使用此日期嗎？`)) return;
+  const autoDelTimeVal = document.getElementById('autoDeleteTime')?.value || '23:00';
+  if(autoDelVal && isClassExpired(autoDelVal, autoDelTimeVal)){
+    if(!confirm(`⚠️ 您設定的「本班自動回收時間（${fmt(autoDelVal)} ${autoDelTimeVal}）」已經過去，儲存後系統將會在下次載入時自動回收刪除本班級！\n\n確定要使用此日期與時間嗎？`)) return;
   }
   const old={...state.settings};
   state.settings={
@@ -1337,7 +1419,8 @@ document.getElementById('settingsForm').addEventListener('submit',e=>{
     dailyCount:Number(document.getElementById('dailyCount').value)||2,
     autoLogoutMinutes:Math.min(99,Math.max(0,parseInt(document.getElementById('autoLogoutMinutes').value,10)||0)),
     deidentify:document.getElementById('deidentifyMode')?.value === 'true',
-    autoDeleteDate:autoDelVal
+    autoDeleteDate:autoDelVal,
+    autoDeleteTime:autoDelTimeVal
   };
   if(old.startDate!==start||old.endDate!==end||old.firstStudentId!==state.settings.firstStudentId||old.editMode!==state.settings.editMode||old.dailyCount!==state.settings.dailyCount)ensureAssignments();
   renderAll();
@@ -1347,6 +1430,7 @@ document.getElementById('settingsForm').addEventListener('submit',e=>{
 document.getElementById('rebuildSettings').addEventListener('click',()=>{
   if(confirm('重新排班可能覆蓋部分手動指定資料，確定繼續？')){
     const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (document.getElementById('autoDeleteDate')?.value || '');
+    const autoDelTimeVal = document.getElementById('autoDeleteTime')?.value || '23:00';
     state.settings.title=document.getElementById('classTitle').value.trim()||'勞動力發展署桃竹苗分署';
     state.settings.subtitle=document.getElementById('classSubtitle').value.trim();
     state.settings.startDate=document.getElementById('startDate').value;
@@ -1357,6 +1441,7 @@ document.getElementById('rebuildSettings').addEventListener('click',()=>{
     state.settings.autoLogoutMinutes=Math.min(99,Math.max(0,parseInt(document.getElementById('autoLogoutMinutes').value,10)||0));
     state.settings.deidentify=document.getElementById('deidentifyMode')?.value === 'true';
     state.settings.autoDeleteDate=autoDelVal;
+    state.settings.autoDeleteTime=autoDelTimeVal;
     state.assignments={};
     generate();
     fetchAllClassesList();
@@ -1546,7 +1631,8 @@ if(createClassFormEl){
     const newSub = document.getElementById('newClassSubInput').value.trim();
     const newStart = document.getElementById('newClassStartDate')?.value || '';
     const newEnd = document.getElementById('newClassEndDate')?.value || '';
-    const newAutoDel = document.getElementById('newClassAutoDeleteDate')?.value || '';
+    const newAutoDel = document.getElementById('newClassAutoDeleteDate')?.value || newEnd || '';
+    const newAutoDelTime = document.getElementById('newClassAutoDeleteTime')?.value || '23:00';
 
     if(!/^[a-zA-Z0-9_-]+$/.test(baseCid)){
       alert('班級代號請使用英文字母、數字、底線(_)或連字號(-)，例如：c01 或 cloud03');
@@ -1556,8 +1642,8 @@ if(createClassFormEl){
       alert('預設課程開始日不能晚於結束日。');
       return;
     }
-    if(newAutoDel && newAutoDel <= todayISO()){
-      alert('自動回收日必須晚於今日日期（若設為今日或過去日期，建立後會立即被自動回收刪除）。');
+    if(newAutoDel && isClassExpired(newAutoDel, newAutoDelTime)){
+      alert(`自動回收時間（${fmt(newAutoDel)} ${newAutoDelTime}）必須晚於目前時間（若設為過去時間，建立後會立即被自動回收刪除）。`);
       return;
     }
 
@@ -1575,13 +1661,13 @@ if(createClassFormEl){
       const msg = `即將為您批次建立 ${toCreateIds.length} 個班級：\n【${toCreateIds[0]} ～ ${toCreateIds[toCreateIds.length - 1]}】\n\n` +
         `‧ 主標題：${newTitle}\n‧ 班級／期別名稱：${newSub}\n` +
         (newStart && newEnd ? `‧ 課程期間：${fmt(newStart)} ～ ${fmt(newEnd)}\n` : '') +
-        (newAutoDel ? `‧ 自動回收日：${fmt(newAutoDel)}\n` : '') +
+        (newAutoDel ? `‧ 自動回收時間：${fmt(newAutoDel)} ${newAutoDelTime}\n` : '') +
         (skippedIds.length ? `（已略過既有代號：${skippedIds.join('、')}）\n` : '') +
         `\n確定立即批次建立？`;
       if(!confirm(msg)) return;
     }
 
-    const packedMode = packEditModeField({ editMode: 'A', deidentify: false, autoDeleteDate: newAutoDel });
+    const packedMode = packEditModeField({ editMode: 'A', deidentify: false, autoDeleteDate: newAutoDel, autoDeleteTime: newAutoDelTime });
     const nowIso = new Date().toISOString();
     const classPayloads = toCreateIds.map(cid => ({
       class_id: cid,
@@ -1617,7 +1703,8 @@ if(createClassFormEl){
           subtitle: newSub,
           startDate: newStart,
           endDate: newEnd,
-          autoDeleteDate: newAutoDel
+          autoDeleteDate: newAutoDel,
+          autoDeleteTime: newAutoDelTime
         },
         students: [],
         holidays: [],
@@ -1655,11 +1742,315 @@ if(copyCurrLinkBtn){
   copyCurrLinkBtn.addEventListener('click', () => copyClassLink(CURRENT_CLASS_ID));
 }
 
+// ---------------------------------------------------------
+// 純原生 JS 零依賴 QR Code 產生器（ISO/IEC 18004 Byte Mode, ECC-L, Version 1~10）與 PNG 海報匯出
+// ---------------------------------------------------------
+function generateQrMatrix(text){
+  const bytes = new TextEncoder().encode(String(text || ''));
+  const len = bytes.length;
+  // Version 1~10 (ECC Level L): [totalDataCodewords, ecCodewordsPerBlock, numBlocks, alignCenters]
+  const V_SPECS = [
+    null,
+    [19, 7, 1, []],
+    [34, 10, 1, [6, 18]],
+    [55, 15, 1, [6, 22]],
+    [80, 20, 1, [6, 26]],
+    [108, 26, 1, [6, 30]],
+    [136, 18, 2, [6, 34]],
+    [156, 20, 2, [6, 22, 38]],
+    [194, 24, 2, [6, 24, 42]],
+    [232, 30, 2, [6, 26, 46]],
+    [274, 18, 4, [6, 28, 50]]
+  ];
+  let ver = 1;
+  while(ver <= 10){
+    const cap = V_SPECS[ver][0] - (ver <= 9 ? 2 : 3);
+    if(len <= cap) break;
+    ver++;
+  }
+  if(ver > 10) ver = 10;
+  const [totalData, ecLen, numBlocks, alignPos] = V_SPECS[ver];
+  const size = ver * 4 + 17;
+
+  // 1. 編碼資料位元流 (Byte mode = 0100)
+  const bits = [];
+  const pushBits = (val, n) => { for(let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+  pushBits(0b0100, 4);
+  pushBits(len, ver <= 9 ? 8 : 16);
+  for(const b of bytes) pushBits(b, 8);
+  const maxBits = totalData * 8;
+  pushBits(0, Math.min(4, maxBits - bits.length));
+  while(bits.length % 8 !== 0) bits.push(0);
+  const dataWords = [];
+  for(let i = 0; i < bits.length; i += 8){
+    let w = 0;
+    for(let j = 0; j < 8; j++) w = (w << 1) | bits[i + j];
+    dataWords.push(w);
+  }
+  let padToggle = true;
+  while(dataWords.length < totalData){
+    dataWords.push(padToggle ? 0xEC : 0x11);
+    padToggle = !padToggle;
+  }
+
+  // 2. GF(256) 與 Reed-Solomon 糾錯碼計算
+  const EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  let x = 1;
+  for(let i = 0; i < 255; i++){
+    EXP[i] = x; LOG[x] = i;
+    x <<= 1; if(x & 0x100) x ^= 0x11D;
+  }
+  for(let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+  const gfMul = (a, b) => (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]];
+
+  let gen = [1];
+  for(let i = 0; i < ecLen; i++){
+    const next = new Array(gen.length + 1).fill(0);
+    for(let j = 0; j < gen.length; j++){
+      next[j] ^= gen[j];
+      next[j + 1] ^= gfMul(gen[j], EXP[i]);
+    }
+    gen = next;
+  }
+
+  const blockDataList = [], blockEcList = [];
+  const shortBlockLen = Math.floor(totalData / numBlocks);
+  const numLongBlocks = totalData % numBlocks;
+  let offset = 0;
+  for(let b = 0; b < numBlocks; b++){
+    const dLen = shortBlockLen + (b >= numBlocks - numLongBlocks ? 1 : 0);
+    const block = dataWords.slice(offset, offset + dLen);
+    offset += dLen;
+    blockDataList.push(block);
+    const msg = [...block, ...new Array(ecLen).fill(0)];
+    for(let i = 0; i < block.length; i++){
+      const coef = msg[i];
+      if(coef !== 0){
+        for(let j = 0; j < gen.length; j++) msg[i + j] ^= gfMul(gen[j], coef);
+      }
+    }
+    blockEcList.push(msg.slice(block.length));
+  }
+
+  const finalWords = [];
+  const maxDLen = shortBlockLen + (numLongBlocks > 0 ? 1 : 0);
+  for(let i = 0; i < maxDLen; i++){
+    for(let b = 0; b < numBlocks; b++) if(i < blockDataList[b].length) finalWords.push(blockDataList[b][i]);
+  }
+  for(let i = 0; i < ecLen; i++){
+    for(let b = 0; b < numBlocks; b++) finalWords.push(blockEcList[b][i]);
+  }
+
+  // 3. 建立矩陣與功能圖樣
+  const mat = Array.from({length: size}, () => new Uint8Array(size));
+  const isFunc = Array.from({length: size}, () => new Uint8Array(size));
+  const setMod = (r, c, dark) => {
+    if(r < 0 || r >= size || c < 0 || c >= size) return;
+    mat[r][c] = dark ? 1 : 0;
+    isFunc[r][c] = 1;
+  };
+  const drawFinder = (r0, c0) => {
+    for(let dy = -1; dy <= 7; dy++){
+      for(let dx = -1; dx <= 7; dx++){
+        const d = Math.max(Math.abs(dx - 3), Math.abs(dy - 3));
+        setMod(r0 + dy, c0 + dx, d !== 2 && d !== 4);
+      }
+    }
+  };
+  drawFinder(0, 0);
+  drawFinder(0, size - 7);
+  drawFinder(size - 7, 0);
+
+  for(let i = 8; i < size - 8; i++){
+    setMod(6, i, i % 2 === 0);
+    setMod(i, 6, i % 2 === 0);
+  }
+  for(const r of alignPos){
+    for(const c of alignPos){
+      if((r === 6 && c === 6) || (r === 6 && c === size - 7) || (r === size - 7 && c === 6)) continue;
+      for(let dy = -2; dy <= 2; dy++){
+        for(let dx = -2; dx <= 2; dx++){
+          setMod(r + dy, c + dx, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+        }
+      }
+    }
+  }
+  setMod(size - 8, 8, true);
+
+  // 預留格式資訊區與版本資訊區
+  for(let i = 0; i < 9; i++){
+    if(i !== 6){ isFunc[8][i] = 1; isFunc[i][8] = 1; }
+  }
+  for(let i = 0; i < 8; i++){
+    isFunc[8][size - 1 - i] = 1;
+    isFunc[size - 1 - i][8] = 1;
+  }
+  if(ver >= 7){
+    let rem = ver;
+    for(let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+    const vBits = (ver << 12) | rem;
+    for(let i = 0; i < 18; i++){
+      const bit = ((vBits >>> i) & 1) === 1;
+      const a = size - 11 + (i % 3), b = Math.floor(i / 3);
+      setMod(a, b, bit);
+      setMod(b, a, bit);
+    }
+  }
+
+  // 4. 填入資料位元並套用 Mask 0 ((r + c) % 2 === 0)
+  let bitIdx = 0;
+  const totalBits = finalWords.length * 8;
+  let upward = true;
+  for(let right = size - 1; right >= 1; right -= 2){
+    if(right === 6) right = 5;
+    for(let v = 0; v < size; v++){
+      const r = upward ? (size - 1 - v) : v;
+      for(let j = 0; j < 2; j++){
+        const c = right - j;
+        if(!isFunc[r][c]){
+          let dark = false;
+          if(bitIdx < totalBits){
+            dark = ((finalWords[bitIdx >>> 3] >>> (7 - (bitIdx & 7))) & 1) === 1;
+            bitIdx++;
+          }
+          if((r + c) % 2 === 0) dark = !dark;
+          mat[r][c] = dark ? 1 : 0;
+        }
+      }
+    }
+    upward = !upward;
+  }
+
+  // 5. 寫入格式資訊 (ECC Level L = 01, Mask 0 = 000 -> data = 01000)
+  let fData = (0b01 << 3) | 0;
+  let fRem = fData;
+  for(let i = 0; i < 10; i++) fRem = (fRem << 1) ^ ((fRem >>> 9) * 0x537);
+  const fBits = ((fData << 10) | fRem) ^ 0x5412;
+  for(let i = 0; i <= 5; i++) mat[8][i] = (fBits >>> i) & 1;
+  mat[8][7] = (fBits >>> 6) & 1;
+  mat[8][8] = (fBits >>> 7) & 1;
+  mat[7][8] = (fBits >>> 8) & 1;
+  for(let i = 9; i < 15; i++) mat[14 - i][8] = (fBits >>> i) & 1;
+  for(let i = 0; i < 8; i++) mat[size - 1 - i][8] = (fBits >>> i) & 1;
+  for(let i = 8; i < 15; i++) mat[8][size - 15 + i] = (fBits >>> i) & 1;
+
+  return mat;
+}
+
+let currentQrTargetClassId = '';
+let currentQrTargetUrl = '';
+
+function openQrCodeModal(cid){
+  const targetCid = String(cid || CURRENT_CLASS_ID).trim() || 'default';
+  const clsInfo = allCloudClasses.find(c => c.class_id === targetCid) || {
+    class_id: targetCid,
+    title: targetCid === CURRENT_CLASS_ID ? state.settings.title : defaults.settings.title,
+    subtitle: targetCid === CURRENT_CLASS_ID ? state.settings.subtitle : ''
+  };
+  const shareUrl = getClassShareUrl(targetCid);
+  currentQrTargetClassId = targetCid;
+  currentQrTargetUrl = shareUrl;
+
+  const titleEl = document.getElementById('qrModalTitle');
+  const subEl = document.getElementById('qrModalSubtitle');
+  const urlEl = document.getElementById('qrModalUrl');
+  if(titleEl) titleEl.textContent = `📱 班級專屬 QR Code【${targetCid}】`;
+  if(subEl) subEl.textContent = clsInfo.subtitle ? `${clsInfo.title || ''}｜${clsInfo.subtitle}` : (clsInfo.title || '值日生排班管理系統');
+  if(urlEl) urlEl.textContent = shareUrl;
+
+  const canvas = document.getElementById('qrCanvas');
+  if(canvas){
+    const mat = generateQrMatrix(shareUrl);
+    const n = mat.length;
+    const quiet = 4;
+    const qrTargetPx = 280;
+    const scale = Math.max(4, Math.floor(qrTargetPx / (n + quiet * 2)));
+    const qrSize = (n + quiet * 2) * scale;
+    const padX = 36;
+    const headerH = 82;
+    const footerH = 44;
+    const W = Math.max(360, qrSize + padX * 2);
+    const H = headerH + qrSize + footerH;
+
+    canvas.width = W;
+    canvas.height = H;
+    canvas.style.width = `${Math.min(320, W)}px`;
+    canvas.style.height = 'auto';
+
+    const ctx = canvas.getContext('2d');
+    // 白底卡片
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    // 頂部標題與班級名稱
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 17px "Microsoft JhengHei", "PingFang TC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(clsInfo.title || '值日生排班管理系統', W / 2, 32);
+
+    ctx.fillStyle = '#2563eb';
+    ctx.font = 'bold 15px "Microsoft JhengHei", "PingFang TC", sans-serif';
+    const subLabel = clsInfo.subtitle ? `${targetCid}｜${clsInfo.subtitle}` : `班級代號：${targetCid}`;
+    ctx.fillText(subLabel, W / 2, 60);
+
+    // 繪製 QR Code 模組
+    const offsetX = Math.floor((W - qrSize) / 2);
+    const offsetY = headerH;
+    ctx.fillStyle = '#000000';
+    for(let r = 0; r < n; r++){
+      for(let c = 0; c < n; c++){
+        if(mat[r][c]){
+          ctx.fillRect(offsetX + (c + quiet) * scale, offsetY + (r + quiet) * scale, scale, scale);
+        }
+      }
+    }
+
+    // 底部提示文字
+    ctx.fillStyle = '#475569';
+    ctx.font = '12px "Microsoft JhengHei", "PingFang TC", sans-serif';
+    ctx.fillText('請使用手機相機或 LINE 掃描進入本班值日生系統', W / 2, headerH + qrSize + 24);
+  }
+
+  const modal = document.getElementById('qrCodeModal');
+  if(modal) modal.classList.remove('hidden');
+}
+
+const qrCurrentClassBtn = document.getElementById('qrCurrentClassBtn');
+if(qrCurrentClassBtn){
+  qrCurrentClassBtn.addEventListener('click', () => openQrCodeModal(CURRENT_CLASS_ID));
+}
+const downloadQrPngBtn = document.getElementById('downloadQrPngBtn');
+if(downloadQrPngBtn){
+  downloadQrPngBtn.addEventListener('click', () => {
+    const canvas = document.getElementById('qrCanvas');
+    if(!canvas) return;
+    const dataUrl = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    const safeCid = (currentQrTargetClassId || CURRENT_CLASS_ID || 'default').replace(/[^a-zA-Z0-9_-]/g, '_');
+    a.href = dataUrl;
+    a.download = `班級QRCode_${safeCid}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+}
+const copyQrUrlBtn = document.getElementById('copyQrUrlBtn');
+if(copyQrUrlBtn){
+  copyQrUrlBtn.addEventListener('click', () => copyClassLink(currentQrTargetClassId || CURRENT_CLASS_ID));
+}
+const closeQrModalBtn = document.getElementById('closeQrModalBtn');
+if(closeQrModalBtn){
+  closeQrModalBtn.addEventListener('click', () => {
+    document.getElementById('qrCodeModal')?.classList.add('hidden');
+  });
+}
+
 const classListTableEl = document.getElementById('classListTable');
 if(classListTableEl){
   classListTableEl.addEventListener('click', async e => {
     const swBtn = e.target.closest('[data-switch-class]');
     const cpBtn = e.target.closest('[data-copy-class]');
+    const qrBtn = e.target.closest('[data-qr-class]');
     const delBtn = e.target.closest('[data-delete-class]');
     if(swBtn){
       const cid = swBtn.dataset.switchClass;
@@ -1668,6 +2059,9 @@ if(classListTableEl){
     }
     if(cpBtn){
       await copyClassLink(cpBtn.dataset.copyClass);
+    }
+    if(qrBtn){
+      openQrCodeModal(qrBtn.dataset.qrClass);
     }
     if(delBtn){
       const cid = delBtn.dataset.deleteClass;

@@ -659,7 +659,7 @@ let allCloudClasses = [];
 // 總控台多班級看板狀態
 let dashboardSelectedClassId = '';
 let dashboardCache = {};
-let dashboardViewMonth = todayISO().slice(0, 7);
+let dashboardViewMonth = '';
 
 // 雲端同步配置
 const SUPABASE_CONFIG = {
@@ -2778,6 +2778,7 @@ async function loadSuperDashboardData(forceRefresh = false){
 }
 
 async function renderSuperDashboard(){
+  if(!dashboardViewMonth) dashboardViewMonth = todayISO().slice(0, 7);
   const today = todayISO();
   const dateBadge = document.getElementById('dashTodayDateBadge');
   if(dateBadge) dateBadge.textContent = `📅 今天：${fmt(today)} 星期${weekday(today)}`;

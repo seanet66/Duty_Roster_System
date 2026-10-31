@@ -2241,7 +2241,7 @@ function setTab(id){
  const isAdmin=currentUser&&currentUser.role==='admin';
  if(!isAdmin&&id!=='homePage'){alert('您的帳號權限僅能檢視值日生班表，無權訪問此頁面。');id='homePage';}
  if(id==='auditLogPage'&&CURRENT_CLASS_ID!=='default'){id='homePage';}
- if(id==='studentsPage'&&CURRENT_CLASS_ID==='default'){alert('總控台專責於全機關管理，學員名單隸屬各獨立分班。請點擊分班「進入代排」後管理該班學員。');id='homePage';}
+ if((id==='studentsPage'||id==='dataPage')&&CURRENT_CLASS_ID==='default'){id='homePage';}
  document.querySelectorAll('.tab-page').forEach(x=>x.classList.toggle('hidden',x.id!==id));
  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));
  if(id==='homePage')renderSchedule();

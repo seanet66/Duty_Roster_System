@@ -402,6 +402,9 @@ if(!skynetUser) {
  }
 }
 let isSyncing = false;
+let isPushing = false;
+let pushQueued = false;
+let lastLocalChangeTime = 0;
 let cloudOnline = false;
 
 function save(skipCloud = false){
@@ -411,6 +414,7 @@ function save(skipCloud = false){
   alert('資料無法儲存，可能是瀏覽器儲存空間不足。請先匯出備份。');
  }
  if(!skipCloud && currentUser && currentUser.role === 'admin'){
+  lastLocalChangeTime = Date.now();
   pushToCloud();
  }
 }
@@ -553,15 +557,16 @@ async function switchClass(targetClassId, keepSession = false){
     currentUser.classId = CURRENT_CLASS_ID;
     setSessionUser(currentUser);
   }
-  await fetchFromCloud();
-fetchAllClassesList();
+  await fetchFromCloud(false, true);
   await fetchAllClassesList();
-  renderAll();
+  renderAll(true);
 }
 
-async function fetchFromCloud(manualAlert = false){
- if(isSyncing) return;
+async function fetchFromCloud(manualAlert = false, forcePull = false){
+ if(isSyncing || isPushing) return;
+ if(!manualAlert && !forcePull && (Date.now() - lastLocalChangeTime < 4000)) return;
  isSyncing = true;
+ const startChangeTime = lastLocalChangeTime;
  const pill = document.getElementById('cloudSyncPill');
  if(pill) pill.textContent = '⚡ 雲端同步中...';
  try {
@@ -581,6 +586,11 @@ async function fetchFromCloud(manualAlert = false){
   const [classList, studList, holiList, assnList, userList] = await Promise.all([
     classRes.json(), studRes.json(), holiRes.json(), assnRes.json(), userRes.json()
   ]);
+
+  // 若在拉取雲端期間，使用者在本機進行了新增/修改（或正在推送），則放棄此次舊資料覆蓋，避免新增帳號或資料被洗掉
+  if(isPushing || lastLocalChangeTime !== startChangeTime){
+    return true;
+  }
 
   cloudOnline = true;
   if(pill){
@@ -672,7 +682,7 @@ async function fetchFromCloud(manualAlert = false){
   if(cloudJson !== localJson && (classData || studentsArr.length)){
     state = cloudState;
     save(true);
-    renderAll();
+    renderAll(true);
     if(manualAlert) alert('已成功同步最新雲端資料！');
   } else {
     if(manualAlert) alert('目前資料已是雲端最新狀態！');
@@ -710,12 +720,42 @@ async function syncUserToCloud(userObj){
   } catch(e){}
 }
 
+// 單一使用者刪除同步
+async function deleteUserFromCloud(username){
+  if(!username) return;
+  try {
+    await supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&username=eq.${encodeURIComponent(username)}`, {
+      method: 'DELETE'
+    });
+  } catch(e){}
+}
+
 async function pushToCloud(){
  if(!currentUser || currentUser.role !== 'admin') return;
+ if(isPushing){
+  pushQueued = true;
+  return;
+ }
+ isPushing = true;
  const pill = document.getElementById('cloudSyncPill');
  if(pill) pill.textContent = '⚡ 雲端儲存中...';
  try {
-  // 1. Upsert 班級設定
+  // 1. 優先 Upsert 使用者與班級設定 (不先 DELETE roster_users，避免任何瞬間讀取到空名單)
+  if(state.users.length){
+    const uPayload = state.users.map(u => ({
+      class_id: CURRENT_CLASS_ID,
+      username: u.username,
+      password: u.password,
+      role: u.role || 'user',
+      first_login: Boolean(u.firstLogin)
+    }));
+    await supabaseFetch('roster_users?on_conflict=class_id,username', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify(uPayload)
+    });
+  }
+
   const s = state.settings;
   await supabaseFetch('roster_classes', {
     method: 'POST',
@@ -734,12 +774,11 @@ async function pushToCloud(){
     }])
   });
 
-  // 2. 清理並覆寫該班級的學員、假日、排班 (確保刪除動作能同步到雲端)
+  // 2. 清理並覆寫該班級的學員、假日、排班
   await Promise.all([
     supabaseFetch(`roster_students?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' }),
     supabaseFetch(`roster_holidays?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' }),
-    supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' }),
-    supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' })
+    supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}`, { method: 'DELETE' })
   ]);
 
   // 批次插入學員
@@ -782,29 +821,12 @@ async function pushToCloud(){
       manual: Boolean(a.manual),
       updated_at: new Date().toISOString()
     }));
-    // 若筆數較多，分批每 200 筆批次寫入
     for(let i=0; i<aPayload.length; i+=200){
       await supabaseFetch('roster_assignments', {
         method: 'POST',
         body: JSON.stringify(aPayload.slice(i, i+200))
       });
     }
-  }
-
-  // 批次 Upsert 使用者
-  if(state.users.length){
-    const uPayload = state.users.map(u => ({
-      class_id: CURRENT_CLASS_ID,
-      username: u.username,
-      password: u.password,
-      role: u.role || 'user',
-      first_login: Boolean(u.firstLogin)
-    }));
-    await supabaseFetch('roster_users?on_conflict=class_id,username', {
-      method: 'POST',
-      headers: { 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify(uPayload)
-    });
   }
 
   cloudOnline = true;
@@ -817,6 +839,12 @@ async function pushToCloud(){
   if(pill){
     pill.textContent = '☁️ 離線保底 (本機已存)';
     pill.style.background = 'rgba(255,255,255,0.1)';
+  }
+ } finally {
+  isPushing = false;
+  if(pushQueued){
+    pushQueued = false;
+    pushToCloud();
   }
  }
 }
@@ -991,7 +1019,7 @@ function renderSchedule(){const all=courseDates(),month=state.viewMonth||todayIS
  document.getElementById('showFullSchedule').textContent=showFull?'回到本月班表':'查看完整課程班表';renderCalendar(month)
 }
 function renderCalendar(month){const [y,m]=month.split('-').map(Number),first=new Date(y,m-1,1,12),last=new Date(y,m,0,12),startOffset=first.getDay(),holidays=holidayMap();let html='<div class="calendar-grid">'+['日','一','二','三','四','五','六'].map(x=>`<div class="cal-head">${x}</div>`).join('');for(let i=0;i<startOffset;i++)html+='<div class="cal-day off"></div>';for(let day=1;day<=last.getDate();day++){const date=iso(new Date(y,m-1,day,12)),a=state.assignments[date],s1=a&&studentFor(a.studentId),s2=a&&studentFor(a.studentId2),h=holidays.get(date),off=!isWorkday(date);html+=`<div class="cal-day ${off?'off':''} ${date===todayISO()?'today':''}"><div class="dayno">${day}</div>${s1?`<div class="who">${esc(s1.name)}${s2?`<br>${esc(s2.name)}`:''}<br><span>${esc(s1.id)}${s2?`／${esc(s2.id)}`:''}</span></div>`:''}${off?`<div class="offtag">${esc(h?.name||(parseDate(date).getDay()===0?'週日':'週六'))}</div>`:''}</div>`}html+='</div>';document.getElementById('calendarWrap').innerHTML=html}
-function renderAll(){renderHeader();renderSettings();renderStudents();renderHolidays();renderUsers();renderSchedule();renderUserBadge();applyRolePermissions();save()}
+function renderAll(skipCloud = false){renderHeader();renderSettings();renderStudents();renderHolidays();renderUsers();renderSchedule();renderUserBadge();applyRolePermissions();save(skipCloud)}
 function generate(){if(!state.settings.startDate||!state.settings.endDate){alert('請先設定開始日與結束日。');return}if(state.settings.startDate>state.settings.endDate){alert('開始日不能晚於結束日。');return}if(!state.students.length){alert('請先新增或匯入至少一位學員。');return}if(!eligibleStudents().some(s=>s.id===state.settings.firstStudentId))state.settings.firstStudentId=eligibleStudents()[0]?.id||'';ensureAssignments();renderAll()}
 function setTab(id){
  const isAdmin=currentUser&&currentUser.role==='admin';
@@ -1297,7 +1325,7 @@ if(classListTableEl){
   });
 }
 
-// 登入處理
+ // 登入處理
 document.getElementById('loginForm').addEventListener('submit', async e=>{
  e.preventDefault();
  const u=document.getElementById('loginUsername').value.trim();
@@ -1308,7 +1336,7 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
  if(targetCid !== CURRENT_CLASS_ID){
    await switchClass(targetCid, false);
  } else {
-   await fetchFromCloud();
+   await fetchFromCloud(false, true);
  }
  const found=state.users.find(x=>x.username===u);
  if(!found||found.password!==p){
@@ -1327,7 +1355,7 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
  document.getElementById('loginOverlay').classList.add('hidden');
  const appMain=document.getElementById('appMain');
  if(appMain)appMain.classList.remove('hidden');
- renderAll();
+ renderAll(true);
 });
 
 // 登出處理
@@ -1405,7 +1433,7 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
 });
 
 // 帳號新增與管理 (僅 admin)
-document.getElementById('userForm').addEventListener('submit',e=>{
+document.getElementById('userForm').addEventListener('submit',async e=>{
  e.preventDefault();
  if(!currentUser||currentUser.role!=='admin'){
   alert('您沒有權限執行此操作。');return;
@@ -1422,8 +1450,12 @@ document.getElementById('userForm').addEventListener('submit',e=>{
  if(state.users.some(u=>u.username===username)){
   alert('此帳號已存在，請使用其他帳號名稱。');return;
  }
- state.users.push({username,password,role,firstLogin:true});
- save();renderUsers();
+ const newUser={username,password,role,firstLogin:true};
+ state.users.push(newUser);
+ lastLocalChangeTime = Date.now();
+ save();
+ syncUserToCloud(newUser);
+ renderUsers();
  e.target.reset();
  alert(`帳號【${username}】建立成功！\n該使用者首次登入時系統會強制要求其修改密碼。`);
 });
@@ -1442,9 +1474,11 @@ document.getElementById('userTable').addEventListener('click',e=>{
   const trimmed=newTemp.trim();
   if(trimmed.length<8||trimmed.length>20){alert('重置失敗：密碼長度必須在 8 到 20 個字元之間！');return;}
   target.password=trimmed;
-  target.password=newTemp.trim();
   target.firstLogin=true; // 重置後要求下次首次登入改密碼
-  save();renderUsers();
+  lastLocalChangeTime = Date.now();
+  save();
+  syncUserToCloud(target);
+  renderUsers();
   alert(`帳號【${uname}】密碼已重置！\n使用者下次登入時會提示修改密碼。`);
  }
  if(del){
@@ -1454,7 +1488,10 @@ document.getElementById('userTable').addEventListener('click',e=>{
   }
   if(!confirm(`確定要刪除帳號【${uname}】？刪除後無法復原。`))return;
   state.users=state.users.filter(u=>u.username!==uname);
-  save();renderUsers();
+  lastLocalChangeTime = Date.now();
+  deleteUserFromCloud(uname);
+  save();
+  renderUsers();
  }
 });
 
@@ -1564,9 +1601,10 @@ setInterval(() => {
 }, 1000);
 
 checkAuth();
-renderAll();
-// 啟動時自動拉取最新資料
-fetchFromCloud();
+renderAll(true);
+// 啟動時自動拉取最新資料与班級清單
+fetchFromCloud(false, true);
+fetchAllClassesList();
 // 每一分鐘自動在背景檢查雲端是否有其他人更新
 setInterval(() => {
  if(!document.hidden) fetchFromCloud();

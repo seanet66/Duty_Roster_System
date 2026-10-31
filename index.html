@@ -244,21 +244,44 @@
         <button type="button" class="secondary small" id="copyCurrentClassLinkBtn">🔗 複製目前班級專屬連結</button>
       </div>
     </div>
-    <form id="createClassForm" class="grid four" style="margin-top:12px">
-      <div class="field">
-        <label for="newClassIdInput">新班級代號（英文或數字）*</label>
-        <input id="newClassIdInput" required maxlength="40" placeholder="例如：cloud03">
+    <form id="createClassForm" style="margin-top:12px">
+      <div class="grid four">
+        <div class="field">
+          <label for="newClassIdInput">起始班級代號（英數）*</label>
+          <input id="newClassIdInput" required maxlength="40" placeholder="例如：c01 或 cloud03">
+          <div class="muted" style="font-size:11px;margin-top:4px">若批次建立多班，尾號將自動遞增（如 c01 ➔ c01~c30）</div>
+        </div>
+        <div class="field">
+          <label for="newClassBatchCount">建立班級數量（批次）*</label>
+          <input type="number" id="newClassBatchCount" min="1" max="50" value="1" required placeholder="1～50">
+          <div class="muted" style="font-size:11px;margin-top:4px">填 1 為單一建立；填 2～50 可一次批次建立多個班級</div>
+        </div>
+        <div class="field">
+          <label for="newClassTitleInput">網頁主標題 *</label>
+          <input id="newClassTitleInput" required maxlength="160" value="勞動力發展署桃竹苗分署">
+        </div>
+        <div class="field">
+          <label for="newClassSubInput">班級／期別名稱（副標題）*</label>
+          <input id="newClassSubInput" required maxlength="180" placeholder="例如：雲端網管與資安(幼獅)第3期">
+        </div>
       </div>
-      <div class="field">
-        <label for="newClassTitleInput">網頁主標題 *</label>
-        <input id="newClassTitleInput" required maxlength="160" value="勞動力發展署桃竹苗分署">
-      </div>
-      <div class="field">
-        <label for="newClassSubInput">班級／期別名稱（副標題）*</label>
-        <input id="newClassSubInput" required maxlength="180" placeholder="例如：雲端網管與資安(幼獅)第3期">
-      </div>
-      <div class="field" style="display:flex;align-items:end;gap:7px">
-        <button type="submit">＋ 建立並切換至此班級</button>
+      <div class="grid four" style="margin-top:10px">
+        <div class="field">
+          <label for="newClassStartDate">預設課程開始日（選填）</label>
+          <input type="date" id="newClassStartDate">
+        </div>
+        <div class="field">
+          <label for="newClassEndDate">預設課程結束日（選填）</label>
+          <input type="date" id="newClassEndDate">
+        </div>
+        <div class="field">
+          <label for="newClassAutoDeleteDate">🗑️ 自動回收（結訓刪除）日（選填）</label>
+          <input type="date" id="newClassAutoDeleteDate">
+          <div class="muted" style="font-size:11px;margin-top:4px">到達此日期當天起，系統自動刪除該班級所有資料</div>
+        </div>
+        <div class="field" style="display:flex;align-items:end;gap:7px">
+          <button type="submit">＋ 建立班級（支援單班／批次）</button>
+        </div>
       </div>
     </form>
     <div class="divider"></div>
@@ -279,6 +302,8 @@
         <div class="field"><label for="dailyCount">每日值日生人數</label><select id="dailyCount"><option value="2">每日 2 位學員（預設）</option><option value="1">每日 1 位學員</option></select></div>
         <div class="field"><label for="autoLogoutMinutes">閒置自動登出時間（分鐘）</label><input type="number" id="autoLogoutMinutes" min="0" max="99" value="10" placeholder="0-99，0表示不自動登出"><div class="muted" style="font-size:11px;margin-top:4px">預設 10 分鐘，可設定 0～99 分鐘（設為 0 表示停用自動登出）</div></div>
         <div class="field"><label for="editMode">手動修改後的排班方式</label><select id="editMode"><option value="A">A．自動接續（手動值日生後，依學號往後接續）</option><option value="B">B．固定指定（保留手動指定日期，其餘日期順序重排）</option><option value="C">C．完全重新排序（修改後整張表重新依學號排班）</option></select></div>
+        <div class="field"><label for="deidentifyMode">🛡️ 姓名去識別化保護（資安隱私遮罩）</label><select id="deidentifyMode"><option value="false">關閉（顯示完整真實姓名 — 預設）</option><option value="true">開啟（全系統列表與匯出檔自動遮罩中間字為 ○）</option></select><div class="muted" style="font-size:11px;margin-top:4px">開啟後：2 字姓名顯示「王○」、3 字顯示「林○松」、4 字顯示「歐○○菲」（含畫面與 Excel/PDF/CSV 匯出）</div></div>
+        <div class="field"><label for="autoDeleteDate">🗑️ 本班自動回收日（結訓自動刪除日，選填）</label><input type="date" id="autoDeleteDate"><div class="muted" style="font-size:11px;margin-top:4px">留空表永久保留；若設定日期，到達該日當天起系統將自動清除本班級（預設 default 主班級受保護不回收）</div></div>
       </div>
       <div class="notice"><strong>排班規則：</strong>只在開始日與結束日（含）之間的上課日排班。週六、週日及假日管理中設定的休假日會跳過；職稱非「學員」的幹部（班長、副班長、服務股長）不列入值日生輪替，系統會自動跳過。學員依學號排序，每日安排 1 或 2 位值日生並循環，直到結束日。若要將週末設為上課日，請在「假日管理」勾選該日為上課日。</div>
       <div class="actions"><button type="submit">儲存設定並產生班表</button><button type="button" class="secondary" id="rebuildSettings">套用設定並重新排班</button></div>
@@ -291,7 +316,14 @@
     <form id="userForm" class="grid four">
       <div class="field"><label for="accUsername">帳號 *</label><input id="accUsername" required maxlength="40" placeholder="例如：user01"></div>
       <div class="field"><label for="accPassword">密碼 *</label><input type="password" id="accPassword" required minlength="8" maxlength="20" placeholder="密碼長度需 8 至 20 字元"><div class="muted" style="font-size:11px;margin-top:4px">密碼原則：長度至少 8～20 個字元</div></div>
-      <div class="field"><label for="accRole">權限角色</label><select id="accRole"><option value="user">一般使用者（排班與檢視）</option><option value="admin">系統管理員（完整權限）</option></select></div>
+      <div class="field">
+        <label for="accRole">權限角色</label>
+        <select id="accRole"><option value="user">一般使用者（唯讀檢視班表）</option><option value="admin">系統管理員（完整排班與管理權限）</option></select>
+        <label id="accGlobalWrap" class="hidden" style="display:flex;align-items:center;gap:6px;margin-top:8px;font-weight:700;color:#1e3a8a;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="accIsGlobal" style="width:16px;height:16px;margin:0;cursor:pointer">
+          <span>🌐 設為「跨全班級通用」總管理員</span>
+        </label>
+      </div>
       <div class="field" style="display:flex;align-items:end;gap:7px"><button type="submit" id="saveUserBtn">新增帳號</button><button type="button" class="secondary hidden" id="cancelUserEdit">取消</button></div>
     </form>
     <div class="divider"></div>
@@ -365,12 +397,49 @@ const SUPABASE_CONFIG = {
 const ROLE_OPTIONS=['學員','班長','副班長','服務股長'];
 const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const SESSION_KEY='offlineDutyRoster_session';
-const DEFAULT_ADMIN={username:'skynet99',password:'iamagoodstudent',role:'admin',firstLogin:false};
+const GLOBAL_USERS_LOCAL_KEY='offlineDutyRoster_globalUsers';
+const DEFAULT_ADMIN={username:'skynet99',password:'iamagoodstudent',role:'admin',firstLogin:false,isGlobal:true};
 /* SEED_DATA_START */
 const EMBEDDED_SEED_DATA = null;
 /* SEED_DATA_END */
-const defaults={settings:{title:'勞動力發展署桃竹苗分署',subtitle:'雲端網管與資安(幼獅)第2期',startDate:'',endDate:'',firstStudentId:'',editMode:'A',dailyCount:2,autoLogoutMinutes:10},students:[],holidays:[],assignments:{},users:[DEFAULT_ADMIN],viewMonth:todayISO().slice(0,7)};
+const defaults={settings:{title:'勞動力發展署桃竹苗分署',subtitle:'雲端網管與資安(幼獅)第2期',startDate:'',endDate:'',firstStudentId:'',editMode:'A',dailyCount:2,autoLogoutMinutes:10,deidentify:false,autoDeleteDate:''},students:[],holidays:[],assignments:{},users:[DEFAULT_ADMIN],viewMonth:todayISO().slice(0,7)};
 let state=loadState(),editingId=null,editingUser=null,importRows=null,showFull=false,currentUser=null,pendingFirstLoginUser=null;
+
+function parseEditModeField(raw){
+  const str = String(raw || 'A');
+  const parts = str.split('|');
+  const mode = ['A','B','C'].includes(parts[0]) ? parts[0] : 'A';
+  let deidentify = false;
+  let autoDeleteDate = '';
+  for(let i=1; i<parts.length; i++){
+    if(parts[i] === 'D1') deidentify = true;
+    else if(parts[i].startsWith('EXP:')) autoDeleteDate = parts[i].slice(4);
+  }
+  return { editMode: mode, deidentify, autoDeleteDate };
+}
+
+function packEditModeField(s){
+  const mode = ['A','B','C'].includes(s.editMode) ? s.editMode : 'A';
+  const deid = s.deidentify ? 'D1' : 'D0';
+  const exp = (s.autoDeleteDate && /^\d{4}-\d{2}-\d{2}$/.test(s.autoDeleteDate)) ? `|EXP:${s.autoDeleteDate}` : '';
+  return `${mode}|${deid}${exp}`;
+}
+
+function getLocalGlobalUsers(){
+  try {
+    const raw = localStorage.getItem(GLOBAL_USERS_LOCAL_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch { return []; }
+}
+
+function setLocalGlobalUsers(usersList){
+  try {
+    const globals = usersList.filter(u => u.isGlobal || u.username === 'skynet99').map(u => ({ ...u, isGlobal: true }));
+    localStorage.setItem(GLOBAL_USERS_LOCAL_KEY, JSON.stringify(globals));
+  } catch(e){}
+}
+
 function loadState(){
  try{
   let raw = localStorage.getItem(KEY);
@@ -387,13 +456,25 @@ function loadState(){
    if(!s.dailyCount)s.dailyCount=2;
    if(s.autoLogoutMinutes===undefined||s.autoLogoutMinutes===null||s.autoLogoutMinutes==='')s.autoLogoutMinutes=10;
    else s.autoLogoutMinutes=Math.min(99,Math.max(0,parseInt(s.autoLogoutMinutes,10)||0));
+   s.deidentify = Boolean(s.deidentify);
+   s.autoDeleteDate = s.autoDeleteDate || '';
    let uList=Array.isArray(x.users)&&x.users.length?x.users:[DEFAULT_ADMIN];
+   // 合併本機快取的跨全班級通用帳號
+   const globalCached = getLocalGlobalUsers();
+   globalCached.forEach(gu => {
+     const existing = uList.find(u => u.username === gu.username);
+     if(!existing) uList.push({ ...gu, isGlobal: true });
+     else existing.isGlobal = true;
+   });
    const skynetUser = uList.find(u=>u.username==='skynet99');
-if(!skynetUser) {
-  uList.unshift(DEFAULT_ADMIN);
-} else if(skynetUser.password === 'bB6613053' || skynetUser.password === 'p@ssw0rd') {
-  skynetUser.password = 'iamagoodstudent';
-}
+   if(!skynetUser) {
+     uList.unshift({...DEFAULT_ADMIN});
+   } else {
+     skynetUser.isGlobal = true;
+     if(skynetUser.password === 'bB6613053' || skynetUser.password === 'p@ssw0rd') {
+       skynetUser.password = 'iamagoodstudent';
+     }
+   }
    return {...structuredClone(defaults),...x,settings:s,students:x.students||[],holidays:x.holidays||[],assignments:x.assignments||{},users:uList};
   }
   return structuredClone(defaults);
@@ -410,6 +491,7 @@ let cloudOnline = false;
 function save(skipCloud = false){
  try{
   localStorage.setItem(KEY,JSON.stringify(state));
+  setLocalGlobalUsers(state.users);
  }catch(e){
   alert('資料無法儲存，可能是瀏覽器儲存空間不足。請先匯出備份。');
  }
@@ -434,22 +516,66 @@ async function supabaseFetch(tableAndQuery, options = {}) {
   return res;
 }
 
-// 取得雲端所有班級清單並更新下拉選單與管理列表
-async function fetchAllClassesList(){
+// 刪除指定班級的所有雲端與本機資料（供手動刪除與到期自動回收共用）
+async function purgeClassEverywhere(cid){
+  if(!cid || cid === 'default') return;
   try {
-    const res = await supabaseFetch('roster_classes?select=class_id,title,subtitle,start_date,end_date,updated_at&order=class_id.asc');
+    await Promise.all([
+      supabaseFetch(`roster_classes?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
+      supabaseFetch(`roster_students?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
+      supabaseFetch(`roster_holidays?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
+      supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
+      supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' })
+    ]);
+  } catch(e){}
+  try { localStorage.removeItem(`offlineDutyRoster_v1_${cid}`); } catch(e){}
+}
+
+// 取得雲端所有班級清單並執行「自動回收日」到期檢查與清理
+async function fetchAllClassesList(){
+  const today = todayISO();
+  let rawList = [];
+  try {
+    const res = await supabaseFetch('roster_classes?select=class_id,title,subtitle,start_date,end_date,edit_mode,updated_at&order=class_id.asc');
     if(res.ok){
       const list = await res.json();
-      allCloudClasses = Array.isArray(list) ? list : [];
+      rawList = Array.isArray(list) ? list : [];
     }
   } catch(e){}
+
+  // 自動檢查是否有已到達或超過「自動回收日」的班級，若有則自動從雲端與本機刪除
+  const validList = [];
+  const expiredIds = [];
+  for(const c of rawList){
+    const parsed = parseEditModeField(c.edit_mode);
+    c.auto_delete_date = parsed.autoDeleteDate || '';
+    if(c.class_id !== 'default' && c.auto_delete_date && today >= c.auto_delete_date){
+      expiredIds.push(c.class_id);
+    } else {
+      validList.push(c);
+    }
+  }
+
+  if(expiredIds.length){
+    await Promise.all(expiredIds.map(cid => purgeClassEverywhere(cid)));
+    if(expiredIds.includes(CURRENT_CLASS_ID)){
+      CURRENT_CLASS_ID = 'default';
+      KEY = `offlineDutyRoster_v1_default`;
+      try { localStorage.setItem(LAST_CLASS_KEY, 'default'); } catch(e){}
+      try { window.history.replaceState({}, '', window.location.pathname); } catch(e){}
+      state = loadState();
+    }
+  }
+
+  allCloudClasses = validList;
   if(!allCloudClasses.some(c => c.class_id === 'default')){
     allCloudClasses.unshift({
       class_id: 'default',
       title: state.settings.title || defaults.settings.title,
       subtitle: state.settings.subtitle || defaults.settings.subtitle,
       start_date: state.settings.startDate || '',
-      end_date: state.settings.endDate || ''
+      end_date: state.settings.endDate || '',
+      auto_delete_date: ''
     });
   }
   if(!allCloudClasses.some(c => c.class_id === CURRENT_CLASS_ID)){
@@ -458,8 +584,19 @@ async function fetchAllClassesList(){
       title: state.settings.title || defaults.settings.title,
       subtitle: state.settings.subtitle || '',
       start_date: state.settings.startDate || '',
-      end_date: state.settings.endDate || ''
+      end_date: state.settings.endDate || '',
+      auto_delete_date: state.settings.autoDeleteDate || ''
     });
+  } else {
+    // 確保目前所在班級在列表中的名稱與回收日即時同步
+    const currItem = allCloudClasses.find(c => c.class_id === CURRENT_CLASS_ID);
+    if(currItem){
+      currItem.title = state.settings.title || currItem.title;
+      currItem.subtitle = state.settings.subtitle ?? currItem.subtitle;
+      currItem.start_date = state.settings.startDate || currItem.start_date;
+      currItem.end_date = state.settings.endDate || currItem.end_date;
+      currItem.auto_delete_date = state.settings.autoDeleteDate || '';
+    }
   }
   renderClassSelectors();
   renderClassManagementTable();
@@ -480,6 +617,11 @@ async function copyClassLink(cid){
   }
 }
 
+function isGlobalSuperUser(u){
+  if(!u) return false;
+  return u.username === 'skynet99' || Boolean(u.isGlobal);
+}
+
 function renderClassSelectors(){
   // 1. 登入畫面班級下拉選單
   const loginSel = document.getElementById('loginClassSelect');
@@ -497,9 +639,9 @@ function renderClassSelectors(){
       loginSel.value = currentVal;
     }
   }
-  // 2. 頁首超級總管理員快速切換下拉選單
+  // 2. 頁首跨班總管理員快速切換下拉選單
   const heroSel = document.getElementById('heroQuickClassSelect');
-  const isSuperAdmin = currentUser && currentUser.username === 'skynet99' && currentUser.role === 'admin';
+  const isSuperAdmin = currentUser && currentUser.role === 'admin' && isGlobalSuperUser(currentUser);
   if(heroSel){
     heroSel.classList.toggle('hidden', !isSuperAdmin);
     if(isSuperAdmin){
@@ -513,7 +655,7 @@ function renderClassSelectors(){
 }
 
 function renderClassManagementTable(){
-  const isSuperAdmin = currentUser && currentUser.username === 'skynet99' && currentUser.role === 'admin';
+  const isSuperAdmin = currentUser && currentUser.role === 'admin' && isGlobalSuperUser(currentUser);
   const panel = document.getElementById('superAdminClassPanel');
   if(panel) panel.classList.toggle('hidden', !isSuperAdmin);
   if(!isSuperAdmin) return;
@@ -521,14 +663,18 @@ function renderClassManagementTable(){
   if(countEl) countEl.textContent = allCloudClasses.length;
   const wrap = document.getElementById('classListTable');
   if(!wrap) return;
-  wrap.innerHTML = `<table><thead><tr><th>班級代號</th><th>主標題</th><th>班級／期別名稱</th><th>課程期間</th><th class="no-print">操作</th></tr></thead><tbody>${allCloudClasses.map(c => {
+  wrap.innerHTML = `<table><thead><tr><th>班級代號</th><th>主標題</th><th>班級／期別名稱</th><th>課程期間</th><th>自動回收日</th><th class="no-print">操作</th></tr></thead><tbody>${allCloudClasses.map(c => {
     const isCurrent = c.class_id === CURRENT_CLASS_ID;
     const range = (c.start_date && c.end_date) ? `${fmt(c.start_date)} ～ ${fmt(c.end_date)}` : '<span class="muted">未設定</span>';
+    const autoDelLabel = c.class_id === 'default'
+      ? '<span class="muted">系統保護</span>'
+      : (c.auto_delete_date ? `<span style="color:#b45309;font-weight:700">🗑️ ${fmt(c.auto_delete_date)}</span>` : '<span class="muted">永久保留</span>');
     return `<tr class="${isCurrent?'today':''}">
       <td><strong>${esc(c.class_id)}</strong> ${isCurrent?'<span class="badge" style="background:#dcfce7;color:#166534">目前所在班級</span>':''}</td>
       <td>${esc(c.title || '—')}</td>
       <td>${esc(c.subtitle || '—')}</td>
       <td>${range}</td>
+      <td>${autoDelLabel}</td>
       <td class="no-print">
         ${isCurrent ? '<button type="button" class="small secondary" disabled>使用中</button>' : `<button type="button" class="small" data-switch-class="${esc(c.class_id)}">切換至此班</button>`}
         <button type="button" class="small secondary" data-copy-class="${esc(c.class_id)}">複製專屬連結</button>
@@ -570,13 +716,13 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
  const pill = document.getElementById('cloudSyncPill');
  if(pill) pill.textContent = '⚡ 雲端同步中...';
  try {
-  // 1. 同時拉取該班級的設定、學員、假日、排班、使用者
+  // 1. 同時拉取該班級的設定、學員、假日、排班、本班使用者、以及跨班通用使用者 (role=super_admin 或 skynet99)
   const [classRes, studRes, holiRes, assnRes, userRes] = await Promise.all([
     supabaseFetch(`roster_classes?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
     supabaseFetch(`roster_students?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
     supabaseFetch(`roster_holidays?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
     supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
-    supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`)
+    supabaseFetch(`roster_users?or=(class_id.eq.${encodeURIComponent(CURRENT_CLASS_ID)},role.eq.super_admin,username.eq.skynet99)&select=*`)
   ]);
 
   if(!classRes.ok || !studRes.ok || !holiRes.ok || !assnRes.ok || !userRes.ok){
@@ -624,27 +770,58 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     source: h.source || 'manual'
   }));
 
-  // 整理使用者名單
-  let usersArr = userList.map(u => ({
-    username: u.username,
-    password: u.password,
-    role: u.role || 'user',
-    firstLogin: Boolean(u.first_login)
-  }));
-  if(!usersArr.some(u => u.username === 'skynet99')) usersArr.unshift(DEFAULT_ADMIN);
+  // 整理使用者名單（合併跨全班級通用帳號與本班帳號，依 username 去重）
+  const userMap = new Map();
+  userList.forEach(u => {
+    const isGlobal = u.username === 'skynet99' || u.role === 'super_admin' || u.class_id === '__global__';
+    const mapped = {
+      username: u.username,
+      password: u.password,
+      role: (u.role === 'super_admin' || u.role === 'admin' || u.username === 'skynet99') ? 'admin' : 'user',
+      firstLogin: Boolean(u.first_login),
+      isGlobal
+    };
+    const prev = userMap.get(u.username);
+    if(!prev || isGlobal || u.class_id === CURRENT_CLASS_ID){
+      if(prev && prev.isGlobal) mapped.isGlobal = true;
+      userMap.set(u.username, mapped);
+    }
+  });
+  let usersArr = [...userMap.values()];
+  if(!usersArr.some(u => u.username === 'skynet99')) usersArr.unshift({...DEFAULT_ADMIN});
+  else {
+    // 確保 skynet99 排在第一位
+    const idx = usersArr.findIndex(u => u.username === 'skynet99');
+    if(idx > 0){
+      const [sky] = usersArr.splice(idx, 1);
+      sky.isGlobal = true;
+      usersArr.unshift(sky);
+    }
+  }
 
   // 班級設定
   let classData = classList[0];
   let s = { ...defaults.settings };
   if(classData){
+    const parsedMode = parseEditModeField(classData.edit_mode);
     s.title = classData.title || defaults.settings.title;
     s.subtitle = classData.subtitle ?? defaults.settings.subtitle;
     s.startDate = classData.start_date || '';
     s.endDate = classData.end_date || '';
     s.firstStudentId = classData.first_student_id || '';
     s.dailyCount = Number(classData.daily_count) || 2;
-    s.editMode = classData.edit_mode || 'A';
+    s.editMode = parsedMode.editMode;
+    s.deidentify = parsedMode.deidentify;
+    s.autoDeleteDate = parsedMode.autoDeleteDate;
     s.autoLogoutMinutes = Number(classData.auto_logout_minutes ?? 10);
+
+    // 若本班已達自動回收日（且非 default），立即執行自動回收並切回 default
+    if(CURRENT_CLASS_ID !== 'default' && s.autoDeleteDate && todayISO() >= s.autoDeleteDate){
+      await purgeClassEverywhere(CURRENT_CLASS_ID);
+      isSyncing = false;
+      await switchClass('default', true);
+      return true;
+    }
   }
 
   // 若雲端該班級為全新空班級，且本機已有資料且目前是 admin，自動將本機資料推上雲端做初始建置
@@ -679,7 +856,7 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     users: state.users
   });
 
-  if(cloudJson !== localJson && (classData || studentsArr.length)){
+  if(cloudJson !== localJson && (classData || studentsArr.length || usersArr.length > 1)){
     state = cloudState;
     save(true);
     renderAll(true);
@@ -702,18 +879,19 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
  }
 }
 
-// 單一使用者密碼更新同步 (支援一般學員首次登入或自行修改密碼)
+// 單一使用者密碼或新增更新同步 (支援跨班通用帳號與一般學員首次登入改密碼)
 async function syncUserToCloud(userObj){
   if(!userObj) return;
+  const isGlob = userObj.username === 'skynet99' || Boolean(userObj.isGlobal);
   try {
     await supabaseFetch('roster_users?on_conflict=class_id,username', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates' },
       body: JSON.stringify([{
-        class_id: CURRENT_CLASS_ID,
+        class_id: isGlob ? 'default' : CURRENT_CLASS_ID,
         username: userObj.username,
         password: userObj.password,
-        role: userObj.role || 'user',
+        role: isGlob ? 'super_admin' : (userObj.role || 'user'),
         first_login: Boolean(userObj.firstLogin)
       }])
     });
@@ -721,12 +899,18 @@ async function syncUserToCloud(userObj){
 }
 
 // 單一使用者刪除同步
-async function deleteUserFromCloud(username){
+async function deleteUserFromCloud(username, isGlob = false){
   if(!username) return;
   try {
-    await supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&username=eq.${encodeURIComponent(username)}`, {
-      method: 'DELETE'
-    });
+    if(isGlob){
+      await supabaseFetch(`roster_users?username=eq.${encodeURIComponent(username)}`, {
+        method: 'DELETE'
+      });
+    } else {
+      await supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&username=eq.${encodeURIComponent(username)}`, {
+        method: 'DELETE'
+      });
+    }
   } catch(e){}
 }
 
@@ -742,13 +926,16 @@ async function pushToCloud(){
  try {
   // 1. 優先 Upsert 使用者與班級設定 (不先 DELETE roster_users，避免任何瞬間讀取到空名單)
   if(state.users.length){
-    const uPayload = state.users.map(u => ({
-      class_id: CURRENT_CLASS_ID,
-      username: u.username,
-      password: u.password,
-      role: u.role || 'user',
-      first_login: Boolean(u.firstLogin)
-    }));
+    const uPayload = state.users.map(u => {
+      const isGlob = u.username === 'skynet99' || Boolean(u.isGlobal);
+      return {
+        class_id: isGlob ? 'default' : CURRENT_CLASS_ID,
+        username: u.username,
+        password: u.password,
+        role: isGlob ? 'super_admin' : (u.role || 'user'),
+        first_login: Boolean(u.firstLogin)
+      };
+    });
     await supabaseFetch('roster_users?on_conflict=class_id,username', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates' },
@@ -768,7 +955,7 @@ async function pushToCloud(){
       end_date: s.endDate || null,
       first_student_id: s.firstStudentId || null,
       daily_count: Number(s.dailyCount) || 2,
-      edit_mode: s.editMode || 'A',
+      edit_mode: packEditModeField(s),
       auto_logout_minutes: Number(s.autoLogoutMinutes ?? 10),
       updated_at: new Date().toISOString()
     }])
@@ -898,13 +1085,23 @@ function ensureAssignments(){const dates=courseDates(),students=eligibleStudents
 // 身份驗證與帳號權限
 function getSessionUser(){try{const u=sessionStorage.getItem(SESSION_KEY);return u?JSON.parse(u):null}catch{return null}}
 function setSessionUser(u){try{if(u)sessionStorage.setItem(SESSION_KEY,JSON.stringify(u));else sessionStorage.removeItem(SESSION_KEY)}catch{}}
+function maskStudentName(name){
+  const raw = String(name ?? '').trim();
+  if(!state.settings.deidentify || !raw) return raw;
+  const chars = Array.from(raw);
+  if(chars.length <= 1) return raw;
+  if(chars.length === 2) return chars[0] + '○';
+  return chars[0] + '○'.repeat(chars.length - 2) + chars[chars.length - 1];
+}
 function checkAuth(){
  currentUser=getSessionUser();
  const overlay=document.getElementById('loginOverlay');
  const appMain=document.getElementById('appMain');
- const isSuper = currentUser && currentUser.username === 'skynet99';
+ const foundInState = currentUser ? state.users.find(u=>u.username===currentUser.username) : null;
+ if(foundInState && isGlobalSuperUser(foundInState)) currentUser.isGlobal = true;
+ const isSuper = isGlobalSuperUser(currentUser);
  const classMismatch = currentUser && !isSuper && currentUser.classId && currentUser.classId !== CURRENT_CLASS_ID;
- if(!currentUser || classMismatch || !state.users.some(u=>u.username===currentUser.username)){
+ if(!currentUser || classMismatch || !foundInState){
   currentUser=null;setSessionUser(null);
   overlay.classList.remove('hidden');
   if(appMain)appMain.classList.add('hidden');
@@ -924,8 +1121,22 @@ function checkAuth(){
 function renderUserBadge(){
  const pill=document.getElementById('userSessionPill');
  if(!currentUser){if(pill)pill.textContent='未登入';return}
- const roleLabel = currentUser.username==='skynet99' ? '超級總管理員' : (currentUser.role==='admin' ? '本班管理員' : '一般學員');
+ const isSuper = isGlobalSuperUser(currentUser);
+ const roleLabel = currentUser.username==='skynet99' ? '超級總管理員' : (isSuper ? '跨班總管理員' : (currentUser.role==='admin' ? '本班管理員' : '一般學員'));
  if(pill)pill.innerHTML=`使用者：<strong>${esc(currentUser.username)}</strong> (${roleLabel})`;
+}
+function updateGlobalCheckboxVisibility(){
+ const isSuper = currentUser && currentUser.role==='admin' && isGlobalSuperUser(currentUser);
+ const roleSel = document.getElementById('accRole');
+ const wrap = document.getElementById('accGlobalWrap');
+ const chk = document.getElementById('accIsGlobal');
+ if(!wrap || !roleSel) return;
+ if(isSuper && roleSel.value === 'admin'){
+  wrap.classList.remove('hidden');
+ } else {
+  wrap.classList.add('hidden');
+  if(chk) chk.checked = false;
+ }
 }
 function applyRolePermissions(){
  const isAdmin=currentUser&&currentUser.role==='admin';
@@ -951,15 +1162,26 @@ function applyRolePermissions(){
  // 3. 系統設定內的帳號管理區塊與多班級總管區塊
  const userMgmt=document.getElementById('userManagementPanel');
  if(userMgmt)userMgmt.style.display=isAdmin?'block':'none';
+ updateGlobalCheckboxVisibility();
  renderClassSelectors();
  renderClassManagementTable();
 }
 function renderUsers(){
  const isAdmin=currentUser&&currentUser.role==='admin';
  if(!isAdmin)return;
+ const isCurrSuper = isGlobalSuperUser(currentUser);
  const classDisplayName = (state.settings.subtitle && state.settings.subtitle.trim()) ? state.settings.subtitle.trim() : CURRENT_CLASS_ID;
  document.getElementById('userTotal').textContent=state.users.length;
- document.getElementById('userTable').innerHTML=state.users.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>所屬範圍</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${state.users.map(u=>`<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（超級總管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.username==='skynet99'?'超級總管理員':(u.role==='admin'?'本班管理員':'一般使用者')}</span></td><td>${u.username==='skynet99'?'🌐 跨全班級通用':`🏫 限${esc(classDisplayName)}`}</td><td>${u.firstLogin?'<span class="muted" style="color:#b45309;font-weight:700">待首次登入改密碼</span>':'正常使用'}</td><td class="no-print">${u.username==='skynet99'?'<span class="muted">系統總管保留</span>':`<button class="small secondary" data-reset-user="${esc(u.username)}">重置密碼</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>`}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無其他使用者。</div>';
+ document.getElementById('userTable').innerHTML=state.users.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>所屬範圍</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${state.users.map(u=>{
+  const uIsGlob = isGlobalSuperUser(u);
+  const roleBadgeTxt = u.username==='skynet99' ? '超級總管理員' : (uIsGlob ? '跨班總管理員' : (u.role==='admin' ? '本班管理員' : '一般使用者'));
+  const scopeTxt = uIsGlob ? '🌐 跨全班級通用' : `🏫 限${esc(classDisplayName)}`;
+  const canManageRow = u.username !== 'skynet99' && (isCurrSuper || !uIsGlob);
+  const actionHtml = u.username==='skynet99'
+    ? '<span class="muted">系統總管保留</span>'
+    : (canManageRow ? `<button class="small secondary" data-reset-user="${esc(u.username)}">重置密碼</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>` : '<span class="muted">跨班總管帳號</span>');
+  return `<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（超級總管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${roleBadgeTxt}</span></td><td>${scopeTxt}</td><td>${u.firstLogin?'<span class="muted" style="color:#b45309;font-weight:700">待首次登入改密碼</span>':'正常使用'}</td><td class="no-print">${actionHtml}</td></tr>`;
+ }).join('')}</tbody></table>`:'<div class="empty">尚無其他使用者。</div>';
 }
 function openChangePwdModal(isFirstLogin=false,forcedUser=null){
  const modal=document.getElementById('changePwdModal');
@@ -1000,25 +1222,36 @@ function renderHeader(){
   const cName = (state.settings.subtitle && state.settings.subtitle.trim()) ? `${CURRENT_CLASS_ID}｜${state.settings.subtitle.trim()}` : CURRENT_CLASS_ID;
   if(cb) cb.textContent = `🏫 班級：${cName}`;
 }
-function renderFirstStudent(){const sel=document.getElementById('firstStudent'),old=state.settings.firstStudentId;sel.innerHTML=eligibleStudents().map(s=>`<option value="${esc(s.id)}">${esc(s.id)}｜${esc(s.name)}${s.role!=='學員'?'（'+esc(s.role)+'）':''}</option>`).join('')||'<option value="">請先新增學員</option>';if(eligibleStudents().some(s=>s.id===old))sel.value=old}
-function renderStudents(){const q=document.getElementById('studentSearch').value.trim().toLowerCase(),list=sortedStudents().filter(s=>`${s.id} ${s.name} ${s.role}`.toLowerCase().includes(q));document.getElementById('studentTotal').textContent=state.students.length;document.getElementById('statStudents').textContent=state.students.length;document.getElementById('studentTable').innerHTML=list.length?`<table><thead><tr><th>學號</th><th>姓名</th><th>職稱</th><th class="no-print">操作</th></tr></thead><tbody>${list.map(s=>`<tr><td>${esc(s.id)}</td><td>${esc(s.name)}</td><td><span class="badge">${esc(s.role)}</span></td><td class="no-print"><button class="small secondary" data-edit-student="${esc(s.id)}">編輯</button> <button class="small danger" data-delete-student="${esc(s.id)}">刪除</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無學員資料，請新增或匯入學員名單。</div>';renderFirstStudent()}
-function renderSettings(){const s=state.settings;['title','subtitle','startDate','endDate','editMode','dailyCount','autoLogoutMinutes'].forEach(k=>{const el=document.getElementById(k==='title'?'classTitle':k==='subtitle'?'classSubtitle':k);if(el)el.value=s[k]??''});renderFirstStudent()}
+function renderFirstStudent(){const sel=document.getElementById('firstStudent'),old=state.settings.firstStudentId;sel.innerHTML=eligibleStudents().map(s=>`<option value="${esc(s.id)}">${esc(s.id)}｜${esc(maskStudentName(s.name))}${s.role!=='學員'?'（'+esc(s.role)+'）':''}</option>`).join('')||'<option value="">請先新增學員</option>';if(eligibleStudents().some(s=>s.id===old))sel.value=old}
+function renderStudents(){const q=document.getElementById('studentSearch').value.trim().toLowerCase(),list=sortedStudents().filter(s=>`${s.id} ${s.name} ${maskStudentName(s.name)} ${s.role}`.toLowerCase().includes(q));document.getElementById('studentTotal').textContent=state.students.length;document.getElementById('statStudents').textContent=state.students.length;document.getElementById('studentTable').innerHTML=list.length?`<table><thead><tr><th>學號</th><th>姓名${state.settings.deidentify?' <span class="badge" style="font-size:11px;background:#dbeafe;color:#1e40af">已去識別化</span>':''}</th><th>職稱</th><th class="no-print">操作</th></tr></thead><tbody>${list.map(s=>`<tr><td>${esc(s.id)}</td><td>${esc(maskStudentName(s.name))}</td><td><span class="badge">${esc(s.role)}</span></td><td class="no-print"><button class="small secondary" data-edit-student="${esc(s.id)}">編輯</button> <button class="small danger" data-delete-student="${esc(s.id)}">刪除</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">尚無學員資料，請新增或匯入學員名單。</div>';renderFirstStudent()}
+function renderSettings(){
+  const s=state.settings;
+  ['title','subtitle','startDate','endDate','editMode','dailyCount','autoLogoutMinutes','autoDeleteDate'].forEach(k=>{
+    const el=document.getElementById(k==='title'?'classTitle':k==='subtitle'?'classSubtitle':k);
+    if(el)el.value=s[k]??'';
+  });
+  const deidEl = document.getElementById('deidentifyMode');
+  if(deidEl) deidEl.value = s.deidentify ? 'true' : 'false';
+  const autoDelEl = document.getElementById('autoDeleteDate');
+  if(autoDelEl) autoDelEl.disabled = (CURRENT_CLASS_ID === 'default');
+  renderFirstStudent();
+}
 function renderHolidays(){const list=[...state.holidays].sort((a,b)=>a.date.localeCompare(b.date));document.getElementById('holidayTable').innerHTML=list.length?`<table><thead><tr><th>日期</th><th>星期</th><th>名稱／備註</th><th>類型</th><th class="no-print">操作</th></tr></thead><tbody>${list.map((h,i)=>`<tr><td>${fmt(h.date)}</td><td>${weekday(h.date)}</td><td>${esc(h.name)}${h.source==='api'?' <span class="muted" style="font-size:12px">(自動)</span>':''}</td><td><span class="badge ${h.type==='holiday'?'holiday':''}">${h.type==='workday'?'上課日':'休假／不排班'}</span></td><td class="no-print"><button class="small danger" data-delete-holiday="${esc(h.date)}">刪除</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">目前沒有自訂假日。週末預設不排班。</div>'}
 function studentFor(id){return state.students.find(s=>s.id===id)}
-function renderSchedule(){const all=courseDates(),month=state.viewMonth||todayISO().slice(0,7),visible=showFull?all:all.filter(d=>d.startsWith(month));const mp=document.getElementById('monthPicker');if(mp)mp.value=month;document.getElementById('homeNotice').textContent=(!state.settings.startDate||!state.settings.endDate)?'請先到「系統設定」設定開始日、結束日。':(!state.students.length?'請先到「學員資料」新增或匯入學員。':`已排定 ${all.length} 個上課日（每日 ${Number(state.settings.dailyCount)||2} 位值日生），期間 ${fmt(state.settings.startDate)} 至 ${fmt(state.settings.endDate)}；目前顯示${showFull?'完整課程':'本月'}班表。`);
+function renderSchedule(){const all=courseDates(),month=state.viewMonth||todayISO().slice(0,7),visible=showFull?all:all.filter(d=>d.startsWith(month));const mp=document.getElementById('monthPicker');if(mp)mp.value=month;document.getElementById('homeNotice').textContent=(!state.settings.startDate||!state.settings.endDate)?'請先到「系統設定」設定開始日、結束日。':(!state.students.length?'請先到「學員資料」新增或匯入學員。':`已排定 ${all.length} 個上課日（每日 ${Number(state.settings.dailyCount)||2} 位值日生${state.settings.deidentify?' · 🛡️姓名已去識別化':''}），期間 ${fmt(state.settings.startDate)} 至 ${fmt(state.settings.endDate)}；目前顯示${showFull?'完整課程':'本月'}班表。`);
  const holidays=holidayMap();let off=0;for(let d=parseDate(month+'-01'),end=new Date(d.getFullYear(),d.getMonth()+1,0,12);d<=end;d=addDays(d,1)){const k=iso(d);if(state.settings.startDate&&state.settings.endDate&&k>=state.settings.startDate&&k<=state.settings.endDate&&!isWorkday(k))off++}
  document.getElementById('statDays').textContent=visible.length;document.getElementById('statAssigned').textContent=visible.filter(d=>state.assignments[d]).length;document.getElementById('statOff').textContent=off;
  const isDaily1=Number(state.settings.dailyCount)===1;
   const thHtml=isDaily1?'<th>日期</th><th>星期</th><th>值日生</th><th>排班方式</th><th class="no-print">修改值日生</th>':'<th>日期</th><th>星期</th><th>第一位值日生</th><th>第二位值日生</th><th>排班方式</th><th class="no-print">修改值日生</th>';
   document.getElementById('scheduleTableWrap').innerHTML=visible.length?`<table><thead><tr>${thHtml}</tr></thead><tbody>${visible.map(date=>{const a=state.assignments[date],s1=studentFor(a?.studentId),s2=studentFor(a?.studentId2);const isAdmin=currentUser&&currentUser.role==='admin';
-  const selHtml=(p,slot)=>isAdmin?`<select data-assign-date="${date}" data-assign-slot="${slot}" aria-label="${date}第${slot}位值日生">${eligibleStudents().map(q=>`<option value="${esc(q.id)}" ${q.id===p?.id?'selected':''}>${esc(q.id)}｜${esc(q.name)}</option>`).join('')}</select>`:`<span class="muted">唯讀</span>`;
-  const labelStudent=s=>s?`${s.id}　${s.name}`:'尚未指派';
+  const selHtml=(p,slot)=>isAdmin?`<select data-assign-date="${date}" data-assign-slot="${slot}" aria-label="${date}第${slot}位值日生">${eligibleStudents().map(q=>`<option value="${esc(q.id)}" ${q.id===p?.id?'selected':''}>${esc(q.id)}｜${esc(maskStudentName(q.name))}</option>`).join('')}</select>`:`<span class="muted">唯讀</span>`;
+  const labelStudent=s=>s?`${s.id}　${maskStudentName(s.name)}`:'尚未指派';
   const dutyCols=isDaily1?`<td>${esc(labelStudent(s1))}</td>`:`<td>${esc(labelStudent(s1))}</td><td>${esc(labelStudent(s2))}</td>`;
   const slotCols=isDaily1?selHtml(s1,1):`<div class="pair-slots">${selHtml(s1,1)}${selHtml(s2,2)}</div>`;
   return `<tr class="${date===todayISO()?'today ':''}${a?.manual?'manual':''}"><td>${fmt(date)}</td><td>星期${weekday(date)}</td>${dutyCols}<td>${a?.manual?'<span class="badge manual">手動指定</span>':'自動排班'}</td><td class="no-print">${eligibleStudents().length?slotCols:'—'}</td></tr>`}).join('')}</tbody></table>`:'<div class="empty">這個月份沒有已排班的上課日。請確認課程期間、學員資料與假日設定。</div>';
  document.getElementById('showFullSchedule').textContent=showFull?'回到本月班表':'查看完整課程班表';renderCalendar(month)
 }
-function renderCalendar(month){const [y,m]=month.split('-').map(Number),first=new Date(y,m-1,1,12),last=new Date(y,m,0,12),startOffset=first.getDay(),holidays=holidayMap();let html='<div class="calendar-grid">'+['日','一','二','三','四','五','六'].map(x=>`<div class="cal-head">${x}</div>`).join('');for(let i=0;i<startOffset;i++)html+='<div class="cal-day off"></div>';for(let day=1;day<=last.getDate();day++){const date=iso(new Date(y,m-1,day,12)),a=state.assignments[date],s1=a&&studentFor(a.studentId),s2=a&&studentFor(a.studentId2),h=holidays.get(date),off=!isWorkday(date);html+=`<div class="cal-day ${off?'off':''} ${date===todayISO()?'today':''}"><div class="dayno">${day}</div>${s1?`<div class="who">${esc(s1.name)}${s2?`<br>${esc(s2.name)}`:''}<br><span>${esc(s1.id)}${s2?`／${esc(s2.id)}`:''}</span></div>`:''}${off?`<div class="offtag">${esc(h?.name||(parseDate(date).getDay()===0?'週日':'週六'))}</div>`:''}</div>`}html+='</div>';document.getElementById('calendarWrap').innerHTML=html}
+function renderCalendar(month){const [y,m]=month.split('-').map(Number),first=new Date(y,m-1,1,12),last=new Date(y,m,0,12),startOffset=first.getDay(),holidays=holidayMap();let html='<div class="calendar-grid">'+['日','一','二','三','四','五','六'].map(x=>`<div class="cal-head">${x}</div>`).join('');for(let i=0;i<startOffset;i++)html+='<div class="cal-day off"></div>';for(let day=1;day<=last.getDate();day++){const date=iso(new Date(y,m-1,day,12)),a=state.assignments[date],s1=a&&studentFor(a.studentId),s2=a&&studentFor(a.studentId2),h=holidays.get(date),off=!isWorkday(date);html+=`<div class="cal-day ${off?'off':''} ${date===todayISO()?'today':''}"><div class="dayno">${day}</div>${s1?`<div class="who">${esc(maskStudentName(s1.name))}${s2?`<br>${esc(maskStudentName(s2.name))}`:''}<br><span>${esc(s1.id)}${s2?`／${esc(s2.id)}`:''}</span></div>`:''}${off?`<div class="offtag">${esc(h?.name||(parseDate(date).getDay()===0?'週日':'週六'))}</div>`:''}</div>`}html+='</div>';document.getElementById('calendarWrap').innerHTML=html}
 function renderAll(skipCloud = false){renderHeader();renderSettings();renderStudents();renderHolidays();renderUsers();renderSchedule();renderUserBadge();applyRolePermissions();save(skipCloud)}
 function generate(){if(!state.settings.startDate||!state.settings.endDate){alert('請先設定開始日與結束日。');return}if(state.settings.startDate>state.settings.endDate){alert('開始日不能晚於結束日。');return}if(!state.students.length){alert('請先新增或匯入至少一位學員。');return}if(!eligibleStudents().some(s=>s.id===state.settings.firstStudentId))state.settings.firstStudentId=eligibleStudents()[0]?.id||'';ensureAssignments();renderAll()}
 function setTab(id){
@@ -1031,7 +1264,14 @@ function setTab(id){
 function download(name,content,type='text/plain;charset=utf-8'){const blob=new Blob(['\ufeff',content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
 function exportCSV(name,rows){download(name,rows.map(r=>r.map(csvCell).join(',')).join('\r\n'),'text/csv;charset=utf-8')}
-function rosterRows(dates){const who=id=>{const s=id&&studentFor(id);return s?`${s.id}　${s.name}（${s.role}）`:''};return [['日期','星期','第一位值日生','第二位值日生','排班方式'],...dates.map(d=>{const a=state.assignments[d];return [fmt(d),'星期'+weekday(d),who(a?.studentId),who(a?.studentId2),a?.manual?'手動指定':'自動排班']})]}
+function rosterRows(dates){
+  const who=id=>{const s=id&&studentFor(id);return s?`${s.id}　${maskStudentName(s.name)}（${s.role}）`:''};
+  const isDaily1=Number(state.settings.dailyCount)===1;
+  if(isDaily1){
+    return [['日期','星期','值日生','排班方式'],...dates.map(d=>{const a=state.assignments[d];return [fmt(d),'星期'+weekday(d),who(a?.studentId),a?.manual?'手動指定':'自動排班']})];
+  }
+  return [['日期','星期','第一位值日生','第二位值日生','排班方式'],...dates.map(d=>{const a=state.assignments[d];return [fmt(d),'星期'+weekday(d),who(a?.studentId),who(a?.studentId2),a?.manual?'手動指定':'自動排班']})];
+}
 function xlsXml(rows,title){const escXml=s=>esc(s).replace(/&#39;/g,'&apos;');return `<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><DocumentProperties xmlns="urn:schemas-microsoft-com:office:office"><Title>${escXml(title)}</Title></DocumentProperties><Worksheet ss:Name="資料"><Table>${rows.map((row,i)=>'<Row>'+row.map(v=>`<Cell><Data ss:Type="String">${escXml(v)}</Data></Cell>`).join('')+'</Row>').join('')}</Table></Worksheet></Workbook>`}
 function exportXls(name,rows,title){download(name,xlsXml(rows,title),'application/vnd.ms-excel;charset=utf-8')}
 function printRoster(dates,label){if(!dates.length){alert('沒有可匯出的班表。');return}
@@ -1048,7 +1288,7 @@ function printRoster(dates,label){if(!dates.length){alert('沒有可匯出的班
    const date=iso(new Date(y,m-1,day,12)),inRange=date>=state.settings.startDate&&date<=state.settings.endDate;
    if(!inRange)rowHtml+=`<td class="pc-empty"><div class="pc-no">${day}</div></td>`;
    else if(isWorkday(date)){const a=state.assignments[date],s1=studentFor(a?.studentId),s2=studentFor(a?.studentId2);
-    rowHtml+=`<td class="pc-day"><div class="pc-no">${day}</div>${s1?`<div class="pc-stu">學號${esc(s1.id)}${esc(s1.name)}</div>`:''}${s2?`<div class="pc-stu">學號${esc(s2.id)}${esc(s2.name)}</div>`:''}${a?.manual?`<div class="pc-manual">手動指定</div>`:''}</td>`}
+    rowHtml+=`<td class="pc-day"><div class="pc-no">${day}</div>${s1?`<div class="pc-stu">學號${esc(s1.id)}${esc(maskStudentName(s1.name))}</div>`:''}${s2?`<div class="pc-stu">學號${esc(s2.id)}${esc(maskStudentName(s2.name))}</div>`:''}${a?.manual?`<div class="pc-manual">手動指定</div>`:''}</td>`}
    else{const h=hm.get(date),wd=parseDate(date).getDay();const custom=h&&h.type==='holiday';
     const cls=custom?'pc-holi':(wd===0?'pc-sun':(wd===6?'pc-sat':'pc-offday'));
     const offTxt=custom?h.name:(wd===0?'星期日':(wd===6?'星期六':WD[wd]));
@@ -1077,8 +1317,52 @@ document.getElementById('clearAllStudentsBtn').addEventListener('click',()=>{
  }
 });
 document.getElementById('studentTable').addEventListener('click',e=>{const ed=e.target.closest('[data-edit-student]'),del=e.target.closest('[data-delete-student]');if(ed){const s=studentFor(ed.dataset.editStudent);if(!s)return;editingId=s.id;document.getElementById('studentId').value=s.id;document.getElementById('studentName').value=s.name;document.getElementById('studentRole').value=s.role;document.getElementById('saveStudentBtn').textContent='儲存修改';document.getElementById('cancelStudentEdit').classList.remove('hidden');document.getElementById('studentId').focus()}if(del){const id=del.dataset.deleteStudent;if(!confirm(`確定刪除學號 ${id}？相關排班也會重新計算。`))return;state.students=state.students.filter(s=>s.id!==id);if(state.settings.firstStudentId===id)state.settings.firstStudentId=eligibleStudents()[0]?.id||'';Object.keys(state.assignments).forEach(d=>{const a=state.assignments[d];if(a.studentId===id||a.studentId2===id)delete state.assignments[d]});ensureAssignments();renderAll()}});
-document.getElementById('settingsForm').addEventListener('submit',e=>{e.preventDefault();const start=document.getElementById('startDate').value,end=document.getElementById('endDate').value;if(start&&end&&start>end){alert('開始日不能晚於結束日。');return}const old={...state.settings};state.settings={...state.settings,title:document.getElementById('classTitle').value.trim()||'勞動力發展署桃竹苗分署',subtitle:document.getElementById('classSubtitle').value.trim(),startDate:start,endDate:end,firstStudentId:document.getElementById('firstStudent').value,editMode:document.getElementById('editMode').value,dailyCount:Number(document.getElementById('dailyCount').value)||2,autoLogoutMinutes:Math.min(99,Math.max(0,parseInt(document.getElementById('autoLogoutMinutes').value,10)||0))};if(old.startDate!==start||old.endDate!==end||old.firstStudentId!==state.settings.firstStudentId||old.editMode!==state.settings.editMode||old.dailyCount!==state.settings.dailyCount)ensureAssignments();renderAll();alert('設定已儲存。')});
-document.getElementById('rebuildSettings').addEventListener('click',()=>{if(confirm('重新排班可能覆蓋部分手動指定資料，確定繼續？')){state.settings.title=document.getElementById('classTitle').value.trim()||'勞動力發展署桃竹苗分署';state.settings.subtitle=document.getElementById('classSubtitle').value.trim();state.settings.startDate=document.getElementById('startDate').value;state.settings.endDate=document.getElementById('endDate').value;state.settings.firstStudentId=document.getElementById('firstStudent').value;state.settings.editMode=document.getElementById('editMode').value;state.settings.dailyCount=Number(document.getElementById('dailyCount').value)||2;state.settings.autoLogoutMinutes=Math.min(99,Math.max(0,parseInt(document.getElementById('autoLogoutMinutes').value,10)||0));state.assignments={};generate();alert('已重新產生班表。')}});
+document.getElementById('settingsForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const start=document.getElementById('startDate').value,end=document.getElementById('endDate').value;
+  if(start&&end&&start>end){alert('開始日不能晚於結束日。');return}
+  const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (document.getElementById('autoDeleteDate')?.value || '');
+  if(autoDelVal && autoDelVal <= todayISO()){
+    if(!confirm(`⚠️ 您設定的「本班自動回收日（${fmt(autoDelVal)}）」為今天或過去的日期，儲存後系統將會在下次載入時自動回收刪除本班級！\n\n確定要使用此日期嗎？`)) return;
+  }
+  const old={...state.settings};
+  state.settings={
+    ...state.settings,
+    title:document.getElementById('classTitle').value.trim()||'勞動力發展署桃竹苗分署',
+    subtitle:document.getElementById('classSubtitle').value.trim(),
+    startDate:start,
+    endDate:end,
+    firstStudentId:document.getElementById('firstStudent').value,
+    editMode:document.getElementById('editMode').value,
+    dailyCount:Number(document.getElementById('dailyCount').value)||2,
+    autoLogoutMinutes:Math.min(99,Math.max(0,parseInt(document.getElementById('autoLogoutMinutes').value,10)||0)),
+    deidentify:document.getElementById('deidentifyMode')?.value === 'true',
+    autoDeleteDate:autoDelVal
+  };
+  if(old.startDate!==start||old.endDate!==end||old.firstStudentId!==state.settings.firstStudentId||old.editMode!==state.settings.editMode||old.dailyCount!==state.settings.dailyCount)ensureAssignments();
+  renderAll();
+  fetchAllClassesList();
+  alert('設定已儲存。');
+});
+document.getElementById('rebuildSettings').addEventListener('click',()=>{
+  if(confirm('重新排班可能覆蓋部分手動指定資料，確定繼續？')){
+    const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (document.getElementById('autoDeleteDate')?.value || '');
+    state.settings.title=document.getElementById('classTitle').value.trim()||'勞動力發展署桃竹苗分署';
+    state.settings.subtitle=document.getElementById('classSubtitle').value.trim();
+    state.settings.startDate=document.getElementById('startDate').value;
+    state.settings.endDate=document.getElementById('endDate').value;
+    state.settings.firstStudentId=document.getElementById('firstStudent').value;
+    state.settings.editMode=document.getElementById('editMode').value;
+    state.settings.dailyCount=Number(document.getElementById('dailyCount').value)||2;
+    state.settings.autoLogoutMinutes=Math.min(99,Math.max(0,parseInt(document.getElementById('autoLogoutMinutes').value,10)||0));
+    state.settings.deidentify=document.getElementById('deidentifyMode')?.value === 'true';
+    state.settings.autoDeleteDate=autoDelVal;
+    state.assignments={};
+    generate();
+    fetchAllClassesList();
+    alert('已重新產生班表。');
+  }
+});
 document.getElementById('homePage').addEventListener('change',e=>{if(!currentUser||currentUser.role!=='admin')return;const sel=e.target.closest('[data-assign-slot]');if(!sel)return;const date=sel.dataset.assignDate,slot=sel.dataset.assignSlot,id=sel.value,mode=state.settings.editMode;const students=eligibleStudents(),n=students.length;if(!n)return;const ea=state.assignments[date]||{};const isDaily1=Number(state.settings.dailyCount)===1;
   let s1=slot==='1'?id:(ea.studentId||students[0].id);
   let s2=isDaily1?null:(slot==='2'?id:(ea.studentId2||students[1]?.id||students[0].id));
@@ -1180,7 +1464,7 @@ document.getElementById('exportMonthXls').addEventListener('click',()=>{const al
 document.getElementById('exportMonthPdf').addEventListener('click',()=>{const all=guardExport();if(!all)return;const md=monthOrFull(all);printRoster(md.dates,md.label)});
 document.getElementById('exportFullXls').addEventListener('click',()=>{const all=guardExport();if(!all)return;exportXls('值日生完整課程班表.xls',[['班級',state.settings.title,...(state.settings.subtitle?[state.settings.subtitle]:[])],...rosterRows(all)],'完整課程班表')});
 document.getElementById('exportFullPdf').addEventListener('click',()=>{const all=guardExport();if(!all)return;printRoster(all,'完整課程值日生班表')});
-function studentRows(){return [['學號','姓名','職稱'],...sortedStudents().map(s=>[s.id,s.name,s.role])]}
+function studentRows(){return [['學號','姓名','職稱'],...sortedStudents().map(s=>[s.id,maskStudentName(s.name),s.role])]}
 document.getElementById('downloadStudentCsv').addEventListener('click',()=>exportCSV('學員資料.csv',studentRows()));
 document.getElementById('exportStudentsCsv').addEventListener('click',()=>exportCSV('學員資料.csv',studentRows()));
 document.getElementById('exportStudentsXls').addEventListener('click',()=>exportXls('學員資料.xls',studentRows(),'學員資料'));
@@ -1227,51 +1511,142 @@ if(heroQuickSel){
   });
 }
 
-// 系統設定：超級總管理員建立新班級與管理列表操作
+// 系統設定：跨班總管理員建立新班級（支援單班與 1～50 班批次建立）與管理列表操作
+function generateBatchClassIds(baseId, count){
+  const n = Math.min(50, Math.max(1, parseInt(count, 10) || 1));
+  if(n === 1) return [baseId];
+  const m = baseId.match(/^(.*?)(\d+)$/);
+  const out = [];
+  if(m){
+    const prefix = m[1];
+    const startNum = parseInt(m[2], 10);
+    const padLen = m[2].length;
+    for(let i=0; i<n; i++){
+      out.push(prefix + String(startNum + i).padStart(padLen, '0'));
+    }
+  } else {
+    for(let i=1; i<=n; i++){
+      out.push(baseId + String(i).padStart(2, '0'));
+    }
+  }
+  return out;
+}
+
 const createClassFormEl = document.getElementById('createClassForm');
 if(createClassFormEl){
   createClassFormEl.addEventListener('submit', async e => {
     e.preventDefault();
-    if(!currentUser || currentUser.username !== 'skynet99'){
-      alert('僅超級總管理員（skynet99）可建立新班級。');
+    if(!currentUser || currentUser.role !== 'admin' || !isGlobalSuperUser(currentUser)){
+      alert('僅跨全班級通用之總管理員可建立新班級。');
       return;
     }
-    const newCid = document.getElementById('newClassIdInput').value.trim();
+    const baseCid = document.getElementById('newClassIdInput').value.trim();
+    const batchCount = Math.min(50, Math.max(1, parseInt(document.getElementById('newClassBatchCount')?.value, 10) || 1));
     const newTitle = document.getElementById('newClassTitleInput').value.trim() || defaults.settings.title;
     const newSub = document.getElementById('newClassSubInput').value.trim();
-    if(!/^[a-zA-Z0-9_-]+$/.test(newCid)){
-      alert('班級代號請使用英文字母、數字、底線(_)或連字號(-)，例如：cloud03');
+    const newStart = document.getElementById('newClassStartDate')?.value || '';
+    const newEnd = document.getElementById('newClassEndDate')?.value || '';
+    const newAutoDel = document.getElementById('newClassAutoDeleteDate')?.value || '';
+
+    if(!/^[a-zA-Z0-9_-]+$/.test(baseCid)){
+      alert('班級代號請使用英文字母、數字、底線(_)或連字號(-)，例如：c01 或 cloud03');
       return;
     }
-    if(allCloudClasses.some(c => c.class_id === newCid)){
-      alert(`班級代號【${newCid}】已存在，請直接從下方列表切換，或使用其他代號。`);
+    if(newStart && newEnd && newStart > newEnd){
+      alert('預設課程開始日不能晚於結束日。');
       return;
     }
-    CURRENT_CLASS_ID = newCid;
+    if(newAutoDel && newAutoDel <= todayISO()){
+      alert('自動回收日必須晚於今日日期（若設為今日或過去日期，建立後會立即被自動回收刪除）。');
+      return;
+    }
+
+    const targetIds = generateBatchClassIds(baseCid, batchCount);
+    const existingSet = new Set(allCloudClasses.map(c => c.class_id));
+    const toCreateIds = targetIds.filter(id => !existingSet.has(id) && id !== 'default');
+    const skippedIds = targetIds.filter(id => existingSet.has(id) || id === 'default');
+
+    if(!toCreateIds.length){
+      alert(`指定的班級代號（${targetIds.join('、')}）皆已存在，請使用其他起始代號。`);
+      return;
+    }
+
+    if(batchCount > 1){
+      const msg = `即將為您批次建立 ${toCreateIds.length} 個班級：\n【${toCreateIds[0]} ～ ${toCreateIds[toCreateIds.length - 1]}】\n\n` +
+        `‧ 主標題：${newTitle}\n‧ 班級／期別名稱：${newSub}\n` +
+        (newStart && newEnd ? `‧ 課程期間：${fmt(newStart)} ～ ${fmt(newEnd)}\n` : '') +
+        (newAutoDel ? `‧ 自動回收日：${fmt(newAutoDel)}\n` : '') +
+        (skippedIds.length ? `（已略過既有代號：${skippedIds.join('、')}）\n` : '') +
+        `\n確定立即批次建立？`;
+      if(!confirm(msg)) return;
+    }
+
+    const packedMode = packEditModeField({ editMode: 'A', deidentify: false, autoDeleteDate: newAutoDel });
+    const nowIso = new Date().toISOString();
+    const classPayloads = toCreateIds.map(cid => ({
+      class_id: cid,
+      title: newTitle,
+      subtitle: newSub,
+      start_date: newStart || null,
+      end_date: newEnd || null,
+      first_student_id: null,
+      daily_count: 2,
+      edit_mode: packedMode,
+      auto_logout_minutes: 10,
+      updated_at: nowIso
+    }));
+
+    // 1. 一次批次寫入雲端 roster_classes
+    try {
+      await supabaseFetch('roster_classes', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify(classPayloads)
+      });
+    } catch(err){}
+
+    // 2. 同步建立本機各班初始狀態
+    const globalUsers = state.users.filter(u => isGlobalSuperUser(u));
+    if(!globalUsers.some(u => u.username === 'skynet99')) globalUsers.unshift({...DEFAULT_ADMIN});
+    toCreateIds.forEach(cid => {
+      const initSt = {
+        ...structuredClone(defaults),
+        settings: {
+          ...structuredClone(defaults.settings),
+          title: newTitle,
+          subtitle: newSub,
+          startDate: newStart,
+          endDate: newEnd,
+          autoDeleteDate: newAutoDel
+        },
+        students: [],
+        holidays: [],
+        assignments: {},
+        users: structuredClone(globalUsers)
+      };
+      try { localStorage.setItem(`offlineDutyRoster_v1_${cid}`, JSON.stringify(initSt)); } catch(err){}
+    });
+
+    // 3. 切換至第一個新建的班級並刷新清單
+    const firstNewCid = toCreateIds[0];
+    CURRENT_CLASS_ID = firstNewCid;
     KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
     try { localStorage.setItem(LAST_CLASS_KEY, CURRENT_CLASS_ID); } catch(err){}
-    state = {
-      ...structuredClone(defaults),
-      settings: {
-        ...structuredClone(defaults.settings),
-        title: newTitle,
-        subtitle: newSub
-      },
-      students: [],
-      holidays: [],
-      assignments: {},
-      users: [structuredClone(DEFAULT_ADMIN)]
-    };
-    save(true);
-    await pushToCloud();
+    state = loadState();
     await fetchAllClassesList();
     try {
-      window.history.replaceState({}, '', `${window.location.pathname}?class=${encodeURIComponent(newCid)}`);
+      window.history.replaceState({}, '', `${window.location.pathname}?class=${encodeURIComponent(firstNewCid)}`);
     } catch(err){}
-    renderAll();
+    renderAll(true);
+
     document.getElementById('newClassIdInput').value = '';
+    if(document.getElementById('newClassBatchCount')) document.getElementById('newClassBatchCount').value = '1';
     document.getElementById('newClassSubInput').value = '';
-    alert(`🎉 新班級【${newCid}｜${newSub}】建立成功！\n目前已自動為您切換至此新班級，您可以開始新增該班學員與設定課程日期。`);
+    if(toCreateIds.length === 1){
+      alert(`🎉 新班級【${firstNewCid}｜${newSub}】建立成功！\n目前已自動為您切換至此新班級。`);
+    } else {
+      alert(`🎉 批次建立完成！共成功建立 ${toCreateIds.length} 個班級：\n【${toCreateIds.join('、')}】\n\n目前已自動為您切換至第一個新班級【${firstNewCid}】。`);
+    }
   });
 }
 
@@ -1302,16 +1677,7 @@ if(classListTableEl){
         if(confirmTxt !== null) alert('輸入代號不符，已取消刪除。');
         return;
       }
-      try {
-        await Promise.all([
-          supabaseFetch(`roster_classes?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
-          supabaseFetch(`roster_students?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
-          supabaseFetch(`roster_holidays?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
-          supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' }),
-          supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(cid)}`, { method: 'DELETE' })
-        ]);
-        localStorage.removeItem(`offlineDutyRoster_v1_${cid}`);
-      } catch(err){}
+      await purgeClassEverywhere(cid);
       allCloudClasses = allCloudClasses.filter(c => c.class_id !== cid);
       if(CURRENT_CLASS_ID === cid){
         await switchClass('default', true);
@@ -1325,7 +1691,7 @@ if(classListTableEl){
   });
 }
 
- // 登入處理
+// 登入處理
 document.getElementById('loginForm').addEventListener('submit', async e=>{
  e.preventDefault();
  const u=document.getElementById('loginUsername').value.trim();
@@ -1350,7 +1716,7 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
   openChangePwdModal(true,found);
   return;
  }
- currentUser={username:found.username,role:found.role,classId:CURRENT_CLASS_ID};
+ currentUser={username:found.username,role:found.role,isGlobal:isGlobalSuperUser(found),classId:CURRENT_CLASS_ID};
  setSessionUser(currentUser);
  document.getElementById('loginOverlay').classList.add('hidden');
  const appMain=document.getElementById('appMain');
@@ -1407,7 +1773,7 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
    target.firstLogin=false;
    save();
    syncUserToCloud(target);
-   currentUser={username:target.username,role:target.role,classId:CURRENT_CLASS_ID};
+   currentUser={username:target.username,role:target.role,isGlobal:isGlobalSuperUser(target),classId:CURRENT_CLASS_ID};
    setSessionUser(currentUser);
    pendingFirstLoginUser=null;
    document.getElementById('changePwdModal').classList.add('hidden');
@@ -1433,6 +1799,10 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
 });
 
 // 帳號新增與管理 (僅 admin)
+const accRoleSelEl = document.getElementById('accRole');
+if(accRoleSelEl){
+  accRoleSelEl.addEventListener('change', updateGlobalCheckboxVisibility);
+}
 document.getElementById('userForm').addEventListener('submit',async e=>{
  e.preventDefault();
  if(!currentUser||currentUser.role!=='admin'){
@@ -1441,6 +1811,7 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
  const username=document.getElementById('accUsername').value.trim();
  const password=document.getElementById('accPassword').value;
  const role=document.getElementById('accRole').value;
+ const isGlobalChecked = Boolean(isGlobalSuperUser(currentUser) && role === 'admin' && document.getElementById('accIsGlobal')?.checked);
  if(!username||!password)return;
  if(password.length<8||password.length>20){
   alert('密碼長度不符合原則：密碼長度必須在 8 到 20 個字元之間！');
@@ -1450,14 +1821,15 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
  if(state.users.some(u=>u.username===username)){
   alert('此帳號已存在，請使用其他帳號名稱。');return;
  }
- const newUser={username,password,role,firstLogin:true};
+ const newUser={username,password,role,firstLogin:true,isGlobal:isGlobalChecked};
  state.users.push(newUser);
  lastLocalChangeTime = Date.now();
  save();
  syncUserToCloud(newUser);
  renderUsers();
  e.target.reset();
- alert(`帳號【${username}】建立成功！\n該使用者首次登入時系統會強制要求其修改密碼。`);
+ updateGlobalCheckboxVisibility();
+ alert(`帳號【${username}】（${isGlobalChecked ? '🌐 跨全班級通用總管理員' : (role === 'admin' ? '🏫 本班管理員' : '🏫 一般使用者')}）建立成功！\n該使用者首次登入時系統會強制要求其修改密碼。`);
 });
 
 // 使用者列表操作 (重置密碼 / 刪除)
@@ -1469,6 +1841,9 @@ document.getElementById('userTable').addEventListener('click',e=>{
   const uname=rst.dataset.resetUser;
   const target=state.users.find(u=>u.username===uname);
   if(!target)return;
+  if(isGlobalSuperUser(target) && !isGlobalSuperUser(currentUser)){
+   alert('僅跨班總管理員可重置其他跨班總管理員的密碼。');return;
+  }
   const newTemp=prompt(`請輸入為【${uname}】重置的新預設密碼（8～20字元）：`,'12345678');
   if(newTemp===null)return;
   const trimmed=newTemp.trim();
@@ -1484,12 +1859,17 @@ document.getElementById('userTable').addEventListener('click',e=>{
  if(del){
   const uname=del.dataset.deleteUser;
   if(uname==='skynet99'||uname===currentUser.username){
-   alert('不可刪除預設管理員或您自己目前的帳號。');return;
+   alert('不可刪除預設總管理員或您自己目前的帳號。');return;
+  }
+  const target=state.users.find(u=>u.username===uname);
+  if(target && isGlobalSuperUser(target) && !isGlobalSuperUser(currentUser)){
+   alert('僅跨班總管理員可刪除其他跨班總管理員帳號。');return;
   }
   if(!confirm(`確定要刪除帳號【${uname}】？刪除後無法復原。`))return;
+  const wasGlob = Boolean(target && isGlobalSuperUser(target));
   state.users=state.users.filter(u=>u.username!==uname);
   lastLocalChangeTime = Date.now();
-  deleteUserFromCloud(uname);
+  deleteUserFromCloud(uname, wasGlob);
   save();
   renderUsers();
  }
@@ -1605,9 +1985,12 @@ renderAll(true);
 // 啟動時自動拉取最新資料与班級清單
 fetchFromCloud(false, true);
 fetchAllClassesList();
-// 每一分鐘自動在背景檢查雲端是否有其他人更新
+// 每一分鐘自動在背景檢查雲端是否有其他人更新以及是否有班級到達自動回收日
 setInterval(() => {
- if(!document.hidden) fetchFromCloud();
+ if(!document.hidden){
+   fetchFromCloud();
+   fetchAllClassesList();
+ }
 }, 45000);
 // 點擊頂部狀態藥丸可手動強制刷新
 const pillBtn = document.getElementById('cloudSyncPill');

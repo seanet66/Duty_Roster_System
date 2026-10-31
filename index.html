@@ -740,29 +740,33 @@ async function verifyTotpCode(secret, inputCode, windowSteps = 1){
   if(!/^\d{6}$/.test(codeStr)) return false;
   const keyBytes = base32Decode(secret);
   if(!keyBytes.length) return false;
-  try {
-    const cryptoKey = await window.crypto.subtle.importKey(
-      'raw',
-      keyBytes,
-      { name: 'HMAC', hash: 'SHA-1' },
-      false,
-      ['sign']
-    );
-    const currentStep = Math.floor(Date.now() / 1000 / 30);
-    for(let offset = -windowSteps; offset <= windowSteps; offset++){
-      const step = currentStep + offset;
-      const buf = new ArrayBuffer(8);
-      const view = new DataView(buf);
-      view.setBigUint64(0, BigInt(step));
-      const sig = await window.crypto.subtle.sign('HMAC', cryptoKey, buf);
-      const sigBytes = new Uint8Array(sig);
-      const hmacOffset = sigBytes[sigBytes.length - 1] & 0x0f;
-      const sigView = new DataView(sig);
-      const binary = sigView.getUint32(hmacOffset) & 0x7fffffff;
-      const otp = (binary % 1000000).toString().padStart(6, '0');
-      if(otp === codeStr) return true;
-    }
-  } catch(e){}
+  // 智慧雙演算法判定：優先驗證現代 HMAC-SHA256；若使用者的 Authenticator App（如部分版本 Google Authenticator）僅支援 SHA-1，自動平滑相容通過
+  const algs = ['SHA-256', 'SHA-1'];
+  for(const alg of algs){
+    try {
+      const cryptoKey = await window.crypto.subtle.importKey(
+        'raw',
+        keyBytes,
+        { name: 'HMAC', hash: alg },
+        false,
+        ['sign']
+      );
+      const currentStep = Math.floor(Date.now() / 1000 / 30);
+      for(let offset = -windowSteps; offset <= windowSteps; offset++){
+        const step = currentStep + offset;
+        const buf = new ArrayBuffer(8);
+        const view = new DataView(buf);
+        view.setBigUint64(0, BigInt(step));
+        const sig = await window.crypto.subtle.sign('HMAC', cryptoKey, buf);
+        const sigBytes = new Uint8Array(sig);
+        const hmacOffset = sigBytes[sigBytes.length - 1] & 0x0f;
+        const sigView = new DataView(sig);
+        const binary = sigView.getUint32(hmacOffset) & 0x7fffffff;
+        const otp = (binary % 1000000).toString().padStart(6, '0');
+        if(otp === codeStr) return true;
+      }
+    } catch(e){}
+  }
   return false;
 }
 

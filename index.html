@@ -2838,17 +2838,33 @@ function generateQrMatrix(text){
   }
 
   // 5. 寫入格式資訊 (ECC Level L = 01, Mask 0 = 000 -> data = 01000)
+  // 標準規範：fBits 的 bit 14 為 MSB，bit 0 為 LSB
   let fData = (0b01 << 3) | 0;
   let fRem = fData;
   for(let i = 0; i < 10; i++) fRem = (fRem << 1) ^ ((fRem >>> 9) * 0x537);
   const fBits = ((fData << 10) | fRem) ^ 0x5412;
-  for(let i = 0; i <= 5; i++) mat[8][i] = (fBits >>> i) & 1;
-  mat[8][7] = (fBits >>> 6) & 1;
-  mat[8][8] = (fBits >>> 7) & 1;
-  mat[7][8] = (fBits >>> 8) & 1;
-  for(let i = 9; i < 15; i++) mat[14 - i][8] = (fBits >>> i) & 1;
-  for(let i = 0; i < 8; i++) mat[size - 1 - i][8] = (fBits >>> i) & 1;
-  for(let i = 8; i < 15; i++) mat[8][size - 15 + i] = (fBits >>> i) & 1;
+  const getFBit = idx => ((fBits >>> idx) & 1);
+
+  // 左上方 Finder Pattern 邊緣繞行（由 bit 14 至 bit 0）
+  mat[8][0] = getFBit(14);
+  mat[8][1] = getFBit(13);
+  mat[8][2] = getFBit(12);
+  mat[8][3] = getFBit(11);
+  mat[8][4] = getFBit(10);
+  mat[8][5] = getFBit(9);
+  mat[8][7] = getFBit(8);
+  mat[8][8] = getFBit(7);
+  mat[7][8] = getFBit(6);
+  mat[5][8] = getFBit(5);
+  mat[4][8] = getFBit(4);
+  mat[3][8] = getFBit(3);
+  mat[2][8] = getFBit(2);
+  mat[1][8] = getFBit(1);
+  mat[0][8] = getFBit(0);
+
+  // 左下方與右上方鏡像複本
+  for(let i = 0; i < 7; i++) mat[size - 1 - i][8] = getFBit(i);
+  for(let i = 0; i < 8; i++) mat[8][size - 8 + i] = getFBit(7 + i);
 
   return mat;
 }

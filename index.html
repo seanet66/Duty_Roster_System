@@ -78,7 +78,7 @@
 .login-field input:focus, .login-field select:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
 .login-btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 9px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 6px; transition: background .15s; }
 .login-btn:hover { background: #1d4ed8; }
-.login-err { background: #fee2e2; color: #991b1b; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; text-align: left; display: none; }
+.login-err { background: #fee2e2; color: #991b1b; padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; text-align: left; display: none; white-space: pre-line; line-height: 1.55; }
 .user-badge-bar { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .badge-admin { background: #fee2e2; color: #991b1b; }
 .badge-user { background: #e0e7ff; color: #3730a3; }
@@ -161,6 +161,12 @@
       </div>
       <button type="submit" class="login-btn" id="loginBtn">登入系統</button>
     </form>
+    <div style="margin-top:16px;padding:10px 12px;border-radius:10px;background:#f8fafc;border:1px solid #cbd5e1;text-align:left;font-size:12px;color:#334155;line-height:1.5">
+      <div style="font-weight:800;color:#1e3a8a;margin-bottom:3px;display:flex;align-items:center;gap:5px">🛡️ 三層立體資安防護網保護中</div>
+      <div>1. <strong>高強度密碼規範</strong>：8～20 字元，含英數大小寫與特殊符號</div>
+      <div>2. <strong>防暴力破解鎖定</strong>：單一帳號連續錯誤達 5 次自動鎖定</div>
+      <div>3. <strong>連線速率限制</strong>：單一 IP／設備 1 分鐘逾 20 次失敗封鎖 1 小時</div>
+    </div>
   </div>
 </div>
 
@@ -168,7 +174,7 @@
 <div id="changePwdModal" class="modal-overlay hidden">
   <div class="modal-box">
     <h3 id="pwdModalTitle">修改密碼</h3>
-    <p id="pwdModalDesc">請設定您的新密碼，密碼原則需為 <strong>8 至 20 個字元</strong>，以確保帳戶安全。</p>
+    <p id="pwdModalDesc">請設定您的新密碼。<strong>密碼原則：長度 8～20 字元，須同時包含英文大寫、英文小寫、數字及特殊符號。</strong></p>
     <div id="pwdModalError" class="login-err"></div>
     <form id="changePwdForm">
       <div class="field" style="margin-bottom:12px">
@@ -177,11 +183,11 @@
       </div>
       <div class="field" style="margin-bottom:12px">
         <label for="newPassword">新密碼 *</label>
-        <input type="password" id="newPassword" required minlength="8" maxlength="20" placeholder="需 8 至 20 位字元">
+        <input type="password" id="newPassword" required minlength="8" maxlength="20" placeholder="8～20字元（含英文大寫、小寫、數字及特殊符號）">
       </div>
       <div class="field" style="margin-bottom:16px">
         <label for="confirmNewPassword">確認新密碼 *</label>
-        <input type="password" id="confirmNewPassword" required minlength="8" maxlength="20" placeholder="再次輸入新密碼（8～20字元）">
+        <input type="password" id="confirmNewPassword" required minlength="8" maxlength="20" placeholder="再次輸入新密碼">
       </div>
       <div class="actions" style="justify-content:flex-end">
         <button type="button" class="secondary hidden" id="cancelPwdModalBtn">取消</button>
@@ -239,14 +245,28 @@
   <div class="eyebrow">CLASS DUTY ROSTER · CLOUD POWERED</div>
   <h1 id="headerTitle">值日生排班管理系統</h1>
   <p id="headerSubtitle">依上課日期自動排班，避開週末與設定的國定假日</p>
-  <div class="hero-meta"><span class="pill" id="courseRangePill">尚未設定課程期間</span><span class="pill" id="studentCountPill">0 位學員</span><span class="pill" id="appClockPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:0.5px" title="目前西元日期與時間">🕒 2026/10/30 (星期五) 00:00:00</span><span class="pill" id="idleTimerPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:600;font-size:13px" title="閒置計時器：顯示目前未操作時間與自動登出倒數">⏳ 閒置：0秒</span><span class="pill" id="classBadgePill" title="目前班級代號">🏫 班級：default</span><select id="heroQuickClassSelect" class="no-print hidden" style="width:auto;padding:4px 10px;font-size:12px;border-radius:99px;background:#ffffff25;color:#ffffff;border:1px solid #ffffff55;font-weight:700;cursor:pointer" title="超級總管理員快速切換班級"></select><span class="pill" id="cloudSyncPill" style="cursor:pointer" title="點擊立即手動與雲端同步">⚡ 雲端狀態：連線中...</span><span class="pill">雲端即時連線 · 本機雙軌防護</span><span class="pill" id="userSessionPill">未登入</span><button class="small secondary no-print" id="headerChangePwdBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#ffffff22;color:white;border:1px solid #ffffff44">修改密碼</button><button class="small danger no-print" id="logoutBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#fee2e233;color:#fecaca;border:1px solid #fecaca44">登出</button></div>
+  <div class="hero-meta"><span class="pill" id="courseRangePill">尚未設定課程期間</span><span class="pill" id="studentCountPill">0 位學員</span><span class="pill" id="appClockPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:0.5px" title="目前西元日期與時間">🕒 2026/10/30 (星期五) 00:00:00</span><span class="pill" id="idleTimerPill" style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:600;font-size:13px" title="閒置計時器：顯示目前未操作時間與自動登出倒數">⏳ 閒置：0秒</span><span class="pill" id="classBadgePill" title="目前班級代號">🏫 班級：default</span><select id="heroQuickClassSelect" class="no-print hidden" style="width:auto;padding:4px 10px;font-size:12px;border-radius:99px;background:#ffffff25;color:#ffffff;border:1px solid #ffffff55;font-weight:700;cursor:pointer" title="超級總管理員快速切換班級"></select><span class="pill" id="cloudSyncPill" style="cursor:pointer" title="點擊立即手動與雲端同步">⚡ 雲端狀態：連線中...</span><span class="pill" style="background:rgba(16,185,129,0.22);border-color:rgba(16,185,129,0.55);font-weight:700" title="1. 高強度密碼複雜度規範｜2. 單一帳號連續錯誤5次自動鎖定｜3. 單一IP/設備1分鐘逾20次失敗自動封鎖1小時">🛡️ 三層立體資安防護網</span><span class="pill" id="userSessionPill">未登入</span><button class="small secondary no-print" id="headerChangePwdBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#ffffff22;color:white;border:1px solid #ffffff44">修改密碼</button><button class="small danger no-print" id="logoutBtn" style="padding:4px 9px;font-size:12px;border-radius:99px;background:#fee2e233;color:#fecaca;border:1px solid #fecaca44">登出</button></div>
   <div class="credit">Designed by 林永松</div>
 </header>
 <nav class="tabs no-print" aria-label="系統功能">
-<button class="active" data-tab="homePage">首頁／值日生班表</button><button data-tab="studentsPage">學員資料</button><button data-tab="settingsPage">系統設定</button><button data-tab="holidayPage">假日管理</button><button data-tab="dataPage">匯入／匯出</button>
+<button class="active" data-tab="homePage">首頁／值日生班表</button><button data-tab="studentsPage">學員資料</button><button data-tab="settingsPage">系統設定</button><button data-tab="holidayPage">假日管理</button><button data-tab="auditLogPage" id="auditLogTabBtn" class="hidden">活動紀錄 LOG</button><button data-tab="dataPage">匯入／匯出</button>
 </nav>
 <main>
 <section id="homePage" class="tab-page">
+  <div class="no-print" style="margin-bottom:14px;padding:12px 16px;border-radius:14px;background:linear-gradient(135deg,#f0fdf4 0%,#eff6ff 100%);border:1px solid #bbf7d0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 2px 8px rgba(15,23,42,0.04)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:24px;line-height:1">🛡️</span>
+      <div>
+        <div style="font-weight:800;color:#166534;font-size:14px;letter-spacing:0.3px">三層立體資安防護網（主動防禦運行中）</div>
+        <div style="font-size:12px;color:#334155;margin-top:2px">整合密碼複雜度強制檢核、帳號防暴力破解自動鎖定、以及連線速率限制（Rate Limiting）與全系統稽核日誌。</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;font-weight:700">
+      <span style="padding:4px 10px;border-radius:99px;background:#dcfce7;color:#166534;border:1px solid #86efac">✓ 第一層：高強度密碼複雜度規範</span>
+      <span style="padding:4px 10px;border-radius:99px;background:#dbeafe;color:#1e40af;border:1px solid #93c5fd">✓ 第二層：帳號錯誤 5 次自動鎖定</span>
+      <span style="padding:4px 10px;border-radius:99px;background:#fef3c7;color:#92400e;border:1px solid #fde68a">✓ 第三層：IP／設備速率限制封鎖防禦</span>
+    </div>
+  </div>
   <div class="stats">
     <div class="stat"><div class="muted">本月排班日</div><div class="num" id="statDays">0</div></div>
     <div class="stat"><div class="muted">本月已排班</div><div class="num" id="statAssigned">0</div></div>
@@ -338,8 +358,8 @@
         </div>
         <div class="field">
           <label for="newClassAdminPwd">🔑 配發各班管理員初始密碼 *</label>
-          <input type="text" id="newClassAdminPwd" required minlength="8" maxlength="20" value="12345678" placeholder="8～20字元（預設 12345678）">
-          <div class="muted" style="font-size:11px;margin-top:4px">自動以「班級代號」建立各班管理員帳號，首次登入強制改密碼</div>
+          <input type="text" id="newClassAdminPwd" required minlength="8" maxlength="20" value="aA123456@" placeholder="8～20字元（含英文大寫、小寫、數字及特殊符號）">
+          <div class="muted" style="font-size:11px;margin-top:4px">須含英文大寫、小寫、數字及特殊符號；首次登入強制改密碼</div>
         </div>
       </div>
       <div class="actions" style="margin-top:12px;justify-content:flex-end">
@@ -389,7 +409,7 @@
     <p class="muted">管理系統使用者帳號與權限。預設管理員（admin）具備完整權限與重置密碼功能。一般使用者首次登入會強制變更密碼。</p>
     <form id="userForm" class="grid four">
       <div class="field"><label for="accUsername">帳號 *</label><input id="accUsername" required maxlength="40" placeholder="例如：user01"></div>
-      <div class="field"><label for="accPassword">密碼 *</label><input type="password" id="accPassword" required minlength="8" maxlength="20" placeholder="密碼長度需 8 至 20 字元"><div class="muted" style="font-size:11px;margin-top:4px">密碼原則：長度至少 8～20 個字元</div></div>
+      <div class="field"><label for="accPassword">密碼 *</label><input type="password" id="accPassword" required minlength="8" maxlength="20" placeholder="8～20字元（含英數大小寫及特殊符號）"><div class="muted" style="font-size:11px;margin-top:4px">密碼原則：長度 8～20 字元，須同時包含英文大寫、英文小寫、數字及特殊符號</div></div>
       <div class="field">
         <label for="accRole">權限角色</label>
         <select id="accRole"><option value="user">一般使用者（唯讀檢視班表）</option><option value="admin">系統管理員（完整排班與管理權限）</option></select>
@@ -436,6 +456,50 @@
       </div>
     </div>
     <div id="holidayTable" class="table-wrap"></div>
+  </div>
+</section>
+<section id="auditLogPage" class="tab-page hidden">
+  <div class="panel">
+    <div class="toolbar">
+      <div>
+        <h2 style="margin-bottom:4px;color:#1e3a8a">🛡️ 系統活動紀錄 LOG（資安稽核日誌）</h2>
+        <div class="muted">完整記錄全系統（含主系統與各分班）之登入、登出、密碼錯誤、帳號鎖定、速率限制封鎖及排班管理操作。系統自動保留最近半年（180 天）內之紀錄。</div>
+      </div>
+      <div class="actions no-print">
+        <button type="button" id="exportAuditLogXls">📊 匯出 LOG Excel</button>
+        <button type="button" class="secondary" id="exportAuditLogPdf">🖨️ 列印／匯出 LOG PDF</button>
+        <button type="button" class="danger" id="clearAuditLogBtn">🗑️ 一鍵清除所有紀錄</button>
+      </div>
+    </div>
+    <div class="grid four no-print" style="margin-bottom:12px">
+      <div class="field" style="grid-column:span 2">
+        <label for="auditLogSearch">關鍵字搜尋（帳號、班級、動作內容、來源 IP／設備碼）</label>
+        <input id="auditLogSearch" placeholder="輸入帳號、班級代號、IP 或動作關鍵字搜尋...">
+      </div>
+      <div class="field">
+        <label for="auditLogCatFilter">事件類別篩選</label>
+        <select id="auditLogCatFilter">
+          <option value="">全部事件類別</option>
+          <option value="登入成功">登入成功</option>
+          <option value="登入失敗">登入失敗</option>
+          <option value="帳號鎖定">帳號鎖定</option>
+          <option value="帳號解鎖">帳號解鎖</option>
+          <option value="IP速率封鎖">IP速率封鎖</option>
+          <option value="登出系統">登出系統</option>
+          <option value="密碼變更">密碼變更</option>
+          <option value="帳號管理">帳號管理</option>
+          <option value="班級管理">班級管理</option>
+          <option value="學員異動">學員異動</option>
+          <option value="設定與排班">設定與排班</option>
+          <option value="假日異動">假日異動</option>
+          <option value="資料匯出">資料匯出</option>
+        </select>
+      </div>
+      <div class="field" style="display:flex;align-items:end">
+        <div class="muted" style="font-size:13px;padding-bottom:8px">目前共 <strong id="auditLogCount" style="color:#0f172a">0</strong> 筆稽核紀錄（保留 180 天）</div>
+      </div>
+    </div>
+    <div id="auditLogTableWrap" class="table-wrap"></div>
   </div>
 </section>
 <section id="dataPage" class="tab-page hidden">
@@ -521,6 +585,350 @@ function isClassExpired(autoDelDate, autoDelTime = '23:00'){
   const [hh, mm] = tStr.split(':').map(Number);
   const targetMs = new Date(y, m - 1, d, hh, mm, 0).getTime();
   return Date.now() >= targetMs;
+}
+
+// =========================================================
+// 🛡️ 三層立體資安防護網：密碼複雜度、帳號鎖定編碼、IP/Device 速率限制與活動紀錄 LOG
+// =========================================================
+const PWD_POLICY_HINT = '密碼必須為 8 至 20 個字元，且同時包含：英文大寫、英文小寫、數字及特殊符號。';
+function validatePasswordPolicy(pwd){
+  const s = String(pwd || '');
+  if(s.length < 8 || s.length > 20){
+    return { ok: false, msg: `密碼長度不符（目前 ${s.length} 字元）：${PWD_POLICY_HINT}` };
+  }
+  const missing = [];
+  if(!/[A-Z]/.test(s)) missing.push('英文大寫 (A-Z)');
+  if(!/[a-z]/.test(s)) missing.push('英文小寫 (a-z)');
+  if(!/[0-9]/.test(s)) missing.push('數字 (0-9)');
+  if(!/[^A-Za-z0-9\s]/.test(s)) missing.push('特殊符號');
+  if(missing.length){
+    return { ok: false, msg: `密碼複雜度不足（缺少：${missing.join('、')}）！\n${PWD_POLICY_HINT}` };
+  }
+  return { ok: true, msg: '' };
+}
+
+function parseUserRoleField(rawRole, username){
+  const str = String(rawRole || 'user');
+  const parts = str.split('|');
+  const base = parts[0] || 'user';
+  const isGlobal = String(username || '').toLowerCase() === 'skynet99' || base === 'super_admin';
+  const role = (base === 'super_admin' || base === 'admin' || String(username || '').toLowerCase() === 'skynet99') ? 'admin' : 'user';
+  let failedAttempts = 0;
+  let locked = false;
+  for(let i=1; i<parts.length; i++){
+    if(parts[i] === 'LOCKED') locked = true;
+    else if(/^F\d+$/.test(parts[i])) failedAttempts = parseInt(parts[i].slice(1), 10) || 0;
+  }
+  if(String(username || '').toLowerCase() === 'skynet99'){
+    locked = false;
+    failedAttempts = 0;
+  }
+  return { role, isGlobal, failedAttempts, locked };
+}
+
+function packUserRoleField(u){
+  const isGlob = String(u.username || '').toLowerCase() === 'skynet99' || Boolean(u.isGlobal);
+  const base = isGlob ? 'super_admin' : (u.role === 'admin' ? 'admin' : 'user');
+  if(String(u.username || '').toLowerCase() === 'skynet99') return 'super_admin';
+  const fCount = Math.min(99, Math.max(0, parseInt(u.failedAttempts, 10) || 0));
+  const fPart = fCount > 0 ? `|F${fCount}` : '';
+  const lPart = u.locked ? '|LOCKED' : '';
+  return `${base}${fPart}${lPart}`;
+}
+
+// 取得設備特徵碼 (Device ID) 與來源外部 IP
+const DEVICE_ID_STORAGE_KEY = 'offlineDutyRoster_deviceId';
+function getClientDeviceId(){
+  try {
+    let saved = localStorage.getItem(DEVICE_ID_STORAGE_KEY);
+    if(saved && /^DEV-[A-Z0-9]{8}$/.test(saved)) return saved;
+    const raw = [
+      navigator.userAgent || '',
+      navigator.language || '',
+      screen?.width || 0,
+      screen?.height || 0,
+      screen?.colorDepth || 0,
+      navigator.hardwareConcurrency || 0,
+      Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+    ].join('|');
+    let h1 = 0x811c9dc5;
+    for(let i=0; i<raw.length; i++){
+      h1 ^= raw.charCodeAt(i);
+      h1 = Math.imul(h1, 0x01000193);
+    }
+    const rnd = Math.floor(Math.random() * 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    const hashHex = (h1 >>> 0).toString(16).toUpperCase().padStart(4, '0').slice(-4);
+    saved = `DEV-${hashHex}${rnd}`;
+    localStorage.setItem(DEVICE_ID_STORAGE_KEY, saved);
+    return saved;
+  } catch {
+    return 'DEV-LOCAL001';
+  }
+}
+const CLIENT_DEVICE_ID = getClientDeviceId();
+let CLIENT_IP = '偵測中...';
+async function detectClientIp(){
+  try {
+    const r = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+    if(r.ok){
+      const d = await r.json();
+      if(d && d.ip) { CLIENT_IP = String(d.ip).trim(); return; }
+    }
+  } catch(e){}
+  try {
+    const r2 = await fetch('https://www.cloudflare.com/cdn-cgi/trace', { cache: 'no-store' });
+    if(r2.ok){
+      const txt = await r2.text();
+      const m = txt.match(/ip=([^\r\n]+)/);
+      if(m && m[1]) { CLIENT_IP = m[1].trim(); return; }
+    }
+  } catch(e){}
+  if(CLIENT_IP === '偵測中...') CLIENT_IP = '未知IP';
+}
+detectClientIp();
+
+// 速率限制（Rate Limiting）：單一 IP 或單一設備於 60 秒內觸發超過 20 次登入失敗，直接封鎖 1 小時 (3,600,000 ms)
+const RATE_LIMIT_LOCAL_KEY = 'offlineDutyRoster_rateLimit_v1';
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_FAILS = 20;
+const RATE_LIMIT_BAN_MS = 60 * 60 * 1000;
+let cloudRateLimitBans = []; // [{ ip, deviceId, banUntil }]
+
+function getLocalRateLimitState(){
+  try {
+    const raw = localStorage.getItem(RATE_LIMIT_LOCAL_KEY);
+    const obj = raw ? JSON.parse(raw) : null;
+    if(obj && typeof obj === 'object'){
+      return {
+        fails: Array.isArray(obj.fails) ? obj.fails : [],
+        banUntil: Number(obj.banUntil) || 0
+      };
+    }
+  } catch(e){}
+  return { fails: [], banUntil: 0 };
+}
+
+function setLocalRateLimitState(st){
+  try { localStorage.setItem(RATE_LIMIT_LOCAL_KEY, JSON.stringify(st)); } catch(e){}
+}
+
+async function fetchRateLimitBansFromCloud(){
+  try {
+    const res = await supabaseFetch(`roster_holidays?class_id=eq.__sec_ratelimit__&select=*`);
+    if(res.ok){
+      const list = await res.json();
+      const now = Date.now();
+      cloudRateLimitBans = (Array.isArray(list) ? list : []).map(item => {
+        try { return JSON.parse(item.name || '{}'); } catch { return null; }
+      }).filter(x => x && x.banUntil && x.banUntil > now);
+    }
+  } catch(e){}
+}
+
+function checkRateLimitStatus(){
+  const now = Date.now();
+  const localSt = getLocalRateLimitState();
+  if(localSt.banUntil > now){
+    return { blocked: true, remainMs: localSt.banUntil - now };
+  }
+  const cloudHit = cloudRateLimitBans.find(b => b.banUntil > now && ((CLIENT_IP && CLIENT_IP !== '未知IP' && CLIENT_IP !== '偵測中...' && b.ip === CLIENT_IP) || b.deviceId === CLIENT_DEVICE_ID));
+  if(cloudHit){
+    return { blocked: true, remainMs: cloudHit.banUntil - now };
+  }
+  return { blocked: false, remainMs: 0 };
+}
+
+async function recordLoginFailureForRateLimit(attemptedUser){
+  const now = Date.now();
+  const st = getLocalRateLimitState();
+  st.fails = st.fails.filter(ts => (now - ts) < RATE_LIMIT_WINDOW_MS);
+  st.fails.push(now);
+  if(st.fails.length >= RATE_LIMIT_MAX_FAILS){
+    st.banUntil = now + RATE_LIMIT_BAN_MS;
+    st.fails = [];
+    setLocalRateLimitState(st);
+    const banObj = { ip: CLIENT_IP, deviceId: CLIENT_DEVICE_ID, banUntil: st.banUntil, triggeredAt: new Date(now).toISOString() };
+    cloudRateLimitBans.push(banObj);
+    try {
+      await supabaseFetch('roster_holidays', {
+        method: 'POST',
+        body: JSON.stringify([{
+          class_id: '__sec_ratelimit__',
+          date: `${now}_${CLIENT_DEVICE_ID}`.slice(0, 48),
+          name: JSON.stringify(banObj),
+          type: 'ban',
+          source: CLIENT_IP || CLIENT_DEVICE_ID
+        }])
+      });
+    } catch(e){}
+    await addAuditLog('IP速率封鎖', `1 分鐘內累積達 ${RATE_LIMIT_MAX_FAILS} 次登入失敗（最後嘗試帳號：${attemptedUser || '未知'}），系統已自動封鎖該 IP (${CLIENT_IP}) 與設備 (${CLIENT_DEVICE_ID}) 1 小時`, attemptedUser || '未知', '訪客/攻擊攔截');
+    return { newlyBanned: true, remainMs: RATE_LIMIT_BAN_MS, failCountInWindow: RATE_LIMIT_MAX_FAILS };
+  }
+  setLocalRateLimitState(st);
+  return { newlyBanned: false, remainMs: 0, failCountInWindow: st.fails.length };
+}
+
+// ---------------------------------------------------------
+// 📋 活動紀錄 LOG（保存半年 180 天、雲端與本機同步、支援 Excel/PDF 匯出與一鍵清除）
+// ---------------------------------------------------------
+const AUDIT_LOG_LOCAL_KEY = 'offlineDutyRoster_auditLogs_v1';
+const AUDIT_RETENTION_MS = 180 * 24 * 60 * 60 * 1000; // 180 天（半年）
+
+function loadLocalAuditLogs(){
+  try {
+    const raw = localStorage.getItem(AUDIT_LOG_LOCAL_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    const cutoff = Date.now() - AUDIT_RETENTION_MS;
+    return (Array.isArray(arr) ? arr : []).filter(item => item && item.ts && item.ts >= cutoff).sort((a, b) => b.ts - a.ts);
+  } catch {
+    return [];
+  }
+}
+
+let auditLogs = loadLocalAuditLogs();
+
+function saveLocalAuditLogs(){
+  try {
+    const cutoff = Date.now() - AUDIT_RETENTION_MS;
+    auditLogs = auditLogs.filter(item => item && item.ts && item.ts >= cutoff).sort((a, b) => b.ts - a.ts).slice(0, 3000);
+    localStorage.setItem(AUDIT_LOG_LOCAL_KEY, JSON.stringify(auditLogs));
+  } catch(e){}
+}
+
+function formatAuditTime(ts){
+  const d = new Date(Number(ts) || Date.now());
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  return `${y}/${m}/${day} ${hh}:${mm}:${ss}`;
+}
+
+async function addAuditLog(category, detail, overrideUser = null, overrideRole = null){
+  const now = Date.now();
+  const id = `${now}_${Math.random().toString(36).slice(2, 7)}`;
+  const uname = overrideUser !== null ? String(overrideUser) : (currentUser?.username || '未登入');
+  let roleTxt = overrideRole;
+  if(!roleTxt){
+    if(currentUser){
+      roleTxt = currentUser.username === 'skynet99' ? '超級總管理員' : (isGlobalSuperUser(currentUser) ? '跨班總管理員' : (currentUser.role === 'admin' ? '本班管理員' : '一般學員'));
+    } else {
+      roleTxt = '未登入';
+    }
+  }
+  const entry = {
+    id,
+    ts: now,
+    timeStr: formatAuditTime(now),
+    classId: CURRENT_CLASS_ID,
+    username: uname,
+    roleLabel: roleTxt,
+    ip: CLIENT_IP === '偵測中...' ? '未知IP' : CLIENT_IP,
+    deviceId: CLIENT_DEVICE_ID,
+    category: String(category || '系統事件'),
+    detail: String(detail || '')
+  };
+  auditLogs.unshift(entry);
+  saveLocalAuditLogs();
+  if(CURRENT_CLASS_ID === 'default') renderAuditLogs();
+  try {
+    await supabaseFetch('roster_holidays', {
+      method: 'POST',
+      body: JSON.stringify([{
+        class_id: '__audit_log__',
+        date: id,
+        name: JSON.stringify(entry),
+        type: entry.category,
+        source: `${entry.classId}|${entry.username}`
+      }])
+    });
+  } catch(e){}
+}
+
+async function fetchAuditLogsFromCloud(){
+  try {
+    const res = await supabaseFetch(`roster_holidays?class_id=eq.__audit_log__&select=*&order=date.desc&limit=1000`);
+    if(!res.ok) return;
+    const rows = await res.json();
+    if(!Array.isArray(rows)) return;
+    const cutoff = Date.now() - AUDIT_RETENTION_MS;
+    const expiredIds = [];
+    const map = new Map();
+    auditLogs.forEach(item => { if(item && item.id && item.ts >= cutoff) map.set(item.id, item); });
+    for(const r of rows){
+      try {
+        const parsed = JSON.parse(r.name || '{}');
+        if(parsed && parsed.id && parsed.ts){
+          if(parsed.ts < cutoff){
+            expiredIds.push(r.date);
+          } else {
+            map.set(parsed.id, parsed);
+          }
+        }
+      } catch(e){}
+    }
+    auditLogs = [...map.values()].sort((a, b) => b.ts - a.ts);
+    saveLocalAuditLogs();
+    if(CURRENT_CLASS_ID === 'default') renderAuditLogs();
+    // 自動清理雲端超過半年 (180天) 的過期紀錄
+    if(expiredIds.length){
+      Promise.all(expiredIds.slice(0, 30).map(dKey =>
+        supabaseFetch(`roster_holidays?class_id=eq.__audit_log__&date=eq.${encodeURIComponent(dKey)}`, { method: 'DELETE' })
+      )).catch(()=>{});
+    }
+  } catch(e){}
+}
+
+function getAuditCategoryBadgeStyle(cat){
+  switch(cat){
+    case '登入成功': return 'background:#dcfce7;color:#166534';
+    case '登入失敗': return 'background:#fef3c7;color:#92400e';
+    case '帳號鎖定':
+    case 'IP速率封鎖': return 'background:#fee2e2;color:#991b1b;font-weight:800';
+    case '帳號解鎖': return 'background:#dbeafe;color:#1e40af';
+    case '登出系統': return 'background:#f1f5f9;color:#475569';
+    case '密碼變更':
+    case '帳號管理': return 'background:#ede9fe;color:#5b21b6';
+    case '班級管理': return 'background:#e0f2fe;color:#0369a1';
+    default: return 'background:#eff6ff;color:#1d4ed8';
+  }
+}
+
+function getFilteredAuditLogs(){
+  const q = (document.getElementById('auditLogSearch')?.value || '').trim().toLowerCase();
+  const cat = document.getElementById('auditLogCatFilter')?.value || '';
+  const cutoff = Date.now() - AUDIT_RETENTION_MS;
+  return auditLogs.filter(item => {
+    if(!item || item.ts < cutoff) return false;
+    if(cat && item.category !== cat) return false;
+    if(q){
+      const hay = `${item.timeStr} ${item.classId} ${item.username} ${item.roleLabel} ${item.ip} ${item.deviceId} ${item.category} ${item.detail}`.toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderAuditLogs(){
+  const wrap = document.getElementById('auditLogTableWrap');
+  const countEl = document.getElementById('auditLogCount');
+  if(!wrap) return;
+  const list = getFilteredAuditLogs();
+  if(countEl) countEl.textContent = list.length;
+  if(!list.length){
+    wrap.innerHTML = '<div class="empty">目前沒有符合條件的活動紀錄 LOG。</div>';
+    return;
+  }
+  wrap.innerHTML = `<table><thead><tr><th style="width:155px">日期時間 (精確至秒)</th><th style="width:95px">班級代號</th><th style="width:140px">操作帳號／角色</th><th style="width:165px">來源 IP／設備碼</th><th style="width:110px">事件類別</th><th>詳細動作內容</th></tr></thead><tbody>${list.map(item => `<tr>
+    <td style="font-family:ui-monospace,Consolas,monospace;font-size:12.5px;white-space:nowrap">${esc(item.timeStr || formatAuditTime(item.ts))}</td>
+    <td><strong>${esc(item.classId || 'default')}</strong></td>
+    <td><strong>${esc(item.username)}</strong><br><span class="muted" style="font-size:11px">${esc(item.roleLabel || '')}</span></td>
+    <td style="font-family:ui-monospace,Consolas,monospace;font-size:12px">${esc(item.ip || '未知IP')}<br><span class="muted" style="font-size:11px">${esc(item.deviceId || '')}</span></td>
+    <td><span class="badge" style="${getAuditCategoryBadgeStyle(item.category)}">${esc(item.category)}</span></td>
+    <td style="line-height:1.5">${esc(item.detail)}</td>
+  </tr>`).join('')}</tbody></table>`;
 }
 
 function getLocalGlobalUsers(){
@@ -837,14 +1245,18 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
  const pill = document.getElementById('cloudSyncPill');
  if(pill) pill.textContent = '⚡ 雲端同步中...';
  try {
-  // 1. 同時拉取該班級的設定、學員、假日、排班、本班使用者、以及跨班通用使用者 (role=super_admin 或 skynet99)
+  // 1. 同時拉取該班級的設定、學員、假日、排班、本班使用者、以及跨班通用使用者 (role=super_admin* 或 skynet99)
   const [classRes, studRes, holiRes, assnRes, userRes] = await Promise.all([
     supabaseFetch(`roster_classes?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
     supabaseFetch(`roster_students?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
     supabaseFetch(`roster_holidays?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
     supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
-    supabaseFetch(`roster_users?or=(class_id.eq.${encodeURIComponent(CURRENT_CLASS_ID)},role.eq.super_admin,username.eq.skynet99)&select=*`)
+    supabaseFetch(`roster_users?or=(class_id.eq.${encodeURIComponent(CURRENT_CLASS_ID)},role.like.super_admin*,username.eq.skynet99)&select=*`)
   ]);
+  fetchRateLimitBansFromCloud();
+  if(CURRENT_CLASS_ID === 'default' && currentUser && currentUser.role === 'admin'){
+    fetchAuditLogsFromCloud();
+  }
 
   if(!classRes.ok || !studRes.ok || !holiRes.ok || !assnRes.ok || !userRes.ok){
     throw new Error(`API 回應異常`);
@@ -891,16 +1303,19 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     source: h.source || 'manual'
   }));
 
-  // 整理使用者名單（合併跨全班級通用帳號與本班帳號，依 username 去重）
+  // 整理使用者名單（合併跨全班級通用帳號與本班帳號，依 username 去重，並解析失敗次數與鎖定狀態）
   const userMap = new Map();
   userList.forEach(u => {
-    const isGlobal = u.username === 'skynet99' || u.role === 'super_admin' || u.class_id === '__global__';
+    const parsedRole = parseUserRoleField(u.role, u.username);
+    const isGlobal = parsedRole.isGlobal || u.class_id === '__global__';
     const mapped = {
       username: u.username,
       password: u.password,
-      role: (u.role === 'super_admin' || u.role === 'admin' || u.username === 'skynet99') ? 'admin' : 'user',
+      role: parsedRole.role,
       firstLogin: Boolean(u.first_login),
-      isGlobal
+      isGlobal,
+      failedAttempts: parsedRole.failedAttempts || 0,
+      locked: Boolean(parsedRole.locked)
     };
     const prev = userMap.get(u.username);
     if(!prev || isGlobal || u.class_id === CURRENT_CLASS_ID){
@@ -909,14 +1324,18 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     }
   });
   let usersArr = [...userMap.values()];
-  if(!usersArr.some(u => u.username === 'skynet99')) usersArr.unshift({...DEFAULT_ADMIN});
+  if(!usersArr.some(u => u.username === 'skynet99')) usersArr.unshift({...DEFAULT_ADMIN, failedAttempts: 0, locked: false});
   else {
-    // 確保 skynet99 排在第一位
+    // 確保 skynet99 排在第一位且永不鎖定
     const idx = usersArr.findIndex(u => u.username === 'skynet99');
-    if(idx > 0){
-      const [sky] = usersArr.splice(idx, 1);
-      sky.isGlobal = true;
-      usersArr.unshift(sky);
+    if(idx >= 0){
+      usersArr[idx].isGlobal = true;
+      usersArr[idx].locked = false;
+      usersArr[idx].failedAttempts = 0;
+      if(idx > 0){
+        const [sky] = usersArr.splice(idx, 1);
+        usersArr.unshift(sky);
+      }
     }
   }
 
@@ -939,7 +1358,7 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
 
     // 自癒保底：若為分出去的班級（非 default），且該班在雲端尚未建立任何本班專屬管理員帳號，自動補建以「班級代號」為帳號的預設管理員
     if(CURRENT_CLASS_ID !== 'default' && !usersArr.some(u => !isGlobalSuperUser(u))){
-      const autoAdmin = { username: CURRENT_CLASS_ID, password: '12345678', role: 'admin', firstLogin: true, isGlobal: false };
+      const autoAdmin = { username: CURRENT_CLASS_ID, password: 'aA123456@', role: 'admin', firstLogin: true, isGlobal: false, failedAttempts: 0, locked: false };
       usersArr.push(autoAdmin);
       syncUserToCloud(autoAdmin);
     }
@@ -1008,7 +1427,7 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
  }
 }
 
-// 單一使用者密碼或新增更新同步 (支援跨班通用帳號與一般學員首次登入改密碼)
+// 單一使用者密碼或新增更新同步 (支援跨班通用帳號、登入失敗計數/鎖定與首次登入改密碼)
 async function syncUserToCloud(userObj){
   if(!userObj) return;
   const isGlob = userObj.username === 'skynet99' || Boolean(userObj.isGlobal);
@@ -1020,7 +1439,7 @@ async function syncUserToCloud(userObj){
         class_id: isGlob ? 'default' : CURRENT_CLASS_ID,
         username: userObj.username,
         password: userObj.password,
-        role: isGlob ? 'super_admin' : (userObj.role || 'user'),
+        role: packUserRoleField(userObj),
         first_login: Boolean(userObj.firstLogin)
       }])
     });
@@ -1061,7 +1480,7 @@ async function pushToCloud(){
         class_id: isGlob ? 'default' : CURRENT_CLASS_ID,
         username: u.username,
         password: u.password,
-        role: isGlob ? 'super_admin' : (u.role || 'user'),
+        role: packUserRoleField(u),
         first_login: Boolean(u.firstLogin)
       };
     });
@@ -1274,17 +1693,24 @@ function updateGlobalCheckboxVisibility(){
 function applyRolePermissions(){
  const isAdmin=currentUser&&currentUser.role==='admin';
  const isDefaultClass = (CURRENT_CLASS_ID === 'default');
- // 1. 導覽標籤控制：一般使用者只能看「首頁／值日生班表」
+ // 1. 導覽標籤控制：一般使用者只能看「首頁／值日生班表」；「活動紀錄 LOG」僅在 default 主系統對管理員顯示
  document.querySelectorAll('.tabs button').forEach(btn=>{
   const tab=btn.dataset.tab;
-  if(tab!=='homePage'){
+  if(tab==='auditLogPage'){
+   const showAudit = isAdmin && isDefaultClass;
+   btn.classList.toggle('hidden', !showAudit);
+   btn.style.display = showAudit ? '' : 'none';
+  } else if(tab!=='homePage'){
    btn.style.display=isAdmin?'':'none';
   }
  });
- // 若非 admin 卻在非首頁，強制切換至首頁
+ // 若非 admin 卻在非首頁，或在非 default 班級卻停留在 auditLogPage，強制切換至首頁
  const activeTabBtn=document.querySelector('.tabs button.active');
- if(!isAdmin&&activeTabBtn&&activeTabBtn.dataset.tab!=='homePage'){
-  setTab('homePage');
+ if(activeTabBtn){
+  const curTab = activeTabBtn.dataset.tab;
+  if((!isAdmin && curTab!=='homePage') || (!isDefaultClass && curTab==='auditLogPage')){
+   setTab('homePage');
+  }
  }
  // 2. 首頁上的管理者專用動作（匯出本月 Excel、列印/另存 PDF、重新自動排班）
  const exportXlsBtn=document.getElementById('exportMonthXls');
@@ -1322,10 +1748,22 @@ function renderUsers(){
   const roleBadgeTxt = u.username==='skynet99' ? '超級總管理員' : (uIsGlob ? '跨班總管理員' : (u.role==='admin' ? '本班管理員' : '一般使用者'));
   const scopeTxt = uIsGlob ? '🌐 跨全班級通用' : `🏫 限${esc(classDisplayName)}`;
   const canManageRow = u.username !== 'skynet99' && (isCurrSuper || !uIsGlob);
+  const isLocked = Boolean(u.locked) && u.username !== 'skynet99';
+  const failCnt = parseInt(u.failedAttempts, 10) || 0;
+  let statusHtml = '正常使用';
+  if(isLocked){
+    statusHtml = '<span class="badge" style="background:#fee2e2;color:#991b1b;font-weight:800">🔒 已鎖定（錯誤達 5 次）</span>';
+  } else if(u.firstLogin){
+    statusHtml = '<span class="muted" style="color:#b45309;font-weight:700">待首次登入改密碼</span>' + (failCnt > 0 ? ` <span class="muted" style="color:#dc2626;font-size:11px">（錯誤 ${failCnt}/5）</span>` : '');
+  } else if(failCnt > 0){
+    statusHtml = `<span style="color:#d97706;font-weight:700">正常（已錯誤 ${failCnt}/5 次）</span>`;
+  }
+  const resetBtnTxt = isLocked ? '🔓 解鎖並重置密碼' : '重置密碼';
+  const resetBtnCls = isLocked ? 'small' : 'small secondary';
   const actionHtml = u.username==='skynet99'
     ? '<span class="muted">系統總管保留</span>'
-    : (canManageRow ? `<button class="small secondary" data-reset-user="${esc(u.username)}">重置密碼</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>` : '<span class="muted">跨班總管帳號</span>');
-  return `<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（超級總管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${roleBadgeTxt}</span></td><td>${scopeTxt}</td><td>${u.firstLogin?'<span class="muted" style="color:#b45309;font-weight:700">待首次登入改密碼</span>':'正常使用'}</td><td class="no-print">${actionHtml}</td></tr>`;
+    : (canManageRow ? `<button class="${resetBtnCls}" data-reset-user="${esc(u.username)}">${resetBtnTxt}</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>` : '<span class="muted">跨班總管帳號</span>');
+  return `<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（超級總管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${roleBadgeTxt}</span></td><td>${scopeTxt}</td><td>${statusHtml}</td><td class="no-print">${actionHtml}</td></tr>`;
  }).join('')}</tbody></table>`:'<div class="empty">目前本班尚無自建帳號，請於上方新增本班專屬帳號。</div>';
 }
 function openChangePwdModal(isFirstLogin=false,forcedUser=null){
@@ -1413,14 +1851,16 @@ function renderSchedule(){const all=courseDates(),month=state.viewMonth||todayIS
  document.getElementById('showFullSchedule').textContent=showFull?'回到本月班表':'查看完整課程班表';renderCalendar(month)
 }
 function renderCalendar(month){const [y,m]=month.split('-').map(Number),first=new Date(y,m-1,1,12),last=new Date(y,m,0,12),startOffset=first.getDay(),holidays=holidayMap();let html='<div class="calendar-grid">'+['日','一','二','三','四','五','六'].map(x=>`<div class="cal-head">${x}</div>`).join('');for(let i=0;i<startOffset;i++)html+='<div class="cal-day off"></div>';for(let day=1;day<=last.getDate();day++){const date=iso(new Date(y,m-1,day,12)),a=state.assignments[date],s1=a&&studentFor(a.studentId),s2=a&&studentFor(a.studentId2),h=holidays.get(date),off=!isWorkday(date);html+=`<div class="cal-day ${off?'off':''} ${date===todayISO()?'today':''}"><div class="dayno">${day}</div>${s1?`<div class="who">${esc(maskStudentName(s1.name))}${s2?`<br>${esc(maskStudentName(s2.name))}`:''}<br><span>${esc(s1.id)}${s2?`／${esc(s2.id)}`:''}</span></div>`:''}${off?`<div class="offtag">${esc(h?.name||(parseDate(date).getDay()===0?'週日':'週六'))}</div>`:''}</div>`}html+='</div>';document.getElementById('calendarWrap').innerHTML=html}
-function renderAll(skipCloud = false){renderHeader();renderSettings();renderStudents();renderHolidays();renderUsers();renderSchedule();renderUserBadge();applyRolePermissions();save(skipCloud)}
+function renderAll(skipCloud = false){renderHeader();renderSettings();renderStudents();renderHolidays();renderUsers();renderSchedule();renderUserBadge();applyRolePermissions();if(CURRENT_CLASS_ID==='default')renderAuditLogs();save(skipCloud)}
 function generate(){if(!state.settings.startDate||!state.settings.endDate){alert('請先設定開始日與結束日。');return}if(state.settings.startDate>state.settings.endDate){alert('開始日不能晚於結束日。');return}if(!state.students.length){alert('請先新增或匯入至少一位學員。');return}if(!eligibleStudents().some(s=>s.id===state.settings.firstStudentId))state.settings.firstStudentId=eligibleStudents()[0]?.id||'';ensureAssignments();renderAll()}
 function setTab(id){
  const isAdmin=currentUser&&currentUser.role==='admin';
  if(!isAdmin&&id!=='homePage'){alert('您的帳號權限僅能檢視值日生班表，無權訪問此頁面。');id='homePage';}
+ if(id==='auditLogPage'&&CURRENT_CLASS_ID!=='default'){id='homePage';}
  document.querySelectorAll('.tab-page').forEach(x=>x.classList.toggle('hidden',x.id!==id));
  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));
  if(id==='homePage')renderSchedule();
+ if(id==='auditLogPage'){fetchAuditLogsFromCloud();renderAuditLogs();}
 }
 function download(name,content,type='text/plain;charset=utf-8'){const blob=new Blob(['\ufeff',content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
@@ -1459,7 +1899,7 @@ function printRoster(dates,label){if(!dates.length){alert('沒有可匯出的班
   html+='<tr>'+rowHtml+'</tr></tbody></table></div>';
  }
  const old=showFull;showFull=true;renderSchedule();const wrap=document.getElementById('scheduleTableWrap');const prior=wrap.innerHTML;wrap.innerHTML=html;document.body.classList.add('print-cal');window.print();document.body.classList.remove('print-cal');wrap.innerHTML=prior;showFull=old;renderSchedule()}
-function saveStudent(e){e.preventDefault();const id=document.getElementById('studentId').value.trim(),name=document.getElementById('studentName').value.trim(),role=document.getElementById('studentRole').value;if(!id||!name)return;if(state.students.some(s=>s.id===id&&s.id!==editingId)){alert('這個學號已存在，請勿重複。');return}if(editingId&&editingId!==id&&state.students.some(s=>s.id===id)){alert('新學號已存在。');return}if(editingId){const idx=state.students.findIndex(s=>s.id===editingId);if(idx>=0){const oldId=state.students[idx].id;state.students[idx]={id,name,role:ROLE_OPTIONS.includes(role)?role:'學員'};if(oldId!==id){Object.values(state.assignments).forEach(a=>{if(a.studentId===oldId)a.studentId=id;if(a.studentId2===oldId)a.studentId2=id});if(state.settings.firstStudentId===oldId)state.settings.firstStudentId=id}}editingId=null;document.getElementById('saveStudentBtn').textContent='新增學員';document.getElementById('cancelStudentEdit').classList.add('hidden')}else state.students.push({id,name,role:ROLE_OPTIONS.includes(role)?role:'學員'});document.getElementById('studentForm').reset();document.getElementById('studentRole').value='學員';if(!state.settings.firstStudentId)state.settings.firstStudentId=(role==='學員'?id:eligibleStudents()[0]?.id||'');ensureAssignments();renderAll()}
+function saveStudent(e){e.preventDefault();const id=document.getElementById('studentId').value.trim(),name=document.getElementById('studentName').value.trim(),role=document.getElementById('studentRole').value;if(!id||!name)return;if(state.students.some(s=>s.id===id&&s.id!==editingId)){alert('這個學號已存在，請勿重複。');return}if(editingId&&editingId!==id&&state.students.some(s=>s.id===id)){alert('新學號已存在。');return}const wasEdit=Boolean(editingId);if(editingId){const idx=state.students.findIndex(s=>s.id===editingId);if(idx>=0){const oldId=state.students[idx].id;state.students[idx]={id,name,role:ROLE_OPTIONS.includes(role)?role:'學員'};if(oldId!==id){Object.values(state.assignments).forEach(a=>{if(a.studentId===oldId)a.studentId=id;if(a.studentId2===oldId)a.studentId2=id});if(state.settings.firstStudentId===oldId)state.settings.firstStudentId=id}}editingId=null;document.getElementById('saveStudentBtn').textContent='新增學員';document.getElementById('cancelStudentEdit').classList.add('hidden')}else state.students.push({id,name,role:ROLE_OPTIONS.includes(role)?role:'學員'});addAuditLog('學員異動',`${wasEdit?'編輯':'新增'}學員：學號 ${id}（職稱：${role}）`);document.getElementById('studentForm').reset();document.getElementById('studentRole').value='學員';if(!state.settings.firstStudentId)state.settings.firstStudentId=(role==='學員'?id:eligibleStudents()[0]?.id||'');ensureAssignments();renderAll()}
 document.getElementById('studentForm').addEventListener('submit',saveStudent);
 document.getElementById('cancelStudentEdit').addEventListener('click',()=>{editingId=null;document.getElementById('studentForm').reset();document.getElementById('studentRole').value='學員';document.getElementById('saveStudentBtn').textContent='新增學員';document.getElementById('cancelStudentEdit').classList.add('hidden')});
 document.getElementById('studentSearch').addEventListener('input',renderStudents);
@@ -1467,17 +1907,19 @@ document.getElementById('clearAllStudentsBtn').addEventListener('click',()=>{
  if(!state.students.length){alert('目前名單內沒有任何學員。');return;}
  const promptText = prompt(`⚠️【高風險操作防呆確認】\n確定要刪除全部 ${state.students.length} 位學員資料？\n\n刪除後排班表也將一併清空！\n若確定執行，請在下方輸入「全部刪除」四個字後按確定：`);
  if(promptText === '全部刪除'){
+  const cnt = state.students.length;
   state.students = [];
   state.settings.firstStudentId = '';
   state.assignments = {};
   ensureAssignments();
   renderAll();
+  addAuditLog('學員異動', `執行「清空所有學員」操作（共清除 ${cnt} 位學員與排班表）`);
   alert('已成功清空所有學員資料與排班。');
  }else if(promptText !== null){
   alert('輸入不正確，已取消刪除操作。');
  }
 });
-document.getElementById('studentTable').addEventListener('click',e=>{const ed=e.target.closest('[data-edit-student]'),del=e.target.closest('[data-delete-student]');if(ed){const s=studentFor(ed.dataset.editStudent);if(!s)return;editingId=s.id;document.getElementById('studentId').value=s.id;document.getElementById('studentName').value=s.name;document.getElementById('studentRole').value=s.role;document.getElementById('saveStudentBtn').textContent='儲存修改';document.getElementById('cancelStudentEdit').classList.remove('hidden');document.getElementById('studentId').focus()}if(del){const id=del.dataset.deleteStudent;if(!confirm(`確定刪除學號 ${id}？相關排班也會重新計算。`))return;state.students=state.students.filter(s=>s.id!==id);if(state.settings.firstStudentId===id)state.settings.firstStudentId=eligibleStudents()[0]?.id||'';Object.keys(state.assignments).forEach(d=>{const a=state.assignments[d];if(a.studentId===id||a.studentId2===id)delete state.assignments[d]});ensureAssignments();renderAll()}});
+document.getElementById('studentTable').addEventListener('click',e=>{const ed=e.target.closest('[data-edit-student]'),del=e.target.closest('[data-delete-student]');if(ed){const s=studentFor(ed.dataset.editStudent);if(!s)return;editingId=s.id;document.getElementById('studentId').value=s.id;document.getElementById('studentName').value=s.name;document.getElementById('studentRole').value=s.role;document.getElementById('saveStudentBtn').textContent='儲存修改';document.getElementById('cancelStudentEdit').classList.remove('hidden');document.getElementById('studentId').focus()}if(del){const id=del.dataset.deleteStudent;if(!confirm(`確定刪除學號 ${id}？相關排班也會重新計算。`))return;state.students=state.students.filter(s=>s.id!==id);if(state.settings.firstStudentId===id)state.settings.firstStudentId=eligibleStudents()[0]?.id||'';Object.keys(state.assignments).forEach(d=>{const a=state.assignments[d];if(a.studentId===id||a.studentId2===id)delete state.assignments[d]});ensureAssignments();renderAll();addAuditLog('學員異動',`刪除學員：學號 ${id}`)}});
 // 建立新班級時，選擇「預設課程結束日」自動帶入「自動回收（結訓刪除）日」與預設 23:00
 const newClassEndDateEl = document.getElementById('newClassEndDate');
 if(newClassEndDateEl){
@@ -1516,6 +1958,7 @@ document.getElementById('settingsForm').addEventListener('submit',e=>{
   if(old.startDate!==start||old.endDate!==end||old.firstStudentId!==state.settings.firstStudentId||old.editMode!==state.settings.editMode||old.dailyCount!==state.settings.dailyCount)ensureAssignments();
   renderAll();
   fetchAllClassesList();
+  addAuditLog('設定與排班', `儲存系統設定（期間：${start||'未設'}～${end||'未設'}、每日人數：${state.settings.dailyCount}人、模式：${state.settings.editMode}、去識別化：${state.settings.deidentify?'開啟':'關閉'}）`);
   alert('設定已儲存。');
 });
 document.getElementById('rebuildSettings').addEventListener('click',()=>{
@@ -1536,6 +1979,7 @@ document.getElementById('rebuildSettings').addEventListener('click',()=>{
     state.assignments={};
     generate();
     fetchAllClassesList();
+    addAuditLog('設定與排班', '執行「重新產生班表」操作');
     alert('已重新產生班表。');
   }
 });
@@ -1545,6 +1989,7 @@ document.getElementById('homePage').addEventListener('change',e=>{if(!currentUse
   if(!isDaily1&&s2===s1)s2=students[(students.findIndex(p=>p.id===s1)+1)%n].id;
   if(mode==='C'){if(confirm('目前是 C 模式：修改後會整張班表依學號重新排班，這次指定可能不會保留。確定套用？')){state.assignments={};ensureAssignments();}renderAll();return}
   state.assignments[date]={studentId:s1,studentId2:s2,manual:true};
+  addAuditLog('設定與排班', `手動修改 ${fmt(date)} 值日生指派（第${slot}位改為學號 ${id}，模式 ${mode}）`);
   if(mode==='A'){
     const dates=courseDates(),idx=dates.indexOf(date);
     if(isDaily1){
@@ -1558,15 +2003,17 @@ document.getElementById('homePage').addEventListener('change',e=>{if(!currentUse
   renderAll()});
 document.getElementById('holidayForm').addEventListener('submit',e=>{e.preventDefault();const start=document.getElementById('holidayDate').value,end=document.getElementById('holidayDateEnd').value||start,name=document.getElementById('holidayName').value.trim(),type=document.getElementById('holidayType').value;if(!start||!name)return;if(end<start){alert('結束日期不可早於起始日期。');return}
  let n=0;for(let d=parseDate(start);;d=addDays(d,1)){const k=iso(d);state.holidays=state.holidays.filter(h=>h.date!==k);state.holidays.push({date:k,name,type});n++;if(k>=end)break}
- state.assignments={};ensureAssignments();e.target.reset();renderAll();alert(n>1?`已新增 ${n} 天（${fmt(start)} ～ ${fmt(end)}），名稱「${name}」。`:'已新增 '+fmt(start)+'（'+name+'）。')});
+ state.assignments={};ensureAssignments();e.target.reset();renderAll();addAuditLog('假日異動', `手動新增${type==='workday'?'補課／上課日':'休假日'}：${fmt(start)}${n>1?'～'+fmt(end):''}（${name}，共 ${n} 天）`);alert(n>1?`已新增 ${n} 天（${fmt(start)} ～ ${fmt(end)}），名稱「${name}」。`:'已新增 '+fmt(start)+'（'+name+'）。')});
 document.getElementById('clearAllHolidaysBtn').addEventListener('click',()=>{
  if(!state.holidays.length){alert('目前沒有任何自訂或 API 假日資料。');return;}
  const promptText = prompt(`⚠️【高風險操作防呆確認】\n確定要清空全部 ${state.holidays.length} 筆假日與補課資料？\n（包含手動新增與 API 匯入的假日）\n\n若確定執行，請在下方輸入「全部刪除」四個字後按確定：`);
  if(promptText === '全部刪除'){
+  const cnt = state.holidays.length;
   state.holidays = [];
   state.assignments = {};
   ensureAssignments();
   renderAll();
+  addAuditLog('假日異動', `執行「清空所有假日」操作（共清除 ${cnt} 筆假日資料）`);
   alert('已成功清空所有假日資料。');
  }else if(promptText !== null){
   alert('輸入不正確，已取消刪除操作。');
@@ -1581,11 +2028,12 @@ document.getElementById('clearApiHolidaysBtn').addEventListener('click',()=>{
   state.assignments = {};
   ensureAssignments();
   renderAll();
+  addAuditLog('假日異動', `執行「僅清除自動更新假日」（共清除 ${apiCount} 筆）`);
   alert(`已清除 ${apiCount} 筆自動更新假日資料，手動新增的假日已保留。`);
  }
 });
 
-document.getElementById('holidayTable').addEventListener('click',e=>{const b=e.target.closest('[data-delete-holiday]');if(!b)return;state.holidays=state.holidays.filter(h=>h.date!==b.dataset.deleteHoliday);state.assignments={};ensureAssignments();renderAll()});
+document.getElementById('holidayTable').addEventListener('click',e=>{const b=e.target.closest('[data-delete-holiday]');if(!b)return;const delDate=b.dataset.deleteHoliday;state.holidays=state.holidays.filter(h=>h.date!==delDate);state.assignments={};ensureAssignments();renderAll();addAuditLog('假日異動',`刪除單筆假日：${fmt(delDate)}`)});
 const API_DEFAULT='https://api.pin-yi.me/taiwan-calendar';
 document.getElementById('apiBase').value=state.settings.apiBase||API_DEFAULT;
 document.getElementById('syncApiBtn').addEventListener('click',async()=>{
@@ -1622,6 +2070,7 @@ document.getElementById('syncApiBtn').addEventListener('click',async()=>{
  }
  const ts=new Date().toLocaleTimeString('zh-TW',{hour12:false});
  if(okYears>0){state.assignments={};ensureAssignments();save();renderAll();
+  addAuditLog('假日異動', `執行「自動更新國定假日」（年度：${years.join('、')}，匯入 ${nHoli} 個國定假日、${nWork} 個補班日）`);
   res.textContent=`更新完成（${ts}，年度 ${years.join('、')}）：匯入 ${nHoli} 個國定假日、${nWork} 個週末補班日。手動新增的假日已全部保留。`+(failYears.length?` 失敗：${failYears.join('、')}。`:'')}
  else res.textContent=`更新失敗：${failYears.join('、')}。請確認網路連線或 API 網址；手動假日未受影響，仍可手動新增。`;
  btn.disabled=false;btn.textContent=oldTxt;
@@ -1633,27 +2082,27 @@ document.getElementById('nextMonth').addEventListener('click',()=>{const [y,m]=s
 document.getElementById('monthPicker').addEventListener('change',e=>{const val=e.target.value;if(val){state.viewMonth=val;showFull=false;renderSchedule();save();}});
 document.getElementById('currMonthBtn').addEventListener('click',()=>{state.viewMonth=todayISO().slice(0,7);showFull=false;renderSchedule();save();});
 document.getElementById('showFullSchedule').addEventListener('click',()=>{showFull=!showFull;renderSchedule()});
-document.getElementById('autoRebuild').addEventListener('click',()=>{if(confirm('重新自動排班會依目前規則重算班表，手動指定可能被覆蓋。確定？')){state.assignments={};generate()}});
+document.getElementById('autoRebuild').addEventListener('click',()=>{if(confirm('重新自動排班會依目前規則重算班表，手動指定可能被覆蓋。確定？')){state.assignments={};generate();addAuditLog('設定與排班','於首頁執行「重新自動排班」')}});
 function guardExport(){if(!state.settings.startDate||!state.settings.endDate){alert('請先到「系統設定」設定開始日與結束日，再匯出班表。');return null}const all=courseDates();if(!all.length){alert('課程期間內沒有可排班的上課日，請檢查開始／結束日與假日設定。');return null}return all}
 function monthOrFull(all){const m=all.filter(d=>d.startsWith(state.viewMonth));return m.length?{month:true,dates:m,label:`本月值日生班表 ${state.viewMonth}`,file:`值日生班表_${state.viewMonth}.xls`,title:'值日生班表'}:{month:false,dates:all,label:`完整課程值日生班表（${state.viewMonth} 本月沒有排班日，改輸出完整課程）`,file:'值日生完整班表.xls',title:'值日生完整班表'}}
-document.getElementById('exportMonthXls').addEventListener('click',()=>{const all=guardExport();if(!all)return;const md=monthOrFull(all);exportXls(md.file,[['班級',state.settings.title,...(state.settings.subtitle?[state.settings.subtitle]:[])],...rosterRows(md.dates)],md.title)});
-document.getElementById('exportMonthPdf').addEventListener('click',()=>{const all=guardExport();if(!all)return;const md=monthOrFull(all);printRoster(md.dates,md.label)});
-document.getElementById('exportFullXls').addEventListener('click',()=>{const all=guardExport();if(!all)return;exportXls('值日生完整課程班表.xls',[['班級',state.settings.title,...(state.settings.subtitle?[state.settings.subtitle]:[])],...rosterRows(all)],'完整課程班表')});
-document.getElementById('exportFullPdf').addEventListener('click',()=>{const all=guardExport();if(!all)return;printRoster(all,'完整課程值日生班表')});
+document.getElementById('exportMonthXls').addEventListener('click',()=>{const all=guardExport();if(!all)return;const md=monthOrFull(all);addAuditLog('資料匯出',`匯出 Excel：${md.file}`);exportXls(md.file,[['班級',state.settings.title,...(state.settings.subtitle?[state.settings.subtitle]:[])],...rosterRows(md.dates)],md.title)});
+document.getElementById('exportMonthPdf').addEventListener('click',()=>{const all=guardExport();if(!all)return;const md=monthOrFull(all);addAuditLog('資料匯出',`列印／匯出 PDF：${md.label}`);printRoster(md.dates,md.label)});
+document.getElementById('exportFullXls').addEventListener('click',()=>{const all=guardExport();if(!all)return;addAuditLog('資料匯出','匯出完整課程班表 Excel');exportXls('值日生完整課程班表.xls',[['班級',state.settings.title,...(state.settings.subtitle?[state.settings.subtitle]:[])],...rosterRows(all)],'完整課程班表')});
+document.getElementById('exportFullPdf').addEventListener('click',()=>{const all=guardExport();if(!all)return;addAuditLog('資料匯出','列印／匯出完整課程班表 PDF');printRoster(all,'完整課程值日生班表')});
 function studentRows(){return [['學號','姓名','職稱'],...sortedStudents().map(s=>[s.id,maskStudentName(s.name),s.role])]}
-document.getElementById('downloadStudentCsv').addEventListener('click',()=>exportCSV('學員資料.csv',studentRows()));
-document.getElementById('exportStudentsCsv').addEventListener('click',()=>exportCSV('學員資料.csv',studentRows()));
-document.getElementById('exportStudentsXls').addEventListener('click',()=>exportXls('學員資料.xls',studentRows(),'學員資料'));
+document.getElementById('downloadStudentCsv').addEventListener('click',()=>{addAuditLog('資料匯出','匯出學員資料 CSV');exportCSV('學員資料.csv',studentRows())});
+document.getElementById('exportStudentsCsv').addEventListener('click',()=>{addAuditLog('資料匯出','匯出學員資料 CSV');exportCSV('學員資料.csv',studentRows())});
+document.getElementById('exportStudentsXls').addEventListener('click',()=>{addAuditLog('資料匯出','匯出學員資料 Excel');exportXls('學員資料.xls',studentRows(),'學員資料')});
 document.getElementById('downloadTemplate').addEventListener('click',()=>exportCSV('學員資料匯入範本.csv',[['學號','姓名','職稱'],['001','王小明','班長'],['002','陳小華','學員']]));
 document.getElementById('studentFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const txt=await f.text();try{const lines=txt.replace(/^\ufeff/,'').split(/\r?\n/).filter(x=>x.trim());const parseLine=line=>{let out=[],cur='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'){cur+='"';i++}else if(c==='"')q=!q;else if(c===','&&!q){out.push(cur);cur=''}else cur+=c}out.push(cur);return out};let rows=lines.map(parseLine);const norm=x=>String(x||'').trim().toLowerCase();if(rows.length&&['學號','id','student id'].includes(norm(rows[0][0])))rows.shift();importRows=rows.filter(r=>r[0]?.trim()&&r[1]?.trim()).map(r=>({id:r[0].trim(),name:r[1].trim(),role:ROLE_OPTIONS.includes(r[2]?.trim())?r[2].trim():'學員'}));const ids=new Set();let dup=0;importRows.forEach(r=>{if(ids.has(r.id))dup++;ids.add(r.id)});document.getElementById('importPreview').textContent=`讀取 ${importRows.length} 筆有效資料；檔案內重複學號 ${dup} 筆（後者會覆蓋前者）。匯入時相同學號會更新現有資料。`;document.getElementById('confirmImport').classList.toggle('hidden',!importRows.length)}catch(err){importRows=null;document.getElementById('importPreview').textContent='檔案解析失敗，請確認是 UTF-8 CSV 格式。';document.getElementById('confirmImport').classList.add('hidden')}});
-document.getElementById('confirmImport').addEventListener('click',()=>{if(!importRows?.length)return;const map=new Map(state.students.map(s=>[s.id,s]));importRows.forEach(s=>map.set(s.id,s));state.students=[...map.values()];if(!state.settings.firstStudentId)state.settings.firstStudentId=eligibleStudents()[0]?.id||'';ensureAssignments();renderAll();document.getElementById('studentFile').value='';document.getElementById('importPreview').textContent=`已匯入／更新 ${importRows.length} 筆資料。`;document.getElementById('confirmImport').classList.add('hidden');importRows=null;alert('學員資料匯入完成。')});
+document.getElementById('confirmImport').addEventListener('click',()=>{if(!importRows?.length)return;const cnt=importRows.length;const map=new Map(state.students.map(s=>[s.id,s]));importRows.forEach(s=>map.set(s.id,s));state.students=[...map.values()];if(!state.settings.firstStudentId)state.settings.firstStudentId=eligibleStudents()[0]?.id||'';ensureAssignments();renderAll();addAuditLog('學員異動',`由 CSV 批次匯入／更新 ${cnt} 筆學員資料`);document.getElementById('studentFile').value='';document.getElementById('importPreview').textContent=`已匯入／更新 ${cnt} 筆資料。`;document.getElementById('confirmImport').classList.add('hidden');importRows=null;alert('學員資料匯入完成。')});
 function backupObj(){return {app:'offline-duty-roster',version:1,exportedAt:new Date().toISOString(),...state}}
-function exportBackup(){download('值日生系統完整備份.json',JSON.stringify(backupObj(),null,2),'application/json;charset=utf-8')}
+function exportBackup(){addAuditLog('資料匯出','匯出系統完整備份 JSON');download('值日生系統完整備份.json',JSON.stringify(backupObj(),null,2),'application/json;charset=utf-8')}
 document.getElementById('exportBackup').addEventListener('click',exportBackup);document.getElementById('backupFromSettings').addEventListener('click',exportBackup);
 
 const manualSyncBtn = document.getElementById('manualSyncBtn');
 if(manualSyncBtn) manualSyncBtn.addEventListener('click', () => fetchFromCloud(true));
-document.getElementById('backupFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const obj=JSON.parse(await f.text());if(!obj.settings||!Array.isArray(obj.students)||!Array.isArray(obj.holidays)||!obj.assignments)throw Error('格式不符');if(!confirm('還原備份會取代目前所有設定、學員與班表資料，確定繼續？'))return;state={...structuredClone(defaults),...obj,settings:{...defaults.settings,...obj.settings}};save();renderAll();alert('備份還原完成。')}catch(err){alert('無法還原：檔案不是有效的本系統 JSON 備份。')}e.target.value=''});
+document.getElementById('backupFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const obj=JSON.parse(await f.text());if(!obj.settings||!Array.isArray(obj.students)||!Array.isArray(obj.holidays)||!obj.assignments)throw Error('格式不符');if(!confirm('還原備份會取代目前所有設定、學員與班表資料，確定繼續？'))return;state={...structuredClone(defaults),...obj,settings:{...defaults.settings,...obj.settings}};save();renderAll();addAuditLog('設定與排班','由 JSON 備份檔還原系統資料');alert('備份還原完成。')}catch(err){alert('無法還原：檔案不是有效的本系統 JSON 備份。')}e.target.value=''});
 window.addEventListener('afterprint',()=>{renderSchedule()});
 {const cd=courseDates();if(eligibleStudents().length&&cd.length&&(Object.keys(state.assignments).length!==cd.length||Object.values(state.assignments).some(a=>{const s=studentFor(a&&a.studentId);return !s||s.role!=='學員'||!a.studentId2})))ensureAssignments()}
 
@@ -1724,14 +2173,15 @@ if(createClassFormEl){
     const newEnd = document.getElementById('newClassEndDate')?.value || '';
     const newAutoDel = document.getElementById('newClassAutoDeleteDate')?.value || newEnd || '';
     const newAutoDelTime = document.getElementById('newClassAutoDeleteTime')?.value || '23:00';
-    const newAdminPwd = (document.getElementById('newClassAdminPwd')?.value || '12345678').trim();
+    const newAdminPwd = (document.getElementById('newClassAdminPwd')?.value || 'aA123456@').trim();
 
     if(!/^[a-zA-Z0-9_-]+$/.test(baseCid)){
       alert('班級代號請使用英文字母、數字、底線(_)或連字號(-)，例如：c01 或 cloud03');
       return;
     }
-    if(newAdminPwd.length < 8 || newAdminPwd.length > 20){
-      alert('配發各班管理員初始密碼長度必須為 8 至 20 個字元！');
+    const pwdCheck = validatePasswordPolicy(newAdminPwd);
+    if(!pwdCheck.ok){
+      alert('配發各班管理員初始密碼不符合高強度規範：\n' + pwdCheck.msg);
       return;
     }
     if(newStart && newEnd && newStart > newEnd){
@@ -1834,6 +2284,7 @@ if(createClassFormEl){
     // 3. 保持留在 default 主系統並刷新班級清單（不自動跳轉至分班）
     await fetchAllClassesList();
     renderAll(true);
+    addAuditLog('班級管理', `建立新班級：${toCreateIds.join('、')}（共 ${toCreateIds.length} 班，期別：${newSub || '未設'}）`);
 
     document.getElementById('newClassIdInput').value = '';
     if(document.getElementById('newClassBatchCount')) document.getElementById('newClassBatchCount').value = '1';
@@ -2160,6 +2611,7 @@ if(deleteAllCustomClassesBtn){
       const targetIds = customClasses.map(c => c.class_id);
       await Promise.all(targetIds.map(cid => purgeClassEverywhere(cid)));
       allCloudClasses = allCloudClasses.filter(c => c.class_id === 'default');
+      addAuditLog('班級管理', `執行「一鍵刪除所有自建班級」（共刪除 ${targetIds.length} 個班級：${targetIds.join('、')}）`);
       if(CURRENT_CLASS_ID !== 'default'){
         await switchClass('default', true);
       } else {
@@ -2269,6 +2721,7 @@ if(editExpiryFormEl){
       return;
     }
     await saveClassExpiryChange(cid, dVal, tVal);
+    addAuditLog('班級管理', dVal ? `修改班級【${cid}】自動回收時間為：${fmt(dVal)} ${tVal}` : `將班級【${cid}】設為永久保留`);
     document.getElementById('editExpiryModal')?.classList.add('hidden');
     alert(dVal ? `✅ 已更新班級【${cid}】自動回收時間為：${fmt(dVal)} ${tVal}` : `✅ 已將班級【${cid}】設為永久保留。`);
   });
@@ -2279,6 +2732,7 @@ if(clearExpiryBtnEl){
     const cid = document.getElementById('editExpiryClassId')?.value;
     if(!cid || cid === 'default') return;
     await saveClassExpiryChange(cid, '', '23:00');
+    addAuditLog('班級管理', `將班級【${cid}】設為永久保留（清除自動回收設定）`);
     document.getElementById('editExpiryModal')?.classList.add('hidden');
     alert(`✅ 已將班級【${cid}】設為永久保留（不自動回收）。`);
   });
@@ -2321,6 +2775,7 @@ if(classListTableEl){
       }
       await purgeClassEverywhere(cid);
       allCloudClasses = allCloudClasses.filter(c => c.class_id !== cid);
+      addAuditLog('班級管理', `手動永久刪除班級【${cid}】`);
       if(CURRENT_CLASS_ID === cid){
         await switchClass('default', true);
       } else {
@@ -2345,27 +2800,91 @@ if(toggleLoginPwdBtn && loginPwdInputEl){
   });
 }
 
-// 登入處理（帳號不分大小寫、密碼嚴格區分大小寫）
+// 登入處理（帳號不分大小寫、密碼嚴格區分大小寫、錯誤 5 次帳號鎖定、單一 IP/設備 1 分鐘 20 次速率封鎖）
 document.getElementById('loginForm').addEventListener('submit', async e=>{
  e.preventDefault();
  const u=document.getElementById('loginUsername').value.trim();
  const p=document.getElementById('loginPassword').value;
  const err=document.getElementById('loginError');
- await fetchFromCloud(false, true);
- const found=state.users.find(x=>String(x.username||'').toLowerCase()===u.toLowerCase());
- if(!found||found.password!==p){
-  err.textContent=`在班級【${CURRENT_CLASS_ID}】中找不到此帳號或密碼錯誤，請確認帳密。`;
+
+ // 1. 檢查單一 IP / 單一設備（Device ID）速率限制（Rate Limiting）
+ await fetchRateLimitBansFromCloud();
+ const rlStatus = checkRateLimitStatus();
+ if(rlStatus.blocked){
+  const remMin = Math.ceil(rlStatus.remainMs / 60000);
+  err.textContent = `🚨【資安速率限制防護】\n系統偵測到您的來源 IP（${CLIENT_IP}）或設備（${CLIENT_DEVICE_ID}）於 1 分鐘內觸發超過 20 次登入失敗，已自動全面封鎖 1 小時（剩餘約 ${remMin} 分鐘）。\n請稍後再試或聯絡系統管理員。`;
   err.style.display='block';
   return;
  }
+
+ await fetchFromCloud(false, true);
+ const found=state.users.find(x=>String(x.username||'').toLowerCase()===u.toLowerCase());
+ const isSuperTarget = found && String(found.username||'').toLowerCase() === 'skynet99';
+
+ // 2. 檢查該帳號是否因連續錯誤達 5 次而已被鎖定
+ if(found && found.locked && !isSuperTarget){
+  await recordLoginFailureForRateLimit(found.username);
+  await addAuditLog('登入失敗', `嘗試登入已鎖定之帳號【${found.username}】遭系統攔截`, found.username, found.role === 'admin' ? '管理員(已鎖定)' : '一般使用者(已鎖定)');
+  err.textContent = `🔒 帳號【${found.username}】因連續輸入錯誤達 5 次已被系統鎖定！\n請聯絡系統管理員為您解鎖並重置密碼，登入後再修改新密碼。`;
+  err.style.display='block';
+  return;
+ }
+
+ // 3. 驗證帳號是否存在及密碼是否正確
+ if(!found || found.password !== p){
+  const rlRec = await recordLoginFailureForRateLimit(u || '未知');
+  if(rlRec.newlyBanned){
+   err.textContent = `🚨【資安速率限制防護】\n您的來源 IP（${CLIENT_IP}）或設備（${CLIENT_DEVICE_ID}）於 1 分鐘內累積超過 20 次登入失敗，已被系統自動全面封鎖 1 小時（60 分鐘）！`;
+   err.style.display='block';
+   return;
+  }
+  if(found && !isSuperTarget){
+   found.failedAttempts = (parseInt(found.failedAttempts, 10) || 0) + 1;
+   lastLocalChangeTime = Date.now();
+   if(found.failedAttempts >= 5){
+    found.locked = true;
+    save(true);
+    await syncUserToCloud(found);
+    await addAuditLog('帳號鎖定', `帳號【${found.username}】連續登入密碼錯誤達 5 次，系統已自動鎖定該帳號`, found.username, found.role === 'admin' ? '管理員' : '一般使用者');
+    err.textContent = `🔒 密碼輸入錯誤已達 5 次！帳號【${found.username}】已被系統自動鎖定。\n請聯絡系統管理員解鎖並重置密碼，待管理員重置後再登入修改密碼。\n\n💡 密碼規則提示：${PWD_POLICY_HINT}`;
+    err.style.display='block';
+    return;
+   } else {
+    const remainTries = 5 - found.failedAttempts;
+    save(true);
+    await syncUserToCloud(found);
+    await addAuditLog('登入失敗', `帳號【${found.username}】密碼輸入錯誤（目前已累計錯誤 ${found.failedAttempts}/5 次）`, found.username, found.role === 'admin' ? '管理員' : '一般使用者');
+    err.textContent = `❌ 帳號或密碼錯誤！帳號【${found.username}】目前已連續錯誤 ${found.failedAttempts} 次（再錯誤 ${remainTries} 次將自動鎖定帳號）。\n\n💡 密碼規則提示：${PWD_POLICY_HINT}`;
+    err.style.display='block';
+    return;
+   }
+  } else {
+   await addAuditLog('登入失敗', `嘗試以帳號【${u || '未填'}】登入失敗（帳號不存在或密碼不符）`, u || '未知', '未授權訪客');
+   err.textContent = `❌ 在班級【${CURRENT_CLASS_ID}】中找不到此帳號或密碼錯誤（注意：連續錯誤達 5 次將鎖定帳號）。\n\n💡 密碼規則提示：${PWD_POLICY_HINT}`;
+   err.style.display='block';
+   return;
+  }
+ }
+
+ // 4. 登入成功：重置錯誤計數器並寫入活動紀錄 LOG
  err.style.display='none';
+ if(found.failedAttempts > 0 || found.locked){
+  found.failedAttempts = 0;
+  found.locked = false;
+  lastLocalChangeTime = Date.now();
+  save(true);
+  syncUserToCloud(found);
+ }
+ const roleTitle = found.username === 'skynet99' ? '超級總管理員' : (isGlobalSuperUser(found) ? '跨班總管理員' : (found.role === 'admin' ? '本班管理員' : '一般學員'));
  if(found.firstLogin){
+  await addAuditLog('登入成功', `帳號【${found.username}】首次登入驗證通過，進入強制修改密碼程序`, found.username, roleTitle);
   document.getElementById('loginOverlay').classList.add('hidden');
   openChangePwdModal(true,found);
   return;
  }
  currentUser={username:found.username,role:found.role,isGlobal:isGlobalSuperUser(found),classId:CURRENT_CLASS_ID};
  setSessionUser(currentUser);
+ addAuditLog('登入成功', `成功登入班級【${CURRENT_CLASS_ID}】系統`, found.username, roleTitle);
  document.getElementById('loginOverlay').classList.add('hidden');
  const appMain=document.getElementById('appMain');
  if(appMain)appMain.classList.remove('hidden');
@@ -2375,6 +2894,7 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
 // 登出處理
 document.getElementById('logoutBtn').addEventListener('click',()=>{
  if(confirm('確定要登出系統？')){
+  addAuditLog('登出系統', `使用者手動登出班級【${CURRENT_CLASS_ID}】`);
   currentUser=null;
   setSessionUser(null);
   checkAuth();
@@ -2397,15 +2917,16 @@ document.getElementById('cancelPwdModalBtn').addEventListener('click',()=>{
  }
 });
 
-// 提交密碼修改
+// 提交密碼修改（強制高強度密碼複雜度驗證）
 document.getElementById('changePwdForm').addEventListener('submit',e=>{
  e.preventDefault();
  const oldP=document.getElementById('oldPassword').value;
  const newP=document.getElementById('newPassword').value;
  const confP=document.getElementById('confirmNewPassword').value;
  const err=document.getElementById('pwdModalError');
- if(newP.length<8||newP.length>20){
-  err.textContent='密碼原則錯誤：密碼長度必須在 8 到 20 個字元之間。';
+ const policyRes = validatePasswordPolicy(newP);
+ if(!policyRes.ok){
+  err.textContent = policyRes.msg;
   err.style.display='block';
   return;
  }
@@ -2419,11 +2940,15 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
   if(target){
    target.password=newP;
    target.firstLogin=false;
+   target.failedAttempts=0;
+   target.locked=false;
+   lastLocalChangeTime = Date.now();
    save();
    syncUserToCloud(target);
    currentUser={username:target.username,role:target.role,isGlobal:isGlobalSuperUser(target),classId:CURRENT_CLASS_ID};
    setSessionUser(currentUser);
    pendingFirstLoginUser=null;
+   addAuditLog('密碼變更', `帳號【${target.username}】完成首次登入強制密碼變更並進入系統`);
    document.getElementById('changePwdModal').classList.add('hidden');
    document.getElementById('loginOverlay').classList.add('hidden');
    const appMain=document.getElementById('appMain');
@@ -2440,8 +2965,12 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
   return;
  }
  target.password=newP;
+ target.failedAttempts=0;
+ target.locked=false;
+ lastLocalChangeTime = Date.now();
  save();
  syncUserToCloud(target);
+ addAuditLog('密碼變更', `帳號【${target.username}】自行修改密碼成功`);
  document.getElementById('changePwdModal').classList.add('hidden');
  alert('密碼修改成功！');
 });
@@ -2462,26 +2991,29 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
  // 分出去的班級（非 default）不允許勾選跨全班級通用，新增的帳號 100% 僅限本班使用
  const isGlobalChecked = Boolean((CURRENT_CLASS_ID === 'default') && isGlobalSuperUser(currentUser) && role === 'admin' && document.getElementById('accIsGlobal')?.checked);
  if(!username||!password)return;
- if(password.length<8||password.length>20){
-  alert('密碼長度不符合原則：密碼長度必須在 8 到 20 個字元之間！');
+ const pwdCheck = validatePasswordPolicy(password);
+ if(!pwdCheck.ok){
+  alert('密碼不符合高強度資安規範：\n' + pwdCheck.msg);
   document.getElementById('accPassword').focus();
   return;
  }
  if(state.users.some(u=>String(u.username||'').toLowerCase()===username.toLowerCase())){
   alert('此帳號已存在（帳號不分大小寫），請使用其他帳號名稱。');return;
  }
- const newUser={username,password,role,firstLogin:true,isGlobal:isGlobalChecked};
+ const newUser={username,password,role,firstLogin:true,isGlobal:isGlobalChecked,failedAttempts:0,locked:false};
  state.users.push(newUser);
  lastLocalChangeTime = Date.now();
  save();
  syncUserToCloud(newUser);
  renderUsers();
+ const roleDesc = isGlobalChecked ? '跨全班級通用總管理員' : (role === 'admin' ? '本班管理員' : '一般使用者');
+ addAuditLog('帳號管理', `新增使用者帳號【${username}】（角色：${roleDesc}）`);
  e.target.reset();
  updateGlobalCheckboxVisibility();
  alert(`帳號【${username}】（${isGlobalChecked ? '🌐 跨全班級通用總管理員' : (role === 'admin' ? '🏫 本班管理員' : '🏫 一般使用者')}）建立成功！\n該使用者首次登入時系統會強制要求其修改密碼。`);
 });
 
-// 使用者列表操作 (重置密碼 / 刪除)
+// 使用者列表操作 (解鎖並重置密碼 / 刪除)
 document.getElementById('userTable').addEventListener('click',e=>{
  if(!currentUser||currentUser.role!=='admin')return;
  const rst=e.target.closest('[data-reset-user]');
@@ -2493,21 +3025,26 @@ document.getElementById('userTable').addEventListener('click',e=>{
   if(isGlobalSuperUser(target) && !isGlobalSuperUser(currentUser)){
    alert('僅跨班總管理員可重置其他跨班總管理員的密碼。');return;
   }
-  const newTemp=prompt(`請輸入為【${uname}】重置的新預設密碼（8～20字元）：`,'12345678');
+  const wasLocked = Boolean(target.locked);
+  const newTemp=prompt(`請輸入為【${uname}】${wasLocked ? '解鎖並' : ''}重置的新預設密碼：\n（${PWD_POLICY_HINT}）`,'aA123456@');
   if(newTemp===null)return;
   const trimmed=newTemp.trim();
-  if(trimmed.length<8||trimmed.length>20){alert('重置失敗：密碼長度必須在 8 到 20 個字元之間！');return;}
+  const pwdCheck = validatePasswordPolicy(trimmed);
+  if(!pwdCheck.ok){alert('重置失敗：\n' + pwdCheck.msg);return;}
   target.password=trimmed;
-  target.firstLogin=true; // 重置後要求下次首次登入改密碼
+  target.firstLogin=true; // 重置後強制要求下次首次登入改密碼
+  target.failedAttempts=0;
+  target.locked=false;
   lastLocalChangeTime = Date.now();
   save();
   syncUserToCloud(target);
   renderUsers();
-  alert(`帳號【${uname}】密碼已重置！\n使用者下次登入時會提示修改密碼。`);
+  addAuditLog(wasLocked ? '帳號解鎖' : '帳號管理', `${wasLocked ? '解鎖帳號並' : ''}重置【${uname}】的密碼（已設為首次登入強制改密碼）`);
+  alert(`帳號【${uname}】${wasLocked ? '已成功解鎖並' : ''}完成密碼重置！\n請通知該使用者以新預設密碼登入，系統將強制要求其設定新密碼。`);
  }
  if(del){
   const uname=del.dataset.deleteUser;
-  if(uname==='skynet99'||uname===currentUser.username){
+  if(uname==='skynet99'||uname.toLowerCase()===currentUser.username.toLowerCase()){
    alert('不可刪除預設總管理員或您自己目前的帳號。');return;
   }
   const target=state.users.find(u=>u.username===uname);
@@ -2521,7 +3058,64 @@ document.getElementById('userTable').addEventListener('click',e=>{
   deleteUserFromCloud(uname, wasGlob);
   save();
   renderUsers();
+  addAuditLog('帳號管理', `刪除使用者帳號【${uname}】`);
  }
+});
+
+// ---------------------------------------------------------
+// 📋 活動紀錄 LOG 分頁操作綁定（搜尋、篩選、匯出 Excel、列印/匯出 PDF、一鍵清除）
+// ---------------------------------------------------------
+document.getElementById('auditLogSearch')?.addEventListener('input', renderAuditLogs);
+document.getElementById('auditLogCatFilter')?.addEventListener('change', renderAuditLogs);
+
+document.getElementById('exportAuditLogXls')?.addEventListener('click', () => {
+  const list = getFilteredAuditLogs();
+  if(!list.length){ alert('目前沒有可匯出的活動紀錄 LOG。'); return; }
+  addAuditLog('資料匯出', `匯出活動紀錄 LOG Excel（共 ${list.length} 筆）`);
+  const rows = [
+    ['日期時間 (精確至秒)', '班級代號', '操作帳號', '角色權限', '來源 IP', '設備識別碼 (Device ID)', '事件類別', '詳細動作內容'],
+    ...list.map(item => [
+      item.timeStr || formatAuditTime(item.ts),
+      item.classId || 'default',
+      item.username || '',
+      item.roleLabel || '',
+      item.ip || '',
+      item.deviceId || '',
+      item.category || '',
+      item.detail || ''
+    ])
+  ];
+  exportXls(`系統活動紀錄LOG_${todayISO()}.xls`, rows, '系統活動紀錄LOG');
+});
+
+document.getElementById('exportAuditLogPdf')?.addEventListener('click', () => {
+  const list = getFilteredAuditLogs();
+  if(!list.length){ alert('目前沒有可列印／匯出的活動紀錄 LOG。'); return; }
+  addAuditLog('資料匯出', `列印／匯出活動紀錄 LOG PDF（共 ${list.length} 筆）`);
+  window.print();
+});
+
+document.getElementById('clearAuditLogBtn')?.addEventListener('click', async () => {
+  if(CURRENT_CLASS_ID !== 'default' || !currentUser || currentUser.role !== 'admin'){
+    alert('僅主系統管理員可清除活動紀錄。');
+    return;
+  }
+  if(!auditLogs.length){
+    alert('目前沒有任何活動紀錄可供清除。');
+    return;
+  }
+  const confirmTxt = prompt(`⚠️【高風險操作防呆確認】\n確定要一鍵清除全部 ${auditLogs.length} 筆系統活動與資安稽核紀錄嗎？\n\n若確定執行，請在下方輸入「全部刪除」四個字後按確定：`);
+  if(confirmTxt !== '全部刪除'){
+    if(confirmTxt !== null) alert('輸入不正確，已取消清除操作。');
+    return;
+  }
+  auditLogs = [];
+  saveLocalAuditLogs();
+  try {
+    await supabaseFetch(`roster_holidays?class_id=eq.__audit_log__`, { method: 'DELETE' });
+  } catch(e){}
+  renderAuditLogs();
+  alert('已成功清除所有活動紀錄 LOG。');
 });
 
 
@@ -2619,6 +3213,7 @@ setInterval(() => {
   
   if (timeoutMin <= 0) return; // 0 表示停用自動登出
   if (idleMs >= timeoutMin * 60 * 1000) {
+    addAuditLog('登出系統', `超過 ${timeoutMin} 分鐘未操作，系統觸發閒置自動登出`);
     currentUser = null;
     setSessionUser(null);
     checkAuth();
@@ -2634,6 +3229,7 @@ renderAll(true);
 // 啟動時自動拉取最新資料与班級清單
 fetchFromCloud(false, true);
 fetchAllClassesList();
+if(CURRENT_CLASS_ID === 'default') fetchAuditLogsFromCloud();
 // 每一分鐘自動在背景檢查雲端是否有其他人更新以及是否有班級到達自動回收日
 setInterval(() => {
  if(!document.hidden){

@@ -358,8 +358,11 @@
         </div>
         <div class="field">
           <label for="newClassAdminPwd">🔑 配發各班管理員初始密碼 *</label>
-          <input type="text" id="newClassAdminPwd" required minlength="8" maxlength="20" value="aA123456@" placeholder="8～20字元（含英文大寫、小寫、數字及特殊符號）">
-          <div class="muted" style="font-size:11px;margin-top:4px">須含英文大寫、小寫、數字及特殊符號；首次登入強制改密碼</div>
+          <div style="position:relative">
+            <input type="password" id="newClassAdminPwd" required minlength="8" maxlength="20" value="aA123456@" placeholder="8～20字元（含英文大寫、小寫、數字及特殊符號）" style="padding-right:42px">
+            <button type="button" id="toggleNewClassPwdBtn" title="顯示／隱藏密碼明碼" aria-label="顯示或隱藏初始密碼" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;padding:4px 8px;font-size:17px;cursor:pointer;color:#64748b;box-shadow:none;line-height:1">👁️</button>
+          </div>
+          <div class="muted" style="font-size:11px;margin-top:4px">預設 aA123456@（可點擊 👁️ 檢視或修改）；首次登入強制改密碼</div>
         </div>
       </div>
       <div class="actions" style="margin-top:12px;justify-content:flex-end">
@@ -409,7 +412,14 @@
     <p class="muted">管理系統使用者帳號與權限。預設管理員（admin）具備完整權限與重置密碼功能。一般使用者首次登入會強制變更密碼。</p>
     <form id="userForm" class="grid four">
       <div class="field"><label for="accUsername">帳號 *</label><input id="accUsername" required maxlength="40" placeholder="例如：user01"></div>
-      <div class="field"><label for="accPassword">密碼 *</label><input type="password" id="accPassword" required minlength="8" maxlength="20" placeholder="8～20字元（含英數大小寫及特殊符號）"><div class="muted" style="font-size:11px;margin-top:4px">密碼原則：長度 8～20 字元，須同時包含英文大寫、英文小寫、數字及特殊符號</div></div>
+      <div class="field">
+        <label for="accPassword">密碼 *</label>
+        <div style="position:relative">
+          <input type="password" id="accPassword" required minlength="8" maxlength="20" value="aA123456@" placeholder="8～20字元（含英數大小寫及特殊符號）" style="padding-right:42px">
+          <button type="button" id="toggleAccPwdBtn" title="顯示／隱藏密碼明碼" aria-label="顯示或隱藏密碼" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;padding:4px 8px;font-size:17px;cursor:pointer;color:#64748b;box-shadow:none;line-height:1">👁️</button>
+        </div>
+        <div class="muted" style="font-size:11px;margin-top:4px">預設 aA123456@（可點擊 👁️ 檢視或修改）；首次登入強制改密碼</div>
+      </div>
       <div class="field">
         <label for="accRole">權限角色</label>
         <select id="accRole"><option value="user">一般使用者（唯讀檢視班表）</option><option value="admin">系統管理員（完整排班與管理權限）</option></select>
@@ -1238,20 +1248,33 @@ async function switchClass(targetClassId, keepSession = false){
 }
 
 async function fetchFromCloud(manualAlert = false, forcePull = false){
- if(isSyncing || isPushing) return;
+ if(isPushing){
+  if(forcePull){
+   while(isPushing) await new Promise(r => setTimeout(r, 80));
+  } else {
+   return;
+  }
+ }
+ if(isSyncing){
+  if(forcePull){
+   while(isSyncing) await new Promise(r => setTimeout(r, 80));
+  } else {
+   return;
+  }
+ }
  if(!manualAlert && !forcePull && (Date.now() - lastLocalChangeTime < 4000)) return;
  isSyncing = true;
  const startChangeTime = lastLocalChangeTime;
  const pill = document.getElementById('cloudSyncPill');
  if(pill) pill.textContent = '⚡ 雲端同步中...';
  try {
-  // 1. 同時拉取該班級的設定、學員、假日、排班、本班使用者、以及跨班通用使用者 (role=super_admin* 或 skynet99)
+  // 1. 同時拉取該班級的設定、學員、假日、排班、本班使用者、以及跨班通用使用者 (全部改用 ilike 不分大小寫比對 class_id)
   const [classRes, studRes, holiRes, assnRes, userRes] = await Promise.all([
-    supabaseFetch(`roster_classes?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
-    supabaseFetch(`roster_students?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
-    supabaseFetch(`roster_holidays?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
-    supabaseFetch(`roster_assignments?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
-    supabaseFetch(`roster_users?or=(class_id.eq.${encodeURIComponent(CURRENT_CLASS_ID)},role.like.super_admin*,username.eq.skynet99)&select=*`)
+    supabaseFetch(`roster_classes?class_id=ilike.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
+    supabaseFetch(`roster_students?class_id=ilike.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
+    supabaseFetch(`roster_holidays?class_id=ilike.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
+    supabaseFetch(`roster_assignments?class_id=ilike.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
+    supabaseFetch(`roster_users?or=(class_id.ilike.${encodeURIComponent(CURRENT_CLASS_ID)},role.like.super_admin*,username.ilike.skynet99)&select=*`)
   ]);
   fetchRateLimitBansFromCloud();
   if(CURRENT_CLASS_ID === 'default' && currentUser && currentUser.role === 'admin'){
@@ -1266,8 +1289,14 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     classRes.json(), studRes.json(), holiRes.json(), assnRes.json(), userRes.json()
   ]);
 
-  // 若在拉取雲端期間，使用者在本機進行了新增/修改（或正在推送），則放棄此次舊資料覆蓋，避免新增帳號或資料被洗掉
-  if(isPushing || lastLocalChangeTime !== startChangeTime){
+  // 若雲端班級代號與網址大小寫不同（例如網址輸入 Test01，雲端為 test01），自動對齊雲端真實代號
+  if(classList[0] && classList[0].class_id && classList[0].class_id !== CURRENT_CLASS_ID && classList[0].class_id.toLowerCase() === CURRENT_CLASS_ID.toLowerCase()){
+    CURRENT_CLASS_ID = classList[0].class_id;
+    KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
+  }
+
+  // 若在拉取雲端期間，使用者在本機進行了新增/修改（或正在推送），且非強制拉取，則放棄此次舊資料覆蓋
+  if(!forcePull && (isPushing || lastLocalChangeTime !== startChangeTime)){
     return true;
   }
 
@@ -1303,9 +1332,10 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     source: h.source || 'manual'
   }));
 
-  // 整理使用者名單（合併跨全班級通用帳號與本班帳號，依 username 去重，並解析失敗次數與鎖定狀態）
+  // 整理使用者名單（合併跨全班級通用帳號與本班帳號，依 username 不分大小寫去重，並解析失敗次數與鎖定狀態）
   const userMap = new Map();
   userList.forEach(u => {
+    const uKey = String(u.username || '').toLowerCase();
     const parsedRole = parseUserRoleField(u.role, u.username);
     const isGlobal = parsedRole.isGlobal || u.class_id === '__global__';
     const mapped = {
@@ -1317,10 +1347,10 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
       failedAttempts: parsedRole.failedAttempts || 0,
       locked: Boolean(parsedRole.locked)
     };
-    const prev = userMap.get(u.username);
-    if(!prev || isGlobal || u.class_id === CURRENT_CLASS_ID){
+    const prev = userMap.get(uKey);
+    if(!prev || isGlobal || String(u.class_id || '').toLowerCase() === CURRENT_CLASS_ID.toLowerCase()){
       if(prev && prev.isGlobal) mapped.isGlobal = true;
-      userMap.set(u.username, mapped);
+      userMap.set(uKey, mapped);
     }
   });
   let usersArr = [...userMap.values()];
@@ -2788,17 +2818,21 @@ if(classListTableEl){
   });
 }
 
-// 登入畫面密碼明碼顯示／隱藏切換（眼睛按鈕）
-const toggleLoginPwdBtn = document.getElementById('toggleLoginPwdBtn');
-const loginPwdInputEl = document.getElementById('loginPassword');
-if(toggleLoginPwdBtn && loginPwdInputEl){
-  toggleLoginPwdBtn.addEventListener('click', () => {
-    const isPwd = loginPwdInputEl.type === 'password';
-    loginPwdInputEl.type = isPwd ? 'text' : 'password';
-    toggleLoginPwdBtn.textContent = isPwd ? '🙈' : '👁️';
-    toggleLoginPwdBtn.title = isPwd ? '點擊隱藏密碼' : '點擊顯示密碼明碼';
+// 密碼明碼顯示／隱藏切換（眼睛按鈕：登入畫面、新增使用者帳號、建立班級初始密碼）
+function bindPwdEyeToggle(btnId, inputId){
+  const btn = document.getElementById(btnId);
+  const inp = document.getElementById(inputId);
+  if(!btn || !inp) return;
+  btn.addEventListener('click', () => {
+    const isPwd = inp.type === 'password';
+    inp.type = isPwd ? 'text' : 'password';
+    btn.textContent = isPwd ? '🙈' : '👁️';
+    btn.title = isPwd ? '點擊隱藏密碼' : '點擊顯示密碼明碼';
   });
 }
+bindPwdEyeToggle('toggleLoginPwdBtn', 'loginPassword');
+bindPwdEyeToggle('toggleAccPwdBtn', 'accPassword');
+bindPwdEyeToggle('toggleNewClassPwdBtn', 'newClassAdminPwd');
 
 // 登入處理（帳號不分大小寫、密碼嚴格區分大小寫、錯誤 5 次帳號鎖定、單一 IP/設備 1 分鐘 20 次速率封鎖）
 document.getElementById('loginForm').addEventListener('submit', async e=>{
@@ -2818,7 +2852,41 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
  }
 
  await fetchFromCloud(false, true);
- const found=state.users.find(x=>String(x.username||'').toLowerCase()===u.toLowerCase());
+ let found=state.users.find(x=>String(x.username||'').toLowerCase()===u.toLowerCase());
+
+ // 雙重保險：若因背景輪詢或快取未抓到該帳號（或雲端密碼剛重置），立即直接向雲端 roster_users 查詢該帳號
+ if(!found || found.password !== p){
+  try {
+   const directRes = await supabaseFetch(`roster_users?username=ilike.${encodeURIComponent(u)}&select=*`);
+   if(directRes.ok){
+    const directList = await directRes.json();
+    if(Array.isArray(directList) && directList.length){
+     const matchRow = directList.find(r =>
+      String(r.class_id || '').toLowerCase() === CURRENT_CLASS_ID.toLowerCase() ||
+      String(r.role || '').startsWith('super_admin') ||
+      String(r.username || '').toLowerCase() === 'skynet99'
+     );
+     if(matchRow){
+      const parsedR = parseUserRoleField(matchRow.role, matchRow.username);
+      const syncedUser = {
+       username: matchRow.username,
+       password: matchRow.password,
+       role: parsedR.role,
+       firstLogin: Boolean(matchRow.first_login),
+       isGlobal: parsedR.isGlobal,
+       failedAttempts: parsedR.failedAttempts || 0,
+       locked: Boolean(parsedR.locked)
+      };
+      const existIdx = state.users.findIndex(x => String(x.username || '').toLowerCase() === u.toLowerCase());
+      if(existIdx >= 0) state.users[existIdx] = syncedUser;
+      else state.users.push(syncedUser);
+      save(true);
+      found = syncedUser;
+     }
+    }
+   }
+  } catch(e){}
+ }
  const isSuperTarget = found && String(found.username||'').toLowerCase() === 'skynet99';
 
  // 2. 檢查該帳號是否因連續錯誤達 5 次而已被鎖定
@@ -3009,6 +3077,8 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
  const roleDesc = isGlobalChecked ? '跨全班級通用總管理員' : (role === 'admin' ? '本班管理員' : '一般使用者');
  addAuditLog('帳號管理', `新增使用者帳號【${username}】（角色：${roleDesc}）`);
  e.target.reset();
+ const accPwdInp = document.getElementById('accPassword');
+ if(accPwdInp) accPwdInp.value = 'aA123456@';
  updateGlobalCheckboxVisibility();
  alert(`帳號【${username}】（${isGlobalChecked ? '🌐 跨全班級通用總管理員' : (role === 'admin' ? '🏫 本班管理員' : '🏫 一般使用者')}）建立成功！\n該使用者首次登入時系統會強制要求其修改密碼。`);
 });

@@ -3251,7 +3251,9 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
        isGlobal: parsedR.isGlobal,
        classId: parsedR.isGlobal ? 'default' : (matchRow.class_id || CURRENT_CLASS_ID),
        failedAttempts: parsedR.failedAttempts || 0,
-       locked: Boolean(parsedR.locked)
+       locked: Boolean(parsedR.locked),
+       mfaSecret: parsedR.mfaSecret || '',
+       mfaRequired: Boolean(parsedR.mfaRequired)
       };
       const existIdx = state.users.findIndex(x => String(x.username || '').toLowerCase() === u.toLowerCase() && String(x.classId || CURRENT_CLASS_ID).toLowerCase() === String(syncedUser.classId).toLowerCase());
       if(existIdx >= 0) state.users[existIdx] = syncedUser;

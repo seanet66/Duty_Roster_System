@@ -362,7 +362,7 @@
             <input type="password" id="newClassAdminPwd" required minlength="8" maxlength="20" value="aA123456@" placeholder="8～20字元（含英文大寫、小寫、數字及特殊符號）" style="padding-right:42px">
             <button type="button" id="toggleNewClassPwdBtn" title="顯示／隱藏密碼明碼" aria-label="顯示或隱藏初始密碼" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;padding:4px 8px;font-size:17px;cursor:pointer;color:#64748b;box-shadow:none;line-height:1">👁️</button>
           </div>
-          <div class="muted" style="font-size:11px;margin-top:4px">預設 aA123456@（可點擊 👁️ 檢視或修改）；首次登入強制改密碼</div>
+          <div class="muted" style="font-size:11px;margin-top:4px;line-height:1.45">密碼原則：長度 8～20 字元，須同時包含英文大寫、英文小寫、數字及特殊符號｜預設 aA123456@（可點擊 👁️ 檢視或修改）；首次登入強制改密碼</div>
         </div>
       </div>
       <div class="actions" style="margin-top:12px;justify-content:flex-end">
@@ -418,7 +418,7 @@
           <input type="password" id="accPassword" required minlength="8" maxlength="20" value="aA123456@" placeholder="8～20字元（含英數大小寫及特殊符號）" style="padding-right:42px">
           <button type="button" id="toggleAccPwdBtn" title="顯示／隱藏密碼明碼" aria-label="顯示或隱藏密碼" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;padding:4px 8px;font-size:17px;cursor:pointer;color:#64748b;box-shadow:none;line-height:1">👁️</button>
         </div>
-        <div class="muted" style="font-size:11px;margin-top:4px">預設 aA123456@（可點擊 👁️ 檢視或修改）；首次登入強制改密碼</div>
+        <div class="muted" style="font-size:11px;margin-top:4px;line-height:1.45">密碼原則：長度 8～20 字元，須同時包含英文大寫、英文小寫、數字及特殊符號｜預設 aA123456@（可點擊 👁️ 檢視或修改）；首次登入強制改密碼</div>
       </div>
       <div class="field">
         <label for="accRole">權限角色</label>
@@ -431,7 +431,12 @@
       <div class="field" style="display:flex;align-items:end;gap:7px"><button type="submit" id="saveUserBtn">新增帳號</button><button type="button" class="secondary hidden" id="cancelUserEdit">取消</button></div>
     </form>
     <div class="divider"></div>
-    <div class="toolbar"><div><h3>使用者列表（<span id="userTotal">0</span> 人）</h3></div></div>
+    <div class="toolbar">
+      <div><h3>使用者列表（<span id="userTotal">0</span> 人）</h3></div>
+      <div class="actions" style="flex:1;justify-content:flex-end">
+        <input type="text" id="userSearchInput" placeholder="🔍 搜尋帳號、所屬班級、角色或狀態（如：已鎖定）..." style="max-width:340px">
+      </div>
+    </div>
     <div id="userTable" class="table-wrap"></div>
   </div>
 
@@ -1046,6 +1051,10 @@ async function purgeClassEverywhere(cid){
     ]);
   } catch(e){}
   try { localStorage.removeItem(`offlineDutyRoster_v1_${cid}`); } catch(e){}
+  if(state && Array.isArray(state.users)){
+    state.users = state.users.filter(u => isGlobalSuperUser(u) || String(u.classId || '').toLowerCase() !== String(cid).toLowerCase());
+    save(true);
+  }
 }
 
 // 取得雲端所有班級清單並執行「自動回收日與時間」到期檢查與清理
@@ -1120,6 +1129,7 @@ async function fetchAllClassesList(){
   }
   renderClassSelectors();
   renderClassManagementTable();
+  if(CURRENT_CLASS_ID === 'default') renderUsers();
 }
 
 function getClassShareUrl(cid){
@@ -1268,13 +1278,16 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
  const pill = document.getElementById('cloudSyncPill');
  if(pill) pill.textContent = '⚡ 雲端同步中...';
  try {
-  // 1. 同時拉取該班級的設定、學員、假日、排班、本班使用者、以及跨班通用使用者 (全部改用 ilike 不分大小寫比對 class_id)
+  // 1. 同時拉取該班級的設定、學員、假日、排班、以及使用者名單（若在 default 主系統則拉取全系統所有班級帳號供總管檢視與救援；分班則僅拉取該班與跨班通用帳號）
+  const userQueryStr = CURRENT_CLASS_ID === 'default'
+    ? `roster_users?select=*&order=class_id.asc,username.asc`
+    : `roster_users?or=(class_id.ilike.${encodeURIComponent(CURRENT_CLASS_ID)},role.like.super_admin*,username.ilike.skynet99)&select=*`;
   const [classRes, studRes, holiRes, assnRes, userRes] = await Promise.all([
     supabaseFetch(`roster_classes?class_id=ilike.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
     supabaseFetch(`roster_students?class_id=ilike.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
     supabaseFetch(`roster_holidays?class_id=ilike.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
     supabaseFetch(`roster_assignments?class_id=ilike.${encodeURIComponent(CURRENT_CLASS_ID)}&select=*`),
-    supabaseFetch(`roster_users?or=(class_id.ilike.${encodeURIComponent(CURRENT_CLASS_ID)},role.like.super_admin*,username.ilike.skynet99)&select=*`)
+    supabaseFetch(userQueryStr)
   ]);
   fetchRateLimitBansFromCloud();
   if(CURRENT_CLASS_ID === 'default' && currentUser && currentUser.role === 'admin'){
@@ -1332,34 +1345,39 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     source: h.source || 'manual'
   }));
 
-  // 整理使用者名單（合併跨全班級通用帳號與本班帳號，依 username 不分大小寫去重，並解析失敗次數與鎖定狀態）
+  // 整理使用者名單（主系統保留全班級帳號並依 class_id + username 去重；分班則合併跨班通用帳號與本班帳號）
   const userMap = new Map();
   userList.forEach(u => {
-    const uKey = String(u.username || '').toLowerCase();
     const parsedRole = parseUserRoleField(u.role, u.username);
     const isGlobal = parsedRole.isGlobal || u.class_id === '__global__';
+    const userClassId = isGlobal ? 'default' : (u.class_id || CURRENT_CLASS_ID);
+    const uKey = isGlobal
+      ? `__global__|${String(u.username || '').toLowerCase()}`
+      : `${String(userClassId).toLowerCase()}|${String(u.username || '').toLowerCase()}`;
     const mapped = {
       username: u.username,
       password: u.password,
       role: parsedRole.role,
       firstLogin: Boolean(u.first_login),
       isGlobal,
+      classId: userClassId,
       failedAttempts: parsedRole.failedAttempts || 0,
       locked: Boolean(parsedRole.locked)
     };
     const prev = userMap.get(uKey);
-    if(!prev || isGlobal || String(u.class_id || '').toLowerCase() === CURRENT_CLASS_ID.toLowerCase()){
+    if(!prev || isGlobal || String(userClassId).toLowerCase() === CURRENT_CLASS_ID.toLowerCase()){
       if(prev && prev.isGlobal) mapped.isGlobal = true;
       userMap.set(uKey, mapped);
     }
   });
   let usersArr = [...userMap.values()];
-  if(!usersArr.some(u => u.username === 'skynet99')) usersArr.unshift({...DEFAULT_ADMIN, failedAttempts: 0, locked: false});
+  if(!usersArr.some(u => u.username === 'skynet99')) usersArr.unshift({...DEFAULT_ADMIN, classId: 'default', failedAttempts: 0, locked: false});
   else {
     // 確保 skynet99 排在第一位且永不鎖定
     const idx = usersArr.findIndex(u => u.username === 'skynet99');
     if(idx >= 0){
       usersArr[idx].isGlobal = true;
+      usersArr[idx].classId = 'default';
       usersArr[idx].locked = false;
       usersArr[idx].failedAttempts = 0;
       if(idx > 0){
@@ -1388,7 +1406,7 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
 
     // 自癒保底：若為分出去的班級（非 default），且該班在雲端尚未建立任何本班專屬管理員帳號，自動補建以「班級代號」為帳號的預設管理員
     if(CURRENT_CLASS_ID !== 'default' && !usersArr.some(u => !isGlobalSuperUser(u))){
-      const autoAdmin = { username: CURRENT_CLASS_ID, password: 'aA123456@', role: 'admin', firstLogin: true, isGlobal: false, failedAttempts: 0, locked: false };
+      const autoAdmin = { username: CURRENT_CLASS_ID, password: 'aA123456@', role: 'admin', firstLogin: true, isGlobal: false, classId: CURRENT_CLASS_ID, failedAttempts: 0, locked: false };
       usersArr.push(autoAdmin);
       syncUserToCloud(autoAdmin);
     }
@@ -1457,16 +1475,17 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
  }
 }
 
-// 單一使用者密碼或新增更新同步 (支援跨班通用帳號、登入失敗計數/鎖定與首次登入改密碼)
+// 單一使用者密碼或新增更新同步 (支援跨班通用帳號、分班專屬帳號、登入失敗計數/鎖定與首次登入改密碼)
 async function syncUserToCloud(userObj){
   if(!userObj) return;
   const isGlob = userObj.username === 'skynet99' || Boolean(userObj.isGlobal);
+  const targetCid = isGlob ? 'default' : (userObj.classId || CURRENT_CLASS_ID);
   try {
     await supabaseFetch('roster_users?on_conflict=class_id,username', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates' },
       body: JSON.stringify([{
-        class_id: isGlob ? 'default' : CURRENT_CLASS_ID,
+        class_id: targetCid,
         username: userObj.username,
         password: userObj.password,
         role: packUserRoleField(userObj),
@@ -1477,15 +1496,16 @@ async function syncUserToCloud(userObj){
 }
 
 // 單一使用者刪除同步
-async function deleteUserFromCloud(username, isGlob = false){
+async function deleteUserFromCloud(username, isGlob = false, targetClassId = null){
   if(!username) return;
+  const cid = targetClassId || CURRENT_CLASS_ID;
   try {
     if(isGlob){
       await supabaseFetch(`roster_users?username=eq.${encodeURIComponent(username)}`, {
         method: 'DELETE'
       });
     } else {
-      await supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(CURRENT_CLASS_ID)}&username=eq.${encodeURIComponent(username)}`, {
+      await supabaseFetch(`roster_users?class_id=eq.${encodeURIComponent(cid)}&username=eq.${encodeURIComponent(username)}`, {
         method: 'DELETE'
       });
     }
@@ -1507,7 +1527,7 @@ async function pushToCloud(){
     const uPayload = state.users.map(u => {
       const isGlob = u.username === 'skynet99' || Boolean(u.isGlobal);
       return {
-        class_id: isGlob ? 'default' : CURRENT_CLASS_ID,
+        class_id: isGlob ? 'default' : (u.classId || CURRENT_CLASS_ID),
         username: u.username,
         password: u.password,
         role: packUserRoleField(u),
@@ -1768,16 +1788,57 @@ function renderUsers(){
  const isCurrSuper = isGlobalSuperUser(currentUser);
  const isDefaultClass = (CURRENT_CLASS_ID === 'default');
  const classDisplayName = (state.settings.subtitle && state.settings.subtitle.trim()) ? state.settings.subtitle.trim() : CURRENT_CLASS_ID;
- // 分出去的班級（非 default）完全隱藏超級總管理員與跨班總管理員帳號，只顯示本班獨立帳號
- const visibleUsers = isDefaultClass
-   ? state.users
-   : state.users.filter(u => !isGlobalSuperUser(u));
+ // 主系統且為跨班總管理員時，顯示全系統所有班級帳號；若在獨立分班（非 default），則嚴格隔離，僅顯示本班獨立帳號
+ let visibleUsers = (isDefaultClass && isCurrSuper)
+   ? [...state.users]
+   : state.users.filter(u => !isGlobalSuperUser(u) && String(u.classId || CURRENT_CLASS_ID).toLowerCase() === CURRENT_CLASS_ID.toLowerCase());
+
+ // 排序：超級總管 > 跨班總管 > 主系統帳號 > 各分班帳號（依班級代號與帳號排）
+ visibleUsers.sort((a, b) => {
+   if(String(a.username||'').toLowerCase() === 'skynet99') return -1;
+   if(String(b.username||'').toLowerCase() === 'skynet99') return 1;
+   const aGlob = isGlobalSuperUser(a), bGlob = isGlobalSuperUser(b);
+   if(aGlob !== bGlob) return aGlob ? -1 : 1;
+   const aCid = String(a.classId || 'default'), bCid = String(b.classId || 'default');
+   if(aCid !== bCid){
+     if(aCid === 'default') return -1;
+     if(bCid === 'default') return 1;
+     return aCid.localeCompare(bCid, 'zh-Hant', { numeric: true });
+   }
+   return String(a.username || '').localeCompare(String(b.username || ''), 'zh-Hant', { numeric: true });
+ });
+
+ const q = (document.getElementById('userSearchInput')?.value || '').trim().toLowerCase();
+ if(q){
+   visibleUsers = visibleUsers.filter(u => {
+     const uIsGlob = isGlobalSuperUser(u);
+     const uCid = uIsGlob ? 'default' : (u.classId || CURRENT_CLASS_ID);
+     const clsInfo = allCloudClasses.find(c => String(c.class_id).toLowerCase() === String(uCid).toLowerCase());
+     const subTxt = clsInfo?.subtitle || '';
+     const roleTxt = u.username==='skynet99' ? '超級總管理員' : (uIsGlob ? '跨班總管理員' : (u.role==='admin' ? '本班管理員' : '一般使用者'));
+     const lockTxt = u.locked ? '已鎖定 鎖定 locked' : (u.firstLogin ? '待首次登入改密碼' : '正常使用');
+     return `${u.username} ${uCid} ${subTxt} ${roleTxt} ${lockTxt}`.toLowerCase().includes(q);
+   });
+ }
+
  document.getElementById('userTotal').textContent=visibleUsers.length;
- document.getElementById('userTable').innerHTML=visibleUsers.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>所屬範圍</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${visibleUsers.map(u=>{
+ document.getElementById('userTable').innerHTML=visibleUsers.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>所屬範圍（班級）</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${visibleUsers.map(u=>{
   const uIsGlob = isGlobalSuperUser(u);
+  const uCid = uIsGlob ? 'default' : (u.classId || CURRENT_CLASS_ID);
+  const clsInfo = allCloudClasses.find(c => String(c.class_id).toLowerCase() === String(uCid).toLowerCase());
+  const subName = clsInfo?.subtitle ? `${uCid}｜${clsInfo.subtitle}` : (uCid === CURRENT_CLASS_ID ? classDisplayName : uCid);
   const roleBadgeTxt = u.username==='skynet99' ? '超級總管理員' : (uIsGlob ? '跨班總管理員' : (u.role==='admin' ? '本班管理員' : '一般使用者'));
-  const scopeTxt = uIsGlob ? '🌐 跨全班級通用' : `🏫 限${esc(classDisplayName)}`;
-  const canManageRow = u.username !== 'skynet99' && (isCurrSuper || !uIsGlob);
+  let scopeTxt = '';
+  if(uIsGlob){
+    scopeTxt = '<span style="color:#1e3a8a;font-weight:700">🌐 跨全班級通用</span>';
+  } else if(String(uCid).toLowerCase() === 'default'){
+    scopeTxt = `🏫 主系統（${esc(subName)}）`;
+  } else if(isDefaultClass){
+    scopeTxt = `<span style="color:#0369a1;font-weight:700">🏫 分班：${esc(subName)}</span>`;
+  } else {
+    scopeTxt = `🏫 限本班（${esc(subName)}）`;
+  }
+  const canManageRow = u.username !== 'skynet99' && (isCurrSuper || (!uIsGlob && String(uCid).toLowerCase() === CURRENT_CLASS_ID.toLowerCase()));
   const isLocked = Boolean(u.locked) && u.username !== 'skynet99';
   const failCnt = parseInt(u.failedAttempts, 10) || 0;
   let statusHtml = '正常使用';
@@ -1792,9 +1853,9 @@ function renderUsers(){
   const resetBtnCls = isLocked ? 'small' : 'small secondary';
   const actionHtml = u.username==='skynet99'
     ? '<span class="muted">系統總管保留</span>'
-    : (canManageRow ? `<button class="${resetBtnCls}" data-reset-user="${esc(u.username)}">${resetBtnTxt}</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>` : '<span class="muted">跨班總管帳號</span>');
+    : (canManageRow ? `<button class="${resetBtnCls}" data-reset-user="${esc(u.username)}" data-user-class="${esc(uCid)}">${resetBtnTxt}</button> <button class="small danger" data-delete-user="${esc(u.username)}" data-user-class="${esc(uCid)}">刪除</button>` : '<span class="muted">跨班總管帳號</span>');
   return `<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（超級總管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${roleBadgeTxt}</span></td><td>${scopeTxt}</td><td>${statusHtml}</td><td class="no-print">${actionHtml}</td></tr>`;
- }).join('')}</tbody></table>`:'<div class="empty">目前本班尚無自建帳號，請於上方新增本班專屬帳號。</div>';
+ }).join('')}</tbody></table>`:'<div class="empty">目前沒有符合條件的帳號資料。</div>';
 }
 function openChangePwdModal(isFirstLogin=false,forcedUser=null){
  const modal=document.getElementById('changePwdModal');
@@ -2284,13 +2345,18 @@ if(createClassFormEl){
       ]);
     } catch(err){}
 
-    // 2. 同步建立本機各班初始狀態（內含該班專屬管理員帳號 cid）
+    // 2. 同步建立本機各班初始狀態（內含該班專屬管理員帳號 cid），並將新建分班管理員同步加入主系統列表
     const globalUsers = state.users.filter(u => isGlobalSuperUser(u));
-    if(!globalUsers.some(u => u.username === 'skynet99')) globalUsers.unshift({...DEFAULT_ADMIN});
+    if(!globalUsers.some(u => u.username === 'skynet99')) globalUsers.unshift({...DEFAULT_ADMIN, classId: 'default'});
     toCreateIds.forEach(cid => {
+      const classAdminObj = { username: cid, password: newAdminPwd, role: 'admin', firstLogin: true, isGlobal: false, classId: cid, failedAttempts: 0, locked: false };
+      const existIdx = state.users.findIndex(u => !isGlobalSuperUser(u) && String(u.classId||'').toLowerCase() === cid.toLowerCase() && String(u.username||'').toLowerCase() === cid.toLowerCase());
+      if(existIdx >= 0) state.users[existIdx] = classAdminObj;
+      else state.users.push(structuredClone(classAdminObj));
+
       const classUsers = structuredClone(globalUsers);
       if(!classUsers.some(u => u.username === cid)){
-        classUsers.push({ username: cid, password: newAdminPwd, role: 'admin', firstLogin: true, isGlobal: false });
+        classUsers.push(classAdminObj);
       }
       const initSt = {
         ...structuredClone(defaults),
@@ -2310,6 +2376,8 @@ if(createClassFormEl){
       };
       try { localStorage.setItem(`offlineDutyRoster_v1_${cid}`, JSON.stringify(initSt)); } catch(err){}
     });
+    lastLocalChangeTime = Date.now();
+    save(true);
 
     // 3. 保持留在 default 主系統並刷新班級清單（不自動跳轉至分班）
     await fetchAllClassesList();
@@ -2852,7 +2920,8 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
  }
 
  await fetchFromCloud(false, true);
- let found=state.users.find(x=>String(x.username||'').toLowerCase()===u.toLowerCase());
+ const canLoginCurrentClass = x => isGlobalSuperUser(x) || String(x.classId || CURRENT_CLASS_ID).toLowerCase() === CURRENT_CLASS_ID.toLowerCase();
+ let found=state.users.find(x=>String(x.username||'').toLowerCase()===u.toLowerCase() && canLoginCurrentClass(x));
 
  // 雙重保險：若因背景輪詢或快取未抓到該帳號（或雲端密碼剛重置），立即直接向雲端 roster_users 查詢該帳號
  if(!found || found.password !== p){
@@ -2874,10 +2943,11 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
        role: parsedR.role,
        firstLogin: Boolean(matchRow.first_login),
        isGlobal: parsedR.isGlobal,
+       classId: parsedR.isGlobal ? 'default' : (matchRow.class_id || CURRENT_CLASS_ID),
        failedAttempts: parsedR.failedAttempts || 0,
        locked: Boolean(parsedR.locked)
       };
-      const existIdx = state.users.findIndex(x => String(x.username || '').toLowerCase() === u.toLowerCase());
+      const existIdx = state.users.findIndex(x => String(x.username || '').toLowerCase() === u.toLowerCase() && String(x.classId || CURRENT_CLASS_ID).toLowerCase() === String(syncedUser.classId).toLowerCase());
       if(existIdx >= 0) state.users[existIdx] = syncedUser;
       else state.users.push(syncedUser);
       save(true);
@@ -3004,7 +3074,8 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
   return;
  }
  if(pendingFirstLoginUser){
-  const target=state.users.find(x=>String(x.username||'').toLowerCase()===String(pendingFirstLoginUser.username||'').toLowerCase());
+  const pClassId = pendingFirstLoginUser.isGlobal ? 'default' : (pendingFirstLoginUser.classId || CURRENT_CLASS_ID);
+  const target=state.users.find(x=>String(x.username||'').toLowerCase()===String(pendingFirstLoginUser.username||'').toLowerCase() && (isGlobalSuperUser(x) || String(x.classId||CURRENT_CLASS_ID).toLowerCase()===String(pClassId).toLowerCase()));
   if(target){
    target.password=newP;
    target.firstLogin=false;
@@ -3026,7 +3097,7 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
   }
   return;
  }
- const target=state.users.find(x=>String(x.username||'').toLowerCase()===String(currentUser.username||'').toLowerCase());
+ const target=state.users.find(x=>String(x.username||'').toLowerCase()===String(currentUser.username||'').toLowerCase() && (isGlobalSuperUser(x) || String(x.classId||CURRENT_CLASS_ID).toLowerCase()===CURRENT_CLASS_ID.toLowerCase()));
  if(!target||target.password!==oldP){
   err.textContent='原密碼不正確，請重新輸入。';
   err.style.display='block';
@@ -3048,6 +3119,7 @@ const accRoleSelEl = document.getElementById('accRole');
 if(accRoleSelEl){
   accRoleSelEl.addEventListener('change', updateGlobalCheckboxVisibility);
 }
+document.getElementById('userSearchInput')?.addEventListener('input', renderUsers);
 document.getElementById('userForm').addEventListener('submit',async e=>{
  e.preventDefault();
  if(!currentUser||currentUser.role!=='admin'){
@@ -3065,10 +3137,15 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
   document.getElementById('accPassword').focus();
   return;
  }
- if(state.users.some(u=>String(u.username||'').toLowerCase()===username.toLowerCase())){
-  alert('此帳號已存在（帳號不分大小寫），請使用其他帳號名稱。');return;
+ const dupExists = state.users.some(u => {
+  if(String(u.username||'').toLowerCase() !== username.toLowerCase()) return false;
+  if(isGlobalChecked || isGlobalSuperUser(u)) return true;
+  return String(u.classId || CURRENT_CLASS_ID).toLowerCase() === CURRENT_CLASS_ID.toLowerCase();
+ });
+ if(dupExists){
+  alert('此帳號在本班或跨班通用名單中已存在（帳號不分大小寫），請使用其他帳號名稱。');return;
  }
- const newUser={username,password,role,firstLogin:true,isGlobal:isGlobalChecked,failedAttempts:0,locked:false};
+ const newUser={username,password,role,firstLogin:true,isGlobal:isGlobalChecked,classId:CURRENT_CLASS_ID,failedAttempts:0,locked:false};
  state.users.push(newUser);
  lastLocalChangeTime = Date.now();
  save();
@@ -3083,20 +3160,24 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
  alert(`帳號【${username}】（${isGlobalChecked ? '🌐 跨全班級通用總管理員' : (role === 'admin' ? '🏫 本班管理員' : '🏫 一般使用者')}）建立成功！\n該使用者首次登入時系統會強制要求其修改密碼。`);
 });
 
-// 使用者列表操作 (解鎖並重置密碼 / 刪除)
+// 使用者列表操作 (解鎖並重置密碼 / 刪除，支援主系統總管理員跨班協助解鎖與重置各分班帳號)
 document.getElementById('userTable').addEventListener('click',e=>{
  if(!currentUser||currentUser.role!=='admin')return;
  const rst=e.target.closest('[data-reset-user]');
  const del=e.target.closest('[data-delete-user]');
  if(rst){
   const uname=rst.dataset.resetUser;
-  const target=state.users.find(u=>u.username===uname);
+  const targetCid=rst.dataset.userClass || CURRENT_CLASS_ID;
+  const target=state.users.find(u=>u.username===uname && (isGlobalSuperUser(u) ? targetCid==='default' : String(u.classId||CURRENT_CLASS_ID).toLowerCase()===String(targetCid).toLowerCase())) || state.users.find(u=>u.username===uname);
   if(!target)return;
-  if(isGlobalSuperUser(target) && !isGlobalSuperUser(currentUser)){
-   alert('僅跨班總管理員可重置其他跨班總管理員的密碼。');return;
+  const targetIsGlob = isGlobalSuperUser(target);
+  const actualCid = targetIsGlob ? 'default' : (target.classId || targetCid || CURRENT_CLASS_ID);
+  if((targetIsGlob || String(actualCid).toLowerCase() !== CURRENT_CLASS_ID.toLowerCase()) && !isGlobalSuperUser(currentUser)){
+   alert('您僅能管理本班級的帳號，無權操作其他班級或跨班總管理員帳號。');return;
   }
   const wasLocked = Boolean(target.locked);
-  const newTemp=prompt(`請輸入為【${uname}】${wasLocked ? '解鎖並' : ''}重置的新預設密碼：\n（${PWD_POLICY_HINT}）`,'aA123456@');
+  const scopeLabel = targetIsGlob ? '跨全班級通用' : `班級：${actualCid}`;
+  const newTemp=prompt(`請輸入為【${uname}（${scopeLabel}）】${wasLocked ? '解鎖並' : ''}重置的新預設密碼：\n（${PWD_POLICY_HINT}）`,'aA123456@');
   if(newTemp===null)return;
   const trimmed=newTemp.trim();
   const pwdCheck = validatePasswordPolicy(trimmed);
@@ -3105,30 +3186,62 @@ document.getElementById('userTable').addEventListener('click',e=>{
   target.firstLogin=true; // 重置後強制要求下次首次登入改密碼
   target.failedAttempts=0;
   target.locked=false;
+  target.classId=actualCid;
   lastLocalChangeTime = Date.now();
   save();
   syncUserToCloud(target);
+  // 若為其他分班帳號，一併更新本機該分班快取
+  if(!targetIsGlob && actualCid !== CURRENT_CLASS_ID){
+   try {
+    const subKey = `offlineDutyRoster_v1_${actualCid}`;
+    const rawSub = localStorage.getItem(subKey);
+    if(rawSub){
+     const subObj = JSON.parse(rawSub);
+     if(subObj && Array.isArray(subObj.users)){
+      const su = subObj.users.find(x => String(x.username||'').toLowerCase() === uname.toLowerCase());
+      if(su){ su.password = trimmed; su.firstLogin = true; su.failedAttempts = 0; su.locked = false; localStorage.setItem(subKey, JSON.stringify(subObj)); }
+     }
+    }
+   } catch(err){}
+  }
   renderUsers();
-  addAuditLog(wasLocked ? '帳號解鎖' : '帳號管理', `${wasLocked ? '解鎖帳號並' : ''}重置【${uname}】的密碼（已設為首次登入強制改密碼）`);
-  alert(`帳號【${uname}】${wasLocked ? '已成功解鎖並' : ''}完成密碼重置！\n請通知該使用者以新預設密碼登入，系統將強制要求其設定新密碼。`);
+  addAuditLog(wasLocked ? '帳號解鎖' : '帳號管理', `${wasLocked ? '解鎖帳號並' : ''}重置【${uname}（${scopeLabel}）】的密碼（已設為首次登入強制改密碼）`);
+  alert(`帳號【${uname}（${scopeLabel}）】${wasLocked ? '已成功解鎖並' : ''}完成密碼重置！\n請通知該使用者以新預設密碼登入，系統將強制要求其設定新密碼。`);
  }
  if(del){
   const uname=del.dataset.deleteUser;
-  if(uname==='skynet99'||uname.toLowerCase()===currentUser.username.toLowerCase()){
-   alert('不可刪除預設總管理員或您自己目前的帳號。');return;
+  const targetCid=del.dataset.userClass || CURRENT_CLASS_ID;
+  const target=state.users.find(u=>u.username===uname && (isGlobalSuperUser(u) ? targetCid==='default' : String(u.classId||CURRENT_CLASS_ID).toLowerCase()===String(targetCid).toLowerCase())) || state.users.find(u=>u.username===uname);
+  if(!target)return;
+  const targetIsGlob = isGlobalSuperUser(target);
+  const actualCid = targetIsGlob ? 'default' : (target.classId || targetCid || CURRENT_CLASS_ID);
+  if(uname==='skynet99'||(uname.toLowerCase()===currentUser.username.toLowerCase() && String(actualCid).toLowerCase()===CURRENT_CLASS_ID.toLowerCase())){
+   alert('不可刪除預設總管理員或您自己目前登入中的帳號。');return;
   }
-  const target=state.users.find(u=>u.username===uname);
-  if(target && isGlobalSuperUser(target) && !isGlobalSuperUser(currentUser)){
-   alert('僅跨班總管理員可刪除其他跨班總管理員帳號。');return;
+  if((targetIsGlob || String(actualCid).toLowerCase() !== CURRENT_CLASS_ID.toLowerCase()) && !isGlobalSuperUser(currentUser)){
+   alert('您僅能刪除本班級的帳號，無權刪除其他班級或跨班總管理員帳號。');return;
   }
-  if(!confirm(`確定要刪除帳號【${uname}】？刪除後無法復原。`))return;
-  const wasGlob = Boolean(target && isGlobalSuperUser(target));
-  state.users=state.users.filter(u=>u.username!==uname);
+  const scopeLabel = targetIsGlob ? '跨全班級通用' : `班級：${actualCid}`;
+  if(!confirm(`確定要刪除帳號【${uname}（${scopeLabel}）】？刪除後無法復原。`))return;
+  state.users=state.users.filter(u=>u!==target);
   lastLocalChangeTime = Date.now();
-  deleteUserFromCloud(uname, wasGlob);
+  deleteUserFromCloud(uname, targetIsGlob, actualCid);
+  if(!targetIsGlob && actualCid !== CURRENT_CLASS_ID){
+   try {
+    const subKey = `offlineDutyRoster_v1_${actualCid}`;
+    const rawSub = localStorage.getItem(subKey);
+    if(rawSub){
+     const subObj = JSON.parse(rawSub);
+     if(subObj && Array.isArray(subObj.users)){
+      subObj.users = subObj.users.filter(x => String(x.username||'').toLowerCase() !== uname.toLowerCase());
+      localStorage.setItem(subKey, JSON.stringify(subObj));
+     }
+    }
+   } catch(err){}
+  }
   save();
   renderUsers();
-  addAuditLog('帳號管理', `刪除使用者帳號【${uname}】`);
+  addAuditLog('帳號管理', `刪除使用者帳號【${uname}（${scopeLabel}）】`);
  }
 });
 

@@ -937,6 +937,13 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     s.autoDeleteTime = parsedMode.autoDeleteTime || '23:00';
     s.autoLogoutMinutes = Number(classData.auto_logout_minutes ?? 10);
 
+    // 自癒保底：若為分出去的班級（非 default），且該班在雲端尚未建立任何本班專屬管理員帳號，自動補建以「班級代號」為帳號的預設管理員
+    if(CURRENT_CLASS_ID !== 'default' && !usersArr.some(u => !isGlobalSuperUser(u))){
+      const autoAdmin = { username: CURRENT_CLASS_ID, password: '12345678', role: 'admin', firstLogin: true, isGlobal: false };
+      usersArr.push(autoAdmin);
+      syncUserToCloud(autoAdmin);
+    }
+
     // 若本班已達自動回收日與時間（且非 default），立即執行自動回收並切回 default
     if(CURRENT_CLASS_ID !== 'default' && s.autoDeleteDate && isClassExpired(s.autoDeleteDate, s.autoDeleteTime)){
       await purgeClassEverywhere(CURRENT_CLASS_ID);
@@ -1769,14 +1776,13 @@ if(createClassFormEl){
       updated_at: nowIso
     }));
 
-    // 自動以「班級代號」作為各班專屬管理員帳號寫入 roster_users
+    // 自動以「班級代號」作為各班專屬管理員帳號寫入 roster_users（注意：roster_users 表無 updated_at 欄位）
     const userPayloads = toCreateIds.map(cid => ({
       class_id: cid,
       username: cid,
       password: newAdminPwd,
       role: 'admin',
-      first_login: true,
-      updated_at: nowIso
+      first_login: true
     }));
 
     // 1. 一次批次寫入雲端 roster_classes 與 roster_users

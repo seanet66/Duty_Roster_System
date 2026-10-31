@@ -392,7 +392,7 @@
         <div class="field"><label for="dailyCount">每日值日生人數</label><select id="dailyCount"><option value="2">每日 2 位學員（預設）</option><option value="1">每日 1 位學員</option></select></div>
         <div class="field"><label for="autoLogoutMinutes">閒置自動登出時間（分鐘）</label><input type="number" id="autoLogoutMinutes" min="0" max="99" value="10" placeholder="0-99，0表示不自動登出"><div class="muted" style="font-size:11px;margin-top:4px">預設 10 分鐘，可設定 0～99 分鐘（設為 0 表示停用自動登出）</div></div>
         <div class="field"><label for="editMode">手動修改後的排班方式</label><select id="editMode"><option value="A">A．自動接續（手動值日生後，依學號往後接續）</option><option value="B">B．固定指定（保留手動指定日期，其餘日期順序重排）</option><option value="C">C．完全重新排序（修改後整張表重新依學號排班）</option></select></div>
-        <div class="field"><label for="deidentifyMode">🛡️ 姓名去識別化保護（資安隱私遮罩）</label><select id="deidentifyMode"><option value="false">關閉（顯示完整真實姓名 — 預設）</option><option value="true">開啟（全系統列表與匯出檔自動遮罩中間字為 ○）</option></select><div class="muted" style="font-size:11px;margin-top:4px">開啟後：2 字姓名顯示「王○」、3 字顯示「林○松」、4 字顯示「歐○○菲」（含畫面與 Excel/PDF/CSV 匯出）</div></div>
+        <div class="field" id="settingsDeidentifyField"><label for="deidentifyMode">🛡️ 姓名去識別化保護（全系統資安隱私遮罩 — 主系統總控）</label><select id="deidentifyMode"><option value="true">開啟（全系統列表與匯出檔自動遮罩中間字為 ○ — 預設）</option><option value="false">關閉（顯示完整真實姓名 — 需輸入管理員密碼驗證）</option></select><div class="muted" style="font-size:11px;margin-top:4px">預設開啟並同步套用至主系統與所有分班（2 字顯示「王○」、3 字顯示「林○松」、4 字顯示「歐○○菲」）；關閉時須驗證主系統管理員密碼</div></div>
         <div class="field" id="settingsAutoDeleteField">
           <label for="autoDeleteDate">🗑️ 本班自動回收日與時間（結訓自動刪除，唯讀檢視）</label>
           <div style="display:flex;gap:8px">
@@ -563,18 +563,19 @@ const DEFAULT_ADMIN={username:'skynet99',password:'iamagoodstudent',role:'admin'
 /* SEED_DATA_START */
 const EMBEDDED_SEED_DATA = null;
 /* SEED_DATA_END */
-const defaults={settings:{title:'勞動力發展署桃竹苗分署',subtitle:'雲端網管與資安(幼獅)第2期',startDate:'',endDate:'',firstStudentId:'',editMode:'A',dailyCount:2,autoLogoutMinutes:10,deidentify:false,autoDeleteDate:'',autoDeleteTime:'23:00'},students:[],holidays:[],assignments:{},users:[DEFAULT_ADMIN],viewMonth:todayISO().slice(0,7)};
+const defaults={settings:{title:'勞動力發展署桃竹苗分署',subtitle:'雲端網管與資安(幼獅)第2期',startDate:'',endDate:'',firstStudentId:'',editMode:'A',dailyCount:2,autoLogoutMinutes:10,deidentify:true,autoDeleteDate:'',autoDeleteTime:'23:00'},students:[],holidays:[],assignments:{},users:[DEFAULT_ADMIN],viewMonth:todayISO().slice(0,7)};
 let state=loadState(),editingId=null,editingUser=null,importRows=null,showFull=false,currentUser=null,pendingFirstLoginUser=null;
 
 function parseEditModeField(raw){
   const str = String(raw || 'A');
   const parts = str.split('|');
   const mode = ['A','B','C'].includes(parts[0]) ? parts[0] : 'A';
-  let deidentify = false;
+  let deidentify = true;
   let autoDeleteDate = '';
   let autoDeleteTime = '23:00';
   for(let i=1; i<parts.length; i++){
-    if(parts[i] === 'D1') deidentify = true;
+    if(parts[i] === 'D0') deidentify = false;
+    else if(parts[i] === 'D1') deidentify = true;
     else if(parts[i].startsWith('EXP:')){
       const expStr = parts[i].slice(4);
       const [dPart, tPart] = expStr.split('@');
@@ -977,7 +978,7 @@ function loadState(){
    if(!s.dailyCount)s.dailyCount=2;
    if(s.autoLogoutMinutes===undefined||s.autoLogoutMinutes===null||s.autoLogoutMinutes==='')s.autoLogoutMinutes=10;
    else s.autoLogoutMinutes=Math.min(99,Math.max(0,parseInt(s.autoLogoutMinutes,10)||0));
-   s.deidentify = Boolean(s.deidentify);
+   s.deidentify = x.settings.deidentify !== undefined ? Boolean(x.settings.deidentify) : true;
    s.autoDeleteDate = s.autoDeleteDate || '';
    s.autoDeleteTime = /^\d{2}:\d{2}$/.test(s.autoDeleteTime || '') ? s.autoDeleteTime : '23:00';
    let uList=Array.isArray(x.users)&&x.users.length?x.users:[DEFAULT_ADMIN];
@@ -1399,7 +1400,17 @@ async function fetchFromCloud(manualAlert = false, forcePull = false){
     s.firstStudentId = classData.first_student_id || '';
     s.dailyCount = Number(classData.daily_count) || 2;
     s.editMode = parsedMode.editMode;
-    s.deidentify = parsedMode.deidentify;
+    // 去識別化保護：若在分班，強制遵循 default 主系統的全域開關；在 default 主系統則依本班設定
+    if(CURRENT_CLASS_ID !== 'default'){
+      const defClassItem = allCloudClasses.find(c => c.class_id === 'default');
+      if(defClassItem && defClassItem.edit_mode){
+        s.deidentify = parseEditModeField(defClassItem.edit_mode).deidentify;
+      } else {
+        s.deidentify = parsedMode.deidentify;
+      }
+    } else {
+      s.deidentify = parsedMode.deidentify;
+    }
     s.autoDeleteDate = parsedMode.autoDeleteDate;
     s.autoDeleteTime = parsedMode.autoDeleteTime || '23:00';
     s.autoLogoutMinutes = Number(classData.auto_logout_minutes ?? 10);
@@ -1777,6 +1788,9 @@ function applyRolePermissions(){
  const dataJsonSection = document.getElementById('dataJsonBackupSection');
  if(settingsJsonPanel) settingsJsonPanel.classList.toggle('hidden', !isDefaultClass);
  if(dataJsonSection) dataJsonSection.classList.toggle('hidden', !isDefaultClass);
+ // 5. 去識別化開關僅在 default 主系統顯示（分班自動隱藏此欄位，統一由主系統全域管控）
+ const deidField = document.getElementById('settingsDeidentifyField');
+ if(deidField) deidField.classList.toggle('hidden', !isDefaultClass);
 
  updateGlobalCheckboxVisibility();
  renderClassSelectors();
@@ -1906,6 +1920,8 @@ function renderSettings(){
   });
   const deidEl = document.getElementById('deidentifyMode');
   if(deidEl) deidEl.value = s.deidentify ? 'true' : 'false';
+  const deidField = document.getElementById('settingsDeidentifyField');
+  if(deidField) deidField.classList.toggle('hidden', CURRENT_CLASS_ID !== 'default');
   const autoDelEl = document.getElementById('autoDeleteDate');
   const autoDelTimeEl = document.getElementById('autoDeleteTime');
   const autoDelHint = document.getElementById('autoDeleteHintText');
@@ -2024,7 +2040,72 @@ if(newClassEndDateEl){
   });
 }
 
-document.getElementById('settingsForm').addEventListener('submit',e=>{
+// 驗證管理員密碼（用於高風險資安開關變更，如關閉去識別化保護）
+function verifyCurrentAdminPassword(actionDesc = '變更此資安設定'){
+  if(!currentUser) return false;
+  const adminObj = state.users.find(u => String(u.username||'').toLowerCase() === String(currentUser.username||'').toLowerCase() && (isGlobalSuperUser(u) || String(u.classId||CURRENT_CLASS_ID).toLowerCase() === CURRENT_CLASS_ID.toLowerCase()));
+  if(!adminObj) return false;
+  const inputPwd = prompt(`🔒【資安隱私身分驗證】\n您正在進行高風險資安操作：${actionDesc}\n\n為確保資安防護，請輸入您目前登入的管理員（${currentUser.username}）密碼：`);
+  if(inputPwd === null) return false;
+  if(inputPwd !== adminObj.password){
+    alert('❌ 管理員密碼驗證失敗！無法變更此設定。');
+    return false;
+  }
+  return true;
+}
+
+// 主系統切換「去識別化」時同步推播至所有雲端班級與本機快取
+async function syncGlobalDeidentifyToAllClasses(newDeidBool){
+  if(CURRENT_CLASS_ID !== 'default') return;
+  // 1. 更新本機已記錄的所有班級
+  allCloudClasses.forEach(c => {
+    const parsed = parseEditModeField(c.edit_mode);
+    const packed = packEditModeField({
+      editMode: parsed.editMode || 'A',
+      deidentify: newDeidBool,
+      autoDeleteDate: parsed.autoDeleteDate || '',
+      autoDeleteTime: parsed.autoDeleteTime || '23:00'
+    });
+    c.edit_mode = packed;
+    try {
+      const localKey = `offlineDutyRoster_v1_${c.class_id}`;
+      const raw = localStorage.getItem(localKey);
+      if(raw){
+        const obj = JSON.parse(raw);
+        if(obj && obj.settings){
+          obj.settings.deidentify = newDeidBool;
+          localStorage.setItem(localKey, JSON.stringify(obj));
+        }
+      }
+    } catch(e){}
+  });
+
+  // 2. 雲端批次更新 roster_classes
+  try {
+    const promises = allCloudClasses.map(c => {
+      return supabaseFetch(`roster_classes?class_id=eq.${encodeURIComponent(c.class_id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ edit_mode: c.edit_mode, updated_at: new Date().toISOString() })
+      });
+    });
+    await Promise.all(promises);
+  } catch(e){}
+}
+
+// 監聽去識別化下拉選單切換（若嘗試由開啟切為關閉，立即要求管理員輸入密碼）
+const deidentifyModeEl = document.getElementById('deidentifyMode');
+if(deidentifyModeEl){
+  deidentifyModeEl.addEventListener('change', () => {
+    if(CURRENT_CLASS_ID === 'default' && deidentifyModeEl.value === 'false' && state.settings.deidentify){
+      const ok = verifyCurrentAdminPassword('關閉全系統「姓名去識別化保護」');
+      if(!ok){
+        deidentifyModeEl.value = 'true';
+      }
+    }
+  });
+}
+
+document.getElementById('settingsForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const start=document.getElementById('startDate').value,end=document.getElementById('endDate').value;
   if(start&&end&&start>end){alert('開始日不能晚於結束日。');return}
@@ -2032,6 +2113,20 @@ document.getElementById('settingsForm').addEventListener('submit',e=>{
   const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (state.settings.autoDeleteDate || '');
   const autoDelTimeVal = state.settings.autoDeleteTime || '23:00';
   const old={...state.settings};
+  
+  let targetDeidentify = document.getElementById('deidentifyMode')?.value === 'true';
+  // 若由開啟轉為關閉且在 default 主系統，進行密碼驗證防護
+  if(CURRENT_CLASS_ID === 'default' && old.deidentify && !targetDeidentify){
+    const verified = verifyCurrentAdminPassword('關閉全系統「姓名去識別化保護」');
+    if(!verified){
+      if(document.getElementById('deidentifyMode')) document.getElementById('deidentifyMode').value = 'true';
+      return;
+    }
+  } else if(CURRENT_CLASS_ID !== 'default'){
+    // 分班嚴格依循全域主系統去識別化設定，分班無權自行變更
+    targetDeidentify = old.deidentify;
+  }
+
   state.settings={
     ...state.settings,
     title:document.getElementById('classTitle').value.trim()||'勞動力發展署桃竹苗分署',
@@ -2042,20 +2137,34 @@ document.getElementById('settingsForm').addEventListener('submit',e=>{
     editMode:document.getElementById('editMode').value,
     dailyCount:Number(document.getElementById('dailyCount').value)||2,
     autoLogoutMinutes:Math.min(99,Math.max(0,parseInt(document.getElementById('autoLogoutMinutes').value,10)||0)),
-    deidentify:document.getElementById('deidentifyMode')?.value === 'true',
+    deidentify:targetDeidentify,
     autoDeleteDate:autoDelVal,
     autoDeleteTime:autoDelTimeVal
   };
   if(old.startDate!==start||old.endDate!==end||old.firstStudentId!==state.settings.firstStudentId||old.editMode!==state.settings.editMode||old.dailyCount!==state.settings.dailyCount)ensureAssignments();
   renderAll();
   fetchAllClassesList();
+  if(CURRENT_CLASS_ID === 'default' && old.deidentify !== targetDeidentify){
+    await syncGlobalDeidentifyToAllClasses(targetDeidentify);
+  }
   addAuditLog('設定與排班', `儲存系統設定（期間：${start||'未設'}～${end||'未設'}、每日人數：${state.settings.dailyCount}人、模式：${state.settings.editMode}、去識別化：${state.settings.deidentify?'開啟':'關閉'}）`);
   alert('設定已儲存。');
 });
-document.getElementById('rebuildSettings').addEventListener('click',()=>{
+document.getElementById('rebuildSettings').addEventListener('click', async ()=>{
   if(confirm('重新排班可能覆蓋部分手動指定資料，確定繼續？')){
     const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (state.settings.autoDeleteDate || '');
     const autoDelTimeVal = state.settings.autoDeleteTime || '23:00';
+    const oldDeid = Boolean(state.settings.deidentify);
+    let targetDeid = document.getElementById('deidentifyMode')?.value === 'true';
+    if(CURRENT_CLASS_ID === 'default' && oldDeid && !targetDeid){
+      const verified = verifyCurrentAdminPassword('關閉全系統「姓名去識別化保護」');
+      if(!verified){
+        if(document.getElementById('deidentifyMode')) document.getElementById('deidentifyMode').value = 'true';
+        return;
+      }
+    } else if(CURRENT_CLASS_ID !== 'default'){
+      targetDeid = oldDeid;
+    }
     state.settings.title=document.getElementById('classTitle').value.trim()||'勞動力發展署桃竹苗分署';
     state.settings.subtitle=document.getElementById('classSubtitle').value.trim();
     state.settings.startDate=document.getElementById('startDate').value;
@@ -2064,12 +2173,15 @@ document.getElementById('rebuildSettings').addEventListener('click',()=>{
     state.settings.editMode=document.getElementById('editMode').value;
     state.settings.dailyCount=Number(document.getElementById('dailyCount').value)||2;
     state.settings.autoLogoutMinutes=Math.min(99,Math.max(0,parseInt(document.getElementById('autoLogoutMinutes').value,10)||0));
-    state.settings.deidentify=document.getElementById('deidentifyMode')?.value === 'true';
+    state.settings.deidentify=targetDeid;
     state.settings.autoDeleteDate=autoDelVal;
     state.settings.autoDeleteTime=autoDelTimeVal;
     state.assignments={};
     generate();
     fetchAllClassesList();
+    if(CURRENT_CLASS_ID === 'default' && oldDeid !== targetDeid){
+      await syncGlobalDeidentifyToAllClasses(targetDeid);
+    }
     addAuditLog('設定與排班', '執行「重新產生班表」操作');
     alert('已重新產生班表。');
   }
@@ -2305,7 +2417,8 @@ if(createClassFormEl){
       if(!confirm(msg)) return;
     }
 
-    const packedMode = packEditModeField({ editMode: 'A', deidentify: false, autoDeleteDate: newAutoDel, autoDeleteTime: newAutoDelTime });
+    const currentDeid = Boolean(state.settings.deidentify);
+    const packedMode = packEditModeField({ editMode: 'A', deidentify: currentDeid, autoDeleteDate: newAutoDel, autoDeleteTime: newAutoDelTime });
     const nowIso = new Date().toISOString();
     const classPayloads = toCreateIds.map(cid => ({
       class_id: cid,

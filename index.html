@@ -187,17 +187,26 @@
     <p id="pwdModalDesc">請設定您的新密碼。<strong>密碼原則：長度 8～20 字元，須同時包含英文大寫、英文小寫、數字及特殊符號。</strong></p>
     <div id="pwdModalError" class="login-err"></div>
     <form id="changePwdForm">
-      <div class="field" style="margin-bottom:12px">
+      <div class="field" id="oldPwdGroup" style="margin-bottom:12px">
         <label for="oldPassword" id="oldPwdLabel">目前密碼 *</label>
-        <input type="password" id="oldPassword" placeholder="輸入目前密碼">
+        <div style="position:relative">
+          <input type="password" id="oldPassword" placeholder="輸入目前密碼" style="padding-right:42px">
+          <button type="button" id="toggleOldPwdBtn" title="顯示／隱藏密碼明碼" aria-label="顯示或隱藏密碼" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;padding:4px 8px;font-size:17px;cursor:pointer;color:#64748b;box-shadow:none;line-height:1">👁️</button>
+        </div>
       </div>
       <div class="field" style="margin-bottom:12px">
         <label for="newPassword">新密碼 *</label>
-        <input type="password" id="newPassword" required minlength="8" maxlength="20" placeholder="8～20字元（含英文大寫、小寫、數字及特殊符號）">
+        <div style="position:relative">
+          <input type="password" id="newPassword" required minlength="8" maxlength="20" placeholder="8～20字元（含英文大寫、小寫、數字及特殊符號）" style="padding-right:42px">
+          <button type="button" id="toggleNewPwdBtn" title="顯示／隱藏密碼明碼" aria-label="顯示或隱藏密碼" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;padding:4px 8px;font-size:17px;cursor:pointer;color:#64748b;box-shadow:none;line-height:1">👁️</button>
+        </div>
       </div>
       <div class="field" style="margin-bottom:16px">
         <label for="confirmNewPassword">確認新密碼 *</label>
-        <input type="password" id="confirmNewPassword" required minlength="8" maxlength="20" placeholder="再次輸入新密碼">
+        <div style="position:relative">
+          <input type="password" id="confirmNewPassword" required minlength="8" maxlength="20" placeholder="再次輸入新密碼" style="padding-right:42px">
+          <button type="button" id="toggleConfirmPwdBtn" title="顯示／隱藏密碼明碼" aria-label="顯示或隱藏密碼" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;padding:4px 8px;font-size:17px;cursor:pointer;color:#64748b;box-shadow:none;line-height:1">👁️</button>
+        </div>
       </div>
       <div class="actions" style="justify-content:flex-end">
         <button type="button" class="secondary hidden" id="cancelPwdModalBtn">取消</button>
@@ -2120,15 +2129,15 @@ function openChangePwdModal(isFirstLogin=false,forcedUser=null){
   if(appMain)appMain.classList.add('hidden');
   title.textContent='首次登入：請修改密碼';
   desc.textContent='這是您第一次登入系統，為了資訊安全，請先設定您的自訂新密碼。';
-  oldFld.style.display='none';
-  if(oldLbl)oldLbl.style.display='none';
+  const oldGroup=document.getElementById('oldPwdGroup');if(oldGroup)oldGroup.style.display='none';
+  oldFld.style.display='none';if(oldLbl)oldLbl.style.display='none';
   cancelBtn.classList.add('hidden');
  }else{
   pendingFirstLoginUser=null;
   title.textContent='修改密碼';
   desc.textContent='請輸入原密碼與新密碼以完成變更。';
-  oldFld.style.display='block';
-  if(oldLbl)oldLbl.style.display='block';
+  const oldGroup=document.getElementById('oldPwdGroup');if(oldGroup)oldGroup.style.display='block';
+  oldFld.style.display='block';if(oldLbl)oldLbl.style.display='block';
   cancelBtn.classList.remove('hidden');
  }
  modal.classList.remove('hidden');
@@ -3663,6 +3672,9 @@ function bindPwdEyeToggle(btnId, inputId){
 bindPwdEyeToggle('toggleLoginPwdBtn', 'loginPassword');
 bindPwdEyeToggle('toggleAccPwdBtn', 'accPassword');
 bindPwdEyeToggle('toggleNewClassPwdBtn', 'newClassAdminPwd');
+bindPwdEyeToggle('toggleOldPwdBtn', 'oldPassword');
+bindPwdEyeToggle('toggleNewPwdBtn', 'newPassword');
+bindPwdEyeToggle('toggleConfirmPwdBtn', 'confirmNewPassword');
 
 // 登入暫存與 MFA 雙因素狀態
 let pendingMfaUser = null;

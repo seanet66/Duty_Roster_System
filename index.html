@@ -148,7 +148,10 @@
       </div>
       <div class="login-field">
         <label for="loginPassword">使用者密碼</label>
-        <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="請輸入密碼">
+        <div style="position:relative">
+          <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="請輸入密碼" style="padding-right:42px">
+          <button type="button" id="toggleLoginPwdBtn" title="顯示／隱藏密碼明碼" aria-label="顯示或隱藏密碼" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;padding:4px 8px;font-size:17px;cursor:pointer;color:#64748b;box-shadow:none;line-height:1">👁️</button>
+        </div>
       </div>
       <button type="submit" class="login-btn" id="loginBtn">登入系統</button>
     </form>
@@ -308,7 +311,12 @@
     </form>
     <div class="divider"></div>
     <div>
-      <h3>已建立的班級列表（<span id="classTotalCount">1</span> 班）</h3>
+      <div class="toolbar" style="margin-bottom:8px">
+        <h3 style="margin:0">已建立的班級列表（<span id="classTotalCount">1</span> 班）</h3>
+        <div class="actions">
+          <button type="button" class="danger small" id="deleteAllCustomClassesBtn">🗑️ 一鍵刪除所有自建班級（保留 default 主系統）</button>
+        </div>
+      </div>
       <div id="classListTable" class="table-wrap" style="margin-top:8px"></div>
     </div>
   </div>
@@ -2019,6 +2027,51 @@ const qrCurrentClassBtn = document.getElementById('qrCurrentClassBtn');
 if(qrCurrentClassBtn){
   qrCurrentClassBtn.addEventListener('click', () => openQrCodeModal(CURRENT_CLASS_ID));
 }
+const deleteAllCustomClassesBtn = document.getElementById('deleteAllCustomClassesBtn');
+if(deleteAllCustomClassesBtn){
+  deleteAllCustomClassesBtn.addEventListener('click', async () => {
+    if(!currentUser || currentUser.role !== 'admin' || !isGlobalSuperUser(currentUser)){
+      alert('僅跨全班級通用之總管理員可執行此操作。');
+      return;
+    }
+    const customClasses = allCloudClasses.filter(c => c.class_id !== 'default');
+    if(!customClasses.length){
+      alert('目前除了主系統（default）之外，沒有其他自建班級可供刪除。');
+      return;
+    }
+    const idListStr = customClasses.map(c => c.class_id).join('、');
+    const promptTxt = prompt(
+      `⚠️【批次清空所有自建班級 防呆確認】\n` +
+      `確定要一次永久刪除全部 ${customClasses.length} 個自建班級嗎？\n` +
+      `（包含：${idListStr}）\n\n` +
+      `✅ 主系統班級【default】將受到保護並完整保留，不會被刪除。\n\n` +
+      `若確定執行，請在下方輸入「全部刪除」四個字後按確定：`
+    );
+    if(promptTxt !== '全部刪除'){
+      if(promptTxt !== null) alert('輸入不正確，已取消批次刪除操作。');
+      return;
+    }
+    deleteAllCustomClassesBtn.disabled = true;
+    const origText = deleteAllCustomClassesBtn.textContent;
+    deleteAllCustomClassesBtn.textContent = '🗑️ 正在批次刪除中...';
+    try {
+      const targetIds = customClasses.map(c => c.class_id);
+      await Promise.all(targetIds.map(cid => purgeClassEverywhere(cid)));
+      allCloudClasses = allCloudClasses.filter(c => c.class_id === 'default');
+      if(CURRENT_CLASS_ID !== 'default'){
+        await switchClass('default', true);
+      } else {
+        await fetchAllClassesList();
+        renderClassSelectors();
+        renderClassManagementTable();
+      }
+      alert(`🎉 已成功刪除全部 ${targetIds.length} 個自建班級！\n主系統班級【default】已完整保留。`);
+    } finally {
+      deleteAllCustomClassesBtn.disabled = false;
+      deleteAllCustomClassesBtn.textContent = origText;
+    }
+  });
+}
 const downloadQrPngBtn = document.getElementById('downloadQrPngBtn');
 if(downloadQrPngBtn){
   downloadQrPngBtn.addEventListener('click', () => {
@@ -2082,6 +2135,18 @@ if(classListTableEl){
       }
       alert(`班級【${cid}】已成功刪除。`);
     }
+  });
+}
+
+// 登入畫面密碼明碼顯示／隱藏切換（眼睛按鈕）
+const toggleLoginPwdBtn = document.getElementById('toggleLoginPwdBtn');
+const loginPwdInputEl = document.getElementById('loginPassword');
+if(toggleLoginPwdBtn && loginPwdInputEl){
+  toggleLoginPwdBtn.addEventListener('click', () => {
+    const isPwd = loginPwdInputEl.type === 'password';
+    loginPwdInputEl.type = isPwd ? 'text' : 'password';
+    toggleLoginPwdBtn.textContent = isPwd ? '🙈' : '👁️';
+    toggleLoginPwdBtn.title = isPwd ? '點擊隱藏密碼' : '點擊顯示密碼明碼';
   });
 }
 

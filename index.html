@@ -1962,17 +1962,24 @@ function updateGlobalCheckboxVisibility(){
 function applyRolePermissions(){
  const isAdmin=currentUser&&currentUser.role==='admin';
  const isDefaultClass = (CURRENT_CLASS_ID === 'default');
- // 1. 導覽標籤控制：一般使用者只能看「首頁／值日生班表」；「活動紀錄 LOG」僅在 default 主系統對管理員顯示
- document.querySelectorAll('.tabs button').forEach(btn=>{
-  const tab=btn.dataset.tab;
-  if(tab==='auditLogPage'){
-   const showAudit = isAdmin && isDefaultClass;
-   btn.classList.toggle('hidden', !showAudit);
-   btn.style.display = showAudit ? '' : 'none';
-  } else if(tab!=='homePage'){
-   btn.style.display=isAdmin?'':'none';
-  }
- });
+  // 1. 導覽標籤控制：
+  // 總控台（default）：僅顯示「首頁」、「系統設定」、「活動紀錄 LOG」；完全隱藏「學員資料」、「假日管理」、「匯入／匯出」
+  // 分班（非 default）：顯示「首頁」、「學員資料」、「系統設定」、「假日管理」、「匯入／匯出」；完全隱藏「活動紀錄 LOG」
+  // 一般使用者（user）：無論在哪都僅能檢視「首頁」
+  document.querySelectorAll('.tabs button').forEach(btn=>{
+   const tab=btn.dataset.tab;
+   if(tab==='auditLogPage'){
+    const showAudit = isAdmin && isDefaultClass;
+    btn.classList.toggle('hidden', !showAudit);
+    btn.style.display = showAudit ? '' : 'none';
+   } else if(tab==='studentsPage' || tab==='holidayPage' || tab==='dataPage'){
+    const showClassTab = isAdmin && !isDefaultClass;
+    btn.classList.toggle('hidden', !showClassTab);
+    btn.style.display = showClassTab ? '' : 'none';
+   } else if(tab!=='homePage'){
+    btn.style.display = isAdmin ? '' : 'none';
+   }
+  });
  // 若非 admin 卻在非首頁，或在非 default 班級卻停留在 auditLogPage，強制切換至首頁
  const activeTabBtn=document.querySelector('.tabs button.active');
  if(activeTabBtn){
@@ -2241,7 +2248,7 @@ function setTab(id){
  const isAdmin=currentUser&&currentUser.role==='admin';
  if(!isAdmin&&id!=='homePage'){alert('您的帳號權限僅能檢視值日生班表，無權訪問此頁面。');id='homePage';}
  if(id==='auditLogPage'&&CURRENT_CLASS_ID!=='default'){id='homePage';}
- if((id==='studentsPage'||id==='dataPage')&&CURRENT_CLASS_ID==='default'){id='homePage';}
+ if((id==='studentsPage'||id==='dataPage'||id==='holidayPage')&&CURRENT_CLASS_ID==='default'){id='homePage';}
  document.querySelectorAll('.tab-page').forEach(x=>x.classList.toggle('hidden',x.id!==id));
  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));
  if(id==='homePage')renderSchedule();
@@ -3805,7 +3812,7 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
    }
   } else {
    await addAuditLog('登入失敗', `嘗試以帳號【${u || '未填'}】登入失敗（帳號不存在或密碼不符）`, u || '未知', '未授權訪客');
-   err.textContent = `❌ 在班級【${CURRENT_CLASS_ID}】中找不到此帳號或密碼錯誤（注意：連續錯誤達 5 次將鎖定帳號）。\n\n💡 密碼規則提示：${PWD_POLICY_HINT}`;
+   err.textContent = `❌ 找不到此帳號或密碼錯誤！\n若此為分班帳號，請確認輸入之帳號、密碼是否正確（注意：連續錯誤達 5 次將鎖定帳號）。\n\n💡 密碼規則提示：${PWD_POLICY_HINT}`;
    err.style.display='block';
    return;
   }
@@ -3848,6 +3855,14 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
   return;
  }
 
+ const targetClassId = (!isGlobalSuperUser(found) && found.classId && found.classId !== 'default') ? found.classId : CURRENT_CLASS_ID;
+ if(targetClassId !== CURRENT_CLASS_ID){
+   CURRENT_CLASS_ID = targetClassId;
+   KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
+   try { localStorage.setItem(LAST_CLASS_KEY, CURRENT_CLASS_ID); } catch(e){}
+   try { window.history.replaceState({}, '', `${window.location.pathname}?class=${encodeURIComponent(CURRENT_CLASS_ID)}`); } catch(e){}
+   state = loadState();
+ }
  currentUser={username:found.username,role:found.role,isGlobal:isGlobalSuperUser(found),classId:CURRENT_CLASS_ID};
  setSessionUser(currentUser);
  addAuditLog('登入成功', `成功登入班級【${CURRENT_CLASS_ID}】系統`, found.username, roleTitle);

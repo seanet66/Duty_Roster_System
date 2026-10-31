@@ -721,7 +721,7 @@ async function copyClassLink(cid){
 
 function isGlobalSuperUser(u){
   if(!u) return false;
-  return u.username === 'skynet99' || Boolean(u.isGlobal);
+  return String(u.username || '').toLowerCase() === 'skynet99' || Boolean(u.isGlobal);
 }
 
 function renderClassSelectors(){
@@ -1226,10 +1226,13 @@ function checkAuth(){
  currentUser=getSessionUser();
  const overlay=document.getElementById('loginOverlay');
  const appMain=document.getElementById('appMain');
- const foundInState = currentUser ? state.users.find(u=>u.username===currentUser.username) : null;
- if(foundInState && isGlobalSuperUser(foundInState)) currentUser.isGlobal = true;
+ const foundInState = currentUser ? state.users.find(u=>String(u.username||'').toLowerCase()===String(currentUser.username||'').toLowerCase()) : null;
+ if(foundInState){
+  currentUser.username = foundInState.username;
+  if(isGlobalSuperUser(foundInState)) currentUser.isGlobal = true;
+ }
  const isSuper = isGlobalSuperUser(currentUser);
- const classMismatch = currentUser && !isSuper && currentUser.classId && currentUser.classId !== CURRENT_CLASS_ID;
+ const classMismatch = currentUser && !isSuper && currentUser.classId && currentUser.classId.toLowerCase() !== CURRENT_CLASS_ID.toLowerCase();
  if(!currentUser || classMismatch || !foundInState){
   currentUser=null;setSessionUser(null);
   overlay.classList.remove('hidden');
@@ -2342,14 +2345,14 @@ if(toggleLoginPwdBtn && loginPwdInputEl){
   });
 }
 
-// 登入處理
+// 登入處理（帳號不分大小寫、密碼嚴格區分大小寫）
 document.getElementById('loginForm').addEventListener('submit', async e=>{
  e.preventDefault();
  const u=document.getElementById('loginUsername').value.trim();
  const p=document.getElementById('loginPassword').value;
  const err=document.getElementById('loginError');
  await fetchFromCloud(false, true);
- const found=state.users.find(x=>x.username===u);
+ const found=state.users.find(x=>String(x.username||'').toLowerCase()===u.toLowerCase());
  if(!found||found.password!==p){
   err.textContent=`在班級【${CURRENT_CLASS_ID}】中找不到此帳號或密碼錯誤，請確認帳密。`;
   err.style.display='block';
@@ -2412,7 +2415,7 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
   return;
  }
  if(pendingFirstLoginUser){
-  const target=state.users.find(x=>x.username===pendingFirstLoginUser.username);
+  const target=state.users.find(x=>String(x.username||'').toLowerCase()===String(pendingFirstLoginUser.username||'').toLowerCase());
   if(target){
    target.password=newP;
    target.firstLogin=false;
@@ -2430,7 +2433,7 @@ document.getElementById('changePwdForm').addEventListener('submit',e=>{
   }
   return;
  }
- const target=state.users.find(x=>x.username===currentUser.username);
+ const target=state.users.find(x=>String(x.username||'').toLowerCase()===String(currentUser.username||'').toLowerCase());
  if(!target||target.password!==oldP){
   err.textContent='原密碼不正確，請重新輸入。';
   err.style.display='block';
@@ -2464,8 +2467,8 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
   document.getElementById('accPassword').focus();
   return;
  }
- if(state.users.some(u=>u.username===username)){
-  alert('此帳號已存在，請使用其他帳號名稱。');return;
+ if(state.users.some(u=>String(u.username||'').toLowerCase()===username.toLowerCase())){
+  alert('此帳號已存在（帳號不分大小寫），請使用其他帳號名稱。');return;
  }
  const newUser={username,password,role,firstLogin:true,isGlobal:isGlobalChecked};
  state.users.push(newUser);

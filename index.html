@@ -139,9 +139,15 @@
   <div class="login-card">
     <div class="login-icon">📅</div>
     <div class="login-title">值日生排班管理系統</div>
+    <div id="loginClassBadge" style="margin:6px auto 12px;display:inline-block;padding:6px 14px;border-radius:99px;background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe;font-weight:700;font-size:13px">🏫 所屬班級：主系統</div>
     <div class="login-desc">請輸入帳號與密碼以登入系統進行排班管理</div>
     <div id="loginError" class="login-err"></div>
     <form id="loginForm">
+      <div class="login-field hidden" id="loginClassSelectWrap">
+        <label for="loginClassSelect">選擇登入班級</label>
+        <select id="loginClassSelect"></select>
+        <input type="text" id="loginCustomClass" class="hidden" placeholder="請輸入班級代號" style="margin-top:6px">
+      </div>
       <div class="login-field">
         <label for="loginUsername">使用者帳號</label>
         <input type="text" id="loginUsername" required autocomplete="username" placeholder="請輸入帳號" autofocus>
@@ -199,6 +205,32 @@
       <button type="button" class="secondary" id="copyQrUrlBtn">🔗 複製網址</button>
       <button type="button" class="secondary" id="closeQrModalBtn">關閉</button>
     </div>
+  </div>
+</div>
+
+<!-- 主系統修改各班自動回收日與時間 Modal -->
+<div id="editExpiryModal" class="modal-overlay hidden no-print">
+  <div class="modal-box" style="max-width:420px">
+    <h3 id="editExpiryModalTitle" style="margin-bottom:6px;color:#1e3a8a">🗑️ 修改班級自動回收日與時間</h3>
+    <p id="editExpiryModalDesc" class="muted" style="margin-bottom:14px">設定該班級結訓後自動從雲端與本機刪除的日期與時間（清空日期代表永久保留）。</p>
+    <form id="editExpiryForm">
+      <input type="hidden" id="editExpiryClassId">
+      <div class="field" style="margin-bottom:12px">
+        <label for="editExpiryDate">自動回收（結訓刪除）日期</label>
+        <input type="date" id="editExpiryDate">
+      </div>
+      <div class="field" style="margin-bottom:16px">
+        <label for="editExpiryTime">自動回收執行時間（24小時制）</label>
+        <input type="time" id="editExpiryTime" value="23:00">
+      </div>
+      <div class="actions" style="justify-content:space-between">
+        <button type="button" class="secondary small" id="clearExpiryBtn">設為永久保留（清空日期）</button>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="secondary" id="cancelExpiryModalBtn">取消</button>
+          <button type="submit">儲存修改</button>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -304,9 +336,14 @@
           </div>
           <div class="muted" style="font-size:11px;margin-top:4px">預設帶入課程結束日 23:00，時間到自動刪除該班資料</div>
         </div>
-        <div class="field" style="display:flex;align-items:end;gap:7px">
-          <button type="submit">＋ 建立班級（支援單班／批次）</button>
+        <div class="field">
+          <label for="newClassAdminPwd">🔑 配發各班管理員初始密碼 *</label>
+          <input type="text" id="newClassAdminPwd" required minlength="8" maxlength="20" value="12345678" placeholder="8～20字元（預設 12345678）">
+          <div class="muted" style="font-size:11px;margin-top:4px">自動以「班級代號」建立各班管理員帳號，首次登入強制改密碼</div>
         </div>
+      </div>
+      <div class="actions" style="margin-top:12px;justify-content:flex-end">
+        <button type="submit">＋ 建立班級（支援單班／批次並自動配發該班管理員帳號）</button>
       </div>
     </form>
     <div class="divider"></div>
@@ -333,13 +370,13 @@
         <div class="field"><label for="autoLogoutMinutes">閒置自動登出時間（分鐘）</label><input type="number" id="autoLogoutMinutes" min="0" max="99" value="10" placeholder="0-99，0表示不自動登出"><div class="muted" style="font-size:11px;margin-top:4px">預設 10 分鐘，可設定 0～99 分鐘（設為 0 表示停用自動登出）</div></div>
         <div class="field"><label for="editMode">手動修改後的排班方式</label><select id="editMode"><option value="A">A．自動接續（手動值日生後，依學號往後接續）</option><option value="B">B．固定指定（保留手動指定日期，其餘日期順序重排）</option><option value="C">C．完全重新排序（修改後整張表重新依學號排班）</option></select></div>
         <div class="field"><label for="deidentifyMode">🛡️ 姓名去識別化保護（資安隱私遮罩）</label><select id="deidentifyMode"><option value="false">關閉（顯示完整真實姓名 — 預設）</option><option value="true">開啟（全系統列表與匯出檔自動遮罩中間字為 ○）</option></select><div class="muted" style="font-size:11px;margin-top:4px">開啟後：2 字姓名顯示「王○」、3 字顯示「林○松」、4 字顯示「歐○○菲」（含畫面與 Excel/PDF/CSV 匯出）</div></div>
-        <div class="field">
-          <label for="autoDeleteDate">🗑️ 本班自動回收日與時間（結訓自動刪除，選填）</label>
+        <div class="field" id="settingsAutoDeleteField">
+          <label for="autoDeleteDate">🗑️ 本班自動回收日與時間（結訓自動刪除，唯讀檢視）</label>
           <div style="display:flex;gap:8px">
-            <input type="date" id="autoDeleteDate" style="flex:1.4">
-            <input type="time" id="autoDeleteTime" value="23:00" style="flex:1">
+            <input type="date" id="autoDeleteDate" style="flex:1.4;background:#f1f5f9;color:#475569;cursor:not-allowed" disabled>
+            <input type="time" id="autoDeleteTime" value="23:00" style="flex:1;background:#f1f5f9;color:#475569;cursor:not-allowed" disabled>
           </div>
-          <div class="muted" style="font-size:11px;margin-top:4px">預設自動帶入「結束日」當天 23:00；時間到達後系統將自動清除本班級（主班級 default 受保護不回收）</div>
+          <div id="autoDeleteHintText" class="muted" style="font-size:11px;margin-top:4px">此回收時間由主系統分班時設定（唯讀），時間到達後系統將自動回收清除本班級資料</div>
         </div>
       </div>
       <div class="notice"><strong>排班規則：</strong>只在開始日與結束日（含）之間的上課日排班。週六、週日及假日管理中設定的休假日會跳過；職稱非「學員」的幹部（班長、副班長、服務股長）不列入值日生輪替，系統會自動跳過。學員依學號排序，每日安排 1 或 2 位值日生並循環，直到結束日。若要將週末設為上課日，請在「假日管理」勾選該日為上課日。</div>
@@ -368,7 +405,7 @@
     <div id="userTable" class="table-wrap"></div>
   </div>
 
-  <div class="panel"><h2>資料備份提醒</h2><p class="muted">本系統資料儲存在目前瀏覽器的本機儲存空間。若改用其他瀏覽器、清除瀏覽資料或換電腦，資料不會自動同步。請定期至「匯入／匯出」匯出完整 JSON 備份。</p><button class="secondary" id="backupFromSettings">匯出完整備份 JSON</button></div>
+  <div class="panel" id="settingsJsonBackupPanel"><h2>資料備份提醒</h2><p class="muted">本系統資料儲存在目前瀏覽器的本機儲存空間。若改用其他瀏覽器、清除瀏覽資料或換電腦，資料不會自動同步。請定期至「匯入／匯出」匯出完整 JSON 備份。</p><button class="secondary" id="backupFromSettings">匯出完整備份 JSON</button></div>
 </section>
 <section id="holidayPage" class="tab-page hidden">
   <div class="panel">
@@ -406,8 +443,15 @@
     <h2>學員資料匯入／匯出</h2>
     <div class="grid two">
       <div><h3>匯入學員資料（CSV）</h3><p class="muted">支援 UTF-8 CSV，欄位為「學號、姓名、職稱」。可使用 Excel 編輯後另存為 CSV UTF-8。若學號重複，會以新資料更新該學號。</p><div class="actions"><button class="secondary" id="downloadTemplate">下載 CSV 範本</button><input type="file" id="studentFile" accept=".csv,.txt,text/csv" style="max-width:280px"></div><div id="importPreview" class="muted" style="margin-top:10px"></div><button id="confirmImport" class="hidden" style="margin-top:10px">確認匯入預覽資料</button></div>
-      <div><h3>匯出資料</h3><p class="muted">匯出學員名單、完整課程班表，或將所有設定與資料打包備份。</p><div class="actions" style="margin-bottom:8px"><button id="exportStudentsCsv">學員資料 CSV</button><button id="exportStudentsXls" class="secondary">學員資料 Excel</button></div><div class="actions" style="margin-bottom:8px"><button id="exportFullXls">完整課程班表 Excel</button><button id="exportFullPdf" class="secondary">完整課程班表 PDF</button></div><button id="exportBackup">完整備份 JSON</button>
-<div class="divider"></div><h3>還原完整備份</h3><p class="muted">選擇先前匯出的 JSON 備份，會以備份內容取代目前系統資料。</p><input type="file" id="backupFile" accept=".json,application/json"></div>
+      <div><h3>匯出資料</h3><p class="muted">匯出學員名單與完整課程班表。</p><div class="actions" style="margin-bottom:8px"><button id="exportStudentsCsv">學員資料 CSV</button><button id="exportStudentsXls" class="secondary">學員資料 Excel</button></div><div class="actions" style="margin-bottom:8px"><button id="exportFullXls">完整課程班表 Excel</button><button id="exportFullPdf" class="secondary">完整課程班表 PDF</button></div>
+      <div id="dataJsonBackupSection">
+        <button id="exportBackup">完整備份 JSON</button>
+        <div class="divider"></div>
+        <h3>還原完整備份</h3>
+        <p class="muted">選擇先前匯出的 JSON 備份，會以備份內容取代目前系統資料。</p>
+        <input type="file" id="backupFile" accept=".json,application/json">
+      </div>
+      </div>
     </div>
     
   <div id="dataNotice" class="notice">Excel 匯出採用 Excel 可開啟的 XML Spreadsheet 格式（.xls）；學員匯入支援 CSV。PDF 匯出為每月一頁的月曆式班表（A4 橫向），使用瀏覽器列印視窗，可選擇「另存為 PDF」。</div>
@@ -418,10 +462,11 @@
 </div>
 <script>
 (() => {
-// 多班級支援：從網址參數 ?class=xxx 取得班級代號，預設為 default
+// 多班級支援：嚴格以網址參數 ?class=xxx 決定所在班級（無參數時固定進入 default 主系統）
 const urlParams = new URLSearchParams(window.location.search);
 const LAST_CLASS_KEY = 'offlineDutyRoster_lastClass';
-let CURRENT_CLASS_ID = (urlParams.get('class') || localStorage.getItem(LAST_CLASS_KEY) || 'default').trim() || 'default';
+const IS_DEDICATED_CLASS_URL = Boolean((urlParams.get('class') || '').trim() && (urlParams.get('class') || '').trim() !== 'default');
+let CURRENT_CLASS_ID = (urlParams.get('class') || 'default').trim() || 'default';
 let KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
 let allCloudClasses = [];
 
@@ -680,9 +725,24 @@ function isGlobalSuperUser(u){
 }
 
 function renderClassSelectors(){
-  // 1. 登入畫面班級下拉選單
+  // 1. 登入畫面班級銘牌與下拉選單控制
+  const loginBadge = document.getElementById('loginClassBadge');
+  const loginSelWrap = document.getElementById('loginClassSelectWrap');
   const loginSel = document.getElementById('loginClassSelect');
   const customInp = document.getElementById('loginCustomClass');
+  const clsObj = allCloudClasses.find(c => c.class_id === CURRENT_CLASS_ID);
+  const subName = clsObj?.subtitle || state.settings.subtitle || '';
+  if(loginBadge){
+    if(CURRENT_CLASS_ID === 'default'){
+      loginBadge.textContent = subName ? `🏫 所屬班級：主系統｜${subName}` : '🏫 所屬班級：default 主系統';
+    } else {
+      loginBadge.textContent = subName ? `🏫 所屬班級：${CURRENT_CLASS_ID}｜${subName}` : `🏫 所屬班級：${CURRENT_CLASS_ID}`;
+    }
+  }
+  // 分出去的班級（非 default）在登入畫面完全鎖定本班，不顯示切換其他班級的下拉選單
+  if(loginSelWrap){
+    loginSelWrap.classList.add('hidden');
+  }
   if(loginSel){
     const currentVal = loginSel.value && loginSel.value !== '__custom__' ? loginSel.value : CURRENT_CLASS_ID;
     loginSel.innerHTML = allCloudClasses.map(c => {
@@ -696,12 +756,12 @@ function renderClassSelectors(){
       loginSel.value = currentVal;
     }
   }
-  // 2. 頁首跨班總管理員快速切換下拉選單
+  // 2. 頁首快速切換下拉選單：分出去的班級（非 default）絕對不顯示切換班級選單，範圍僅限自己班級
   const heroSel = document.getElementById('heroQuickClassSelect');
-  const isSuperAdmin = currentUser && currentUser.role === 'admin' && isGlobalSuperUser(currentUser);
+  const canShowHeroSwitch = (CURRENT_CLASS_ID === 'default') && currentUser && currentUser.role === 'admin' && isGlobalSuperUser(currentUser);
   if(heroSel){
-    heroSel.classList.toggle('hidden', !isSuperAdmin);
-    if(isSuperAdmin){
+    heroSel.classList.toggle('hidden', !canShowHeroSwitch);
+    if(canShowHeroSwitch){
       heroSel.innerHTML = allCloudClasses.map(c => {
         const label = c.subtitle ? `🔀 切換：${c.class_id} (${c.subtitle})` : `🔀 切換：${c.class_id}`;
         return `<option value="${esc(c.class_id)}" style="color:#0f172a;background:#fff" ${c.class_id===CURRENT_CLASS_ID?'selected':''}>${esc(label)}</option>`;
@@ -712,28 +772,31 @@ function renderClassSelectors(){
 }
 
 function renderClassManagementTable(){
-  const isSuperAdmin = currentUser && currentUser.role === 'admin' && isGlobalSuperUser(currentUser);
+  // 分出去的班級（非 default）完全不顯示「👑 多班級總管中心」（不能再分班、也不顯示分了哪些班級）
+  const isMainSuperAdmin = (CURRENT_CLASS_ID === 'default') && currentUser && currentUser.role === 'admin' && isGlobalSuperUser(currentUser);
   const panel = document.getElementById('superAdminClassPanel');
-  if(panel) panel.classList.toggle('hidden', !isSuperAdmin);
-  if(!isSuperAdmin) return;
+  if(panel) panel.classList.toggle('hidden', !isMainSuperAdmin);
+  if(!isMainSuperAdmin) return;
   const countEl = document.getElementById('classTotalCount');
   if(countEl) countEl.textContent = allCloudClasses.length;
   const wrap = document.getElementById('classListTable');
   if(!wrap) return;
-  wrap.innerHTML = `<table><thead><tr><th>班級代號</th><th>主標題</th><th>班級／期別名稱</th><th>課程期間</th><th>自動回收日與時間</th><th class="no-print">操作</th></tr></thead><tbody>${allCloudClasses.map(c => {
+  wrap.innerHTML = `<table><thead><tr><th>班級代號（管理員帳號）</th><th>主標題</th><th>班級／期別名稱</th><th>課程期間</th><th>自動回收日與時間</th><th class="no-print">操作</th></tr></thead><tbody>${allCloudClasses.map(c => {
     const isCurrent = c.class_id === CURRENT_CLASS_ID;
     const range = (c.start_date && c.end_date) ? `${fmt(c.start_date)} ～ ${fmt(c.end_date)}` : '<span class="muted">未設定</span>';
     const autoDelLabel = c.class_id === 'default'
       ? '<span class="muted">系統保護</span>'
-      : (c.auto_delete_date ? `<span style="color:#b45309;font-weight:700">🗑️ ${fmt(c.auto_delete_date)} ${esc(c.auto_delete_time || '23:00')}</span>` : '<span class="muted">永久保留</span>');
+      : (c.auto_delete_date
+          ? `<span style="color:#b45309;font-weight:700">🗑️ ${fmt(c.auto_delete_date)} ${esc(c.auto_delete_time || '23:00')}</span> <button type="button" class="small secondary" data-edit-expiry="${esc(c.class_id)}" style="padding:2px 7px;font-size:11px;margin-left:4px">✏️ 修改</button>`
+          : `<span class="muted">永久保留</span> <button type="button" class="small secondary" data-edit-expiry="${esc(c.class_id)}" style="padding:2px 7px;font-size:11px;margin-left:4px">✏️ 設定</button>`);
     return `<tr class="${isCurrent?'today':''}">
-      <td><strong>${esc(c.class_id)}</strong> ${isCurrent?'<span class="badge" style="background:#dcfce7;color:#166534">目前所在班級</span>':''}</td>
+      <td><strong>${esc(c.class_id)}</strong> ${isCurrent?'<span class="badge" style="background:#dcfce7;color:#166534">主控台</span>':`<span class="muted" style="font-size:11px">（帳號：${esc(c.class_id)}）</span>`}</td>
       <td>${esc(c.title || '—')}</td>
       <td>${esc(c.subtitle || '—')}</td>
       <td>${range}</td>
       <td>${autoDelLabel}</td>
       <td class="no-print">
-        ${isCurrent ? '<button type="button" class="small secondary" disabled>使用中</button>' : `<button type="button" class="small" data-switch-class="${esc(c.class_id)}">切換至此班</button>`}
+        ${c.class_id === 'default' ? '<button type="button" class="small secondary" disabled>主系統</button>' : `<button type="button" class="small" data-open-class="${esc(c.class_id)}">🔗 開啟該班網頁</button>`}
         <button type="button" class="small secondary" data-copy-class="${esc(c.class_id)}">複製專屬連結</button>
         <button type="button" class="small secondary" data-qr-class="${esc(c.class_id)}" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe">📱 生成 QR Code</button>
         ${c.class_id === 'default' ? '' : `<button type="button" class="small danger" data-delete-class="${esc(c.class_id)}">刪除班級</button>`}
@@ -1185,12 +1248,13 @@ function renderUserBadge(){
  if(pill)pill.innerHTML=`使用者：<strong>${esc(currentUser.username)}</strong> (${roleLabel})`;
 }
 function updateGlobalCheckboxVisibility(){
- const isSuper = currentUser && currentUser.role==='admin' && isGlobalSuperUser(currentUser);
+ const isMainSuper = (CURRENT_CLASS_ID === 'default') && currentUser && currentUser.role==='admin' && isGlobalSuperUser(currentUser);
  const roleSel = document.getElementById('accRole');
  const wrap = document.getElementById('accGlobalWrap');
  const chk = document.getElementById('accIsGlobal');
  if(!wrap || !roleSel) return;
- if(isSuper && roleSel.value === 'admin'){
+ // 分出去的班級（非 default）不允許建立跨班通用管理員，僅限本班使用
+ if(isMainSuper && roleSel.value === 'admin'){
   wrap.classList.remove('hidden');
  } else {
   wrap.classList.add('hidden');
@@ -1199,6 +1263,7 @@ function updateGlobalCheckboxVisibility(){
 }
 function applyRolePermissions(){
  const isAdmin=currentUser&&currentUser.role==='admin';
+ const isDefaultClass = (CURRENT_CLASS_ID === 'default');
  // 1. 導覽標籤控制：一般使用者只能看「首頁／值日生班表」
  document.querySelectorAll('.tabs button').forEach(btn=>{
   const tab=btn.dataset.tab;
@@ -1221,6 +1286,12 @@ function applyRolePermissions(){
  // 3. 系統設定內的帳號管理區塊與多班級總管區塊
  const userMgmt=document.getElementById('userManagementPanel');
  if(userMgmt)userMgmt.style.display=isAdmin?'block':'none';
+ // 4. 分出去的班級（非 default）隱藏 JSON 完整備份與還原區塊（僅主系統保留 JSON 備份功能）
+ const settingsJsonPanel = document.getElementById('settingsJsonBackupPanel');
+ const dataJsonSection = document.getElementById('dataJsonBackupSection');
+ if(settingsJsonPanel) settingsJsonPanel.classList.toggle('hidden', !isDefaultClass);
+ if(dataJsonSection) dataJsonSection.classList.toggle('hidden', !isDefaultClass);
+
  updateGlobalCheckboxVisibility();
  renderClassSelectors();
  renderClassManagementTable();
@@ -1229,9 +1300,14 @@ function renderUsers(){
  const isAdmin=currentUser&&currentUser.role==='admin';
  if(!isAdmin)return;
  const isCurrSuper = isGlobalSuperUser(currentUser);
+ const isDefaultClass = (CURRENT_CLASS_ID === 'default');
  const classDisplayName = (state.settings.subtitle && state.settings.subtitle.trim()) ? state.settings.subtitle.trim() : CURRENT_CLASS_ID;
- document.getElementById('userTotal').textContent=state.users.length;
- document.getElementById('userTable').innerHTML=state.users.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>所屬範圍</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${state.users.map(u=>{
+ // 分出去的班級（非 default）完全隱藏超級總管理員與跨班總管理員帳號，只顯示本班獨立帳號
+ const visibleUsers = isDefaultClass
+   ? state.users
+   : state.users.filter(u => !isGlobalSuperUser(u));
+ document.getElementById('userTotal').textContent=visibleUsers.length;
+ document.getElementById('userTable').innerHTML=visibleUsers.length?`<table><thead><tr><th>帳號</th><th>角色</th><th>所屬範圍</th><th>狀態</th><th class="no-print">操作</th></tr></thead><tbody>${visibleUsers.map(u=>{
   const uIsGlob = isGlobalSuperUser(u);
   const roleBadgeTxt = u.username==='skynet99' ? '超級總管理員' : (uIsGlob ? '跨班總管理員' : (u.role==='admin' ? '本班管理員' : '一般使用者'));
   const scopeTxt = uIsGlob ? '🌐 跨全班級通用' : `🏫 限${esc(classDisplayName)}`;
@@ -1240,7 +1316,7 @@ function renderUsers(){
     ? '<span class="muted">系統總管保留</span>'
     : (canManageRow ? `<button class="small secondary" data-reset-user="${esc(u.username)}">重置密碼</button> <button class="small danger" data-delete-user="${esc(u.username)}">刪除</button>` : '<span class="muted">跨班總管帳號</span>');
   return `<tr><td><strong>${esc(u.username)}</strong>${u.username==='skynet99'?' <span class="muted" style="font-size:11px">（超級總管理員）</span>':''}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${roleBadgeTxt}</span></td><td>${scopeTxt}</td><td>${u.firstLogin?'<span class="muted" style="color:#b45309;font-weight:700">待首次登入改密碼</span>':'正常使用'}</td><td class="no-print">${actionHtml}</td></tr>`;
- }).join('')}</tbody></table>`:'<div class="empty">尚無其他使用者。</div>';
+ }).join('')}</tbody></table>`:'<div class="empty">目前本班尚無自建帳號，請於上方新增本班專屬帳號。</div>';
 }
 function openChangePwdModal(isFirstLogin=false,forcedUser=null){
  const modal=document.getElementById('changePwdModal');
@@ -1293,10 +1369,21 @@ function renderSettings(){
   if(deidEl) deidEl.value = s.deidentify ? 'true' : 'false';
   const autoDelEl = document.getElementById('autoDeleteDate');
   const autoDelTimeEl = document.getElementById('autoDeleteTime');
-  if(autoDelEl) autoDelEl.disabled = (CURRENT_CLASS_ID === 'default');
+  const autoDelHint = document.getElementById('autoDeleteHintText');
+  // 本班自動回收日與時間在系統設定中一律設為反灰唯讀（分班管理員僅能檢視哪一天幾點回收，無法自行修改）
+  if(autoDelEl) autoDelEl.disabled = true;
   if(autoDelTimeEl){
     autoDelTimeEl.value = s.autoDeleteTime || '23:00';
-    autoDelTimeEl.disabled = (CURRENT_CLASS_ID === 'default');
+    autoDelTimeEl.disabled = true;
+  }
+  if(autoDelHint){
+    if(CURRENT_CLASS_ID === 'default'){
+      autoDelHint.textContent = '主系統班級（default）受系統永久保護不會回收；各分班之回收日請於上方「多班級總管中心」設定或修改。';
+    } else if(s.autoDeleteDate){
+      autoDelHint.textContent = `📌 本班將於【${fmt(s.autoDeleteDate)} ${s.autoDeleteTime || '23:00'}】結訓自動回收刪除（唯讀檢視，由主系統設定）。`;
+    } else {
+      autoDelHint.textContent = '📌 本班目前設為永久保留（唯讀檢視，由主系統設定）。';
+    }
   }
   renderFirstStudent();
 }
@@ -1381,19 +1468,7 @@ document.getElementById('clearAllStudentsBtn').addEventListener('click',()=>{
  }
 });
 document.getElementById('studentTable').addEventListener('click',e=>{const ed=e.target.closest('[data-edit-student]'),del=e.target.closest('[data-delete-student]');if(ed){const s=studentFor(ed.dataset.editStudent);if(!s)return;editingId=s.id;document.getElementById('studentId').value=s.id;document.getElementById('studentName').value=s.name;document.getElementById('studentRole').value=s.role;document.getElementById('saveStudentBtn').textContent='儲存修改';document.getElementById('cancelStudentEdit').classList.remove('hidden');document.getElementById('studentId').focus()}if(del){const id=del.dataset.deleteStudent;if(!confirm(`確定刪除學號 ${id}？相關排班也會重新計算。`))return;state.students=state.students.filter(s=>s.id!==id);if(state.settings.firstStudentId===id)state.settings.firstStudentId=eligibleStudents()[0]?.id||'';Object.keys(state.assignments).forEach(d=>{const a=state.assignments[d];if(a.studentId===id||a.studentId2===id)delete state.assignments[d]});ensureAssignments();renderAll()}});
-// 課程結束日變更時，自動帶入自動回收（結訓刪除）日與預設 23:00
-const endDateInputEl = document.getElementById('endDate');
-if(endDateInputEl){
-  endDateInputEl.addEventListener('change', () => {
-    if(CURRENT_CLASS_ID === 'default') return;
-    const autoDelEl = document.getElementById('autoDeleteDate');
-    const autoDelTimeEl = document.getElementById('autoDeleteTime');
-    if(autoDelEl && endDateInputEl.value){
-      autoDelEl.value = endDateInputEl.value;
-      if(autoDelTimeEl && !autoDelTimeEl.value) autoDelTimeEl.value = '23:00';
-    }
-  });
-}
+// 建立新班級時，選擇「預設課程結束日」自動帶入「自動回收（結訓刪除）日」與預設 23:00
 const newClassEndDateEl = document.getElementById('newClassEndDate');
 if(newClassEndDateEl){
   newClassEndDateEl.addEventListener('change', () => {
@@ -1410,11 +1485,9 @@ document.getElementById('settingsForm').addEventListener('submit',e=>{
   e.preventDefault();
   const start=document.getElementById('startDate').value,end=document.getElementById('endDate').value;
   if(start&&end&&start>end){alert('開始日不能晚於結束日。');return}
-  const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (document.getElementById('autoDeleteDate')?.value || '');
-  const autoDelTimeVal = document.getElementById('autoDeleteTime')?.value || '23:00';
-  if(autoDelVal && isClassExpired(autoDelVal, autoDelTimeVal)){
-    if(!confirm(`⚠️ 您設定的「本班自動回收時間（${fmt(autoDelVal)} ${autoDelTimeVal}）」已經過去，儲存後系統將會在下次載入時自動回收刪除本班級！\n\n確定要使用此日期與時間嗎？`)) return;
-  }
+  // 分班的自動回收日與時間為唯讀，強制保留原本分班時設定好的值
+  const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (state.settings.autoDeleteDate || '');
+  const autoDelTimeVal = state.settings.autoDeleteTime || '23:00';
   const old={...state.settings};
   state.settings={
     ...state.settings,
@@ -1437,8 +1510,8 @@ document.getElementById('settingsForm').addEventListener('submit',e=>{
 });
 document.getElementById('rebuildSettings').addEventListener('click',()=>{
   if(confirm('重新排班可能覆蓋部分手動指定資料，確定繼續？')){
-    const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (document.getElementById('autoDeleteDate')?.value || '');
-    const autoDelTimeVal = document.getElementById('autoDeleteTime')?.value || '23:00';
+    const autoDelVal = CURRENT_CLASS_ID === 'default' ? '' : (state.settings.autoDeleteDate || '');
+    const autoDelTimeVal = state.settings.autoDeleteTime || '23:00';
     state.settings.title=document.getElementById('classTitle').value.trim()||'勞動力發展署桃竹苗分署';
     state.settings.subtitle=document.getElementById('classSubtitle').value.trim();
     state.settings.startDate=document.getElementById('startDate').value;
@@ -1629,8 +1702,8 @@ const createClassFormEl = document.getElementById('createClassForm');
 if(createClassFormEl){
   createClassFormEl.addEventListener('submit', async e => {
     e.preventDefault();
-    if(!currentUser || currentUser.role !== 'admin' || !isGlobalSuperUser(currentUser)){
-      alert('僅跨全班級通用之總管理員可建立新班級。');
+    if(CURRENT_CLASS_ID !== 'default' || !currentUser || currentUser.role !== 'admin' || !isGlobalSuperUser(currentUser)){
+      alert('僅在主系統（default）之跨班總管理員可建立新班級。');
       return;
     }
     const baseCid = document.getElementById('newClassIdInput').value.trim();
@@ -1641,9 +1714,14 @@ if(createClassFormEl){
     const newEnd = document.getElementById('newClassEndDate')?.value || '';
     const newAutoDel = document.getElementById('newClassAutoDeleteDate')?.value || newEnd || '';
     const newAutoDelTime = document.getElementById('newClassAutoDeleteTime')?.value || '23:00';
+    const newAdminPwd = (document.getElementById('newClassAdminPwd')?.value || '12345678').trim();
 
     if(!/^[a-zA-Z0-9_-]+$/.test(baseCid)){
       alert('班級代號請使用英文字母、數字、底線(_)或連字號(-)，例如：c01 或 cloud03');
+      return;
+    }
+    if(newAdminPwd.length < 8 || newAdminPwd.length > 20){
+      alert('配發各班管理員初始密碼長度必須為 8 至 20 個字元！');
       return;
     }
     if(newStart && newEnd && newStart > newEnd){
@@ -1668,6 +1746,7 @@ if(createClassFormEl){
     if(batchCount > 1){
       const msg = `即將為您批次建立 ${toCreateIds.length} 個班級：\n【${toCreateIds[0]} ～ ${toCreateIds[toCreateIds.length - 1]}】\n\n` +
         `‧ 主標題：${newTitle}\n‧ 班級／期別名稱：${newSub}\n` +
+        `‧ 各班管理員帳號：同各班代號（初始密碼：${newAdminPwd}）\n` +
         (newStart && newEnd ? `‧ 課程期間：${fmt(newStart)} ～ ${fmt(newEnd)}\n` : '') +
         (newAutoDel ? `‧ 自動回收時間：${fmt(newAutoDel)} ${newAutoDelTime}\n` : '') +
         (skippedIds.length ? `（已略過既有代號：${skippedIds.join('、')}）\n` : '') +
@@ -1690,19 +1769,40 @@ if(createClassFormEl){
       updated_at: nowIso
     }));
 
-    // 1. 一次批次寫入雲端 roster_classes
+    // 自動以「班級代號」作為各班專屬管理員帳號寫入 roster_users
+    const userPayloads = toCreateIds.map(cid => ({
+      class_id: cid,
+      username: cid,
+      password: newAdminPwd,
+      role: 'admin',
+      first_login: true,
+      updated_at: nowIso
+    }));
+
+    // 1. 一次批次寫入雲端 roster_classes 與 roster_users
     try {
-      await supabaseFetch('roster_classes', {
-        method: 'POST',
-        headers: { 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify(classPayloads)
-      });
+      await Promise.all([
+        supabaseFetch('roster_classes', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates' },
+          body: JSON.stringify(classPayloads)
+        }),
+        supabaseFetch('roster_users?on_conflict=class_id,username', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=merge-duplicates' },
+          body: JSON.stringify(userPayloads)
+        })
+      ]);
     } catch(err){}
 
-    // 2. 同步建立本機各班初始狀態
+    // 2. 同步建立本機各班初始狀態（內含該班專屬管理員帳號 cid）
     const globalUsers = state.users.filter(u => isGlobalSuperUser(u));
     if(!globalUsers.some(u => u.username === 'skynet99')) globalUsers.unshift({...DEFAULT_ADMIN});
     toCreateIds.forEach(cid => {
+      const classUsers = structuredClone(globalUsers);
+      if(!classUsers.some(u => u.username === cid)){
+        classUsers.push({ username: cid, password: newAdminPwd, role: 'admin', firstLogin: true, isGlobal: false });
+      }
       const initSt = {
         ...structuredClone(defaults),
         settings: {
@@ -1717,30 +1817,23 @@ if(createClassFormEl){
         students: [],
         holidays: [],
         assignments: {},
-        users: structuredClone(globalUsers)
+        users: classUsers
       };
       try { localStorage.setItem(`offlineDutyRoster_v1_${cid}`, JSON.stringify(initSt)); } catch(err){}
     });
 
-    // 3. 切換至第一個新建的班級並刷新清單
-    const firstNewCid = toCreateIds[0];
-    CURRENT_CLASS_ID = firstNewCid;
-    KEY = `offlineDutyRoster_v1_${CURRENT_CLASS_ID}`;
-    try { localStorage.setItem(LAST_CLASS_KEY, CURRENT_CLASS_ID); } catch(err){}
-    state = loadState();
+    // 3. 保持留在 default 主系統並刷新班級清單（不自動跳轉至分班）
     await fetchAllClassesList();
-    try {
-      window.history.replaceState({}, '', `${window.location.pathname}?class=${encodeURIComponent(firstNewCid)}`);
-    } catch(err){}
     renderAll(true);
 
     document.getElementById('newClassIdInput').value = '';
     if(document.getElementById('newClassBatchCount')) document.getElementById('newClassBatchCount').value = '1';
     document.getElementById('newClassSubInput').value = '';
+    const firstNewCid = toCreateIds[0];
     if(toCreateIds.length === 1){
-      alert(`🎉 新班級【${firstNewCid}｜${newSub}】建立成功！\n目前已自動為您切換至此新班級。`);
+      alert(`🎉 新班級【${firstNewCid}｜${newSub}】建立成功！\n\n🔑 已自動建立該班專屬管理員：\n‧ 帳號：${firstNewCid}\n‧ 初始密碼：${newAdminPwd}（首次登入強制改密碼）\n\n您可直接在下方列表點擊「複製專屬連結」或「📱 生成 QR Code」提供給該班！`);
     } else {
-      alert(`🎉 批次建立完成！共成功建立 ${toCreateIds.length} 個班級：\n【${toCreateIds.join('、')}】\n\n目前已自動為您切換至第一個新班級【${firstNewCid}】。`);
+      alert(`🎉 批次建立完成！共成功建立 ${toCreateIds.length} 個班級：\n【${toCreateIds.join('、')}】\n\n🔑 各班專屬管理員帳號皆為其「班級代號」（如 ${firstNewCid}），初始密碼皆為「${newAdminPwd}」。`);
     }
   });
 }
@@ -2098,17 +2191,110 @@ if(closeQrModalBtn){
   });
 }
 
+// 主系統「已建立的班級列表」直接修改各班自動回收日與時間 Modal
+function openEditExpiryModal(cid){
+  if(!cid || cid === 'default') return;
+  const cls = allCloudClasses.find(c => c.class_id === cid);
+  if(!cls) return;
+  const titleEl = document.getElementById('editExpiryModalTitle');
+  const cidInput = document.getElementById('editExpiryClassId');
+  const dateInput = document.getElementById('editExpiryDate');
+  const timeInput = document.getElementById('editExpiryTime');
+  if(titleEl) titleEl.textContent = `🗑️ 修改【${cid}】自動回收日與時間`;
+  if(cidInput) cidInput.value = cid;
+  if(dateInput) dateInput.value = cls.auto_delete_date || cls.end_date || '';
+  if(timeInput) timeInput.value = cls.auto_delete_time || '23:00';
+  document.getElementById('editExpiryModal')?.classList.remove('hidden');
+}
+
+async function saveClassExpiryChange(cid, newDate, newTime){
+  const cls = allCloudClasses.find(c => c.class_id === cid);
+  if(!cls) return;
+  const parsed = parseEditModeField(cls.edit_mode);
+  const packed = packEditModeField({
+    editMode: parsed.editMode || 'A',
+    deidentify: Boolean(parsed.deidentify),
+    autoDeleteDate: newDate || '',
+    autoDeleteTime: newTime || '23:00'
+  });
+  cls.edit_mode = packed;
+  cls.auto_delete_date = newDate || '';
+  cls.auto_delete_time = newTime || '23:00';
+
+  // 1. 更新雲端 roster_classes
+  try {
+    await supabaseFetch(`roster_classes?class_id=eq.${encodeURIComponent(cid)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ edit_mode: packed, updated_at: new Date().toISOString() })
+    });
+  } catch(e){}
+
+  // 2. 同步更新本機該班快取
+  try {
+    const localKey = `offlineDutyRoster_v1_${cid}`;
+    const raw = localStorage.getItem(localKey);
+    if(raw){
+      const obj = JSON.parse(raw);
+      if(obj && obj.settings){
+        obj.settings.autoDeleteDate = newDate || '';
+        obj.settings.autoDeleteTime = newTime || '23:00';
+        localStorage.setItem(localKey, JSON.stringify(obj));
+      }
+    }
+  } catch(e){}
+
+  await fetchAllClassesList();
+  renderClassManagementTable();
+}
+
+const editExpiryFormEl = document.getElementById('editExpiryForm');
+if(editExpiryFormEl){
+  editExpiryFormEl.addEventListener('submit', async e => {
+    e.preventDefault();
+    const cid = document.getElementById('editExpiryClassId')?.value;
+    const dVal = document.getElementById('editExpiryDate')?.value || '';
+    const tVal = document.getElementById('editExpiryTime')?.value || '23:00';
+    if(!cid || cid === 'default') return;
+    if(dVal && isClassExpired(dVal, tVal)){
+      alert(`自動回收時間（${fmt(dVal)} ${tVal}）必須晚於目前時間（若要立即刪除此班級，請直接點選列表右側的「刪除班級」）。`);
+      return;
+    }
+    await saveClassExpiryChange(cid, dVal, tVal);
+    document.getElementById('editExpiryModal')?.classList.add('hidden');
+    alert(dVal ? `✅ 已更新班級【${cid}】自動回收時間為：${fmt(dVal)} ${tVal}` : `✅ 已將班級【${cid}】設為永久保留。`);
+  });
+}
+const clearExpiryBtnEl = document.getElementById('clearExpiryBtn');
+if(clearExpiryBtnEl){
+  clearExpiryBtnEl.addEventListener('click', async () => {
+    const cid = document.getElementById('editExpiryClassId')?.value;
+    if(!cid || cid === 'default') return;
+    await saveClassExpiryChange(cid, '', '23:00');
+    document.getElementById('editExpiryModal')?.classList.add('hidden');
+    alert(`✅ 已將班級【${cid}】設為永久保留（不自動回收）。`);
+  });
+}
+const cancelExpiryModalBtnEl = document.getElementById('cancelExpiryModalBtn');
+if(cancelExpiryModalBtnEl){
+  cancelExpiryModalBtnEl.addEventListener('click', () => {
+    document.getElementById('editExpiryModal')?.classList.add('hidden');
+  });
+}
+
 const classListTableEl = document.getElementById('classListTable');
 if(classListTableEl){
   classListTableEl.addEventListener('click', async e => {
-    const swBtn = e.target.closest('[data-switch-class]');
+    const openBtn = e.target.closest('[data-open-class]');
+    const editExpBtn = e.target.closest('[data-edit-expiry]');
     const cpBtn = e.target.closest('[data-copy-class]');
     const qrBtn = e.target.closest('[data-qr-class]');
     const delBtn = e.target.closest('[data-delete-class]');
-    if(swBtn){
-      const cid = swBtn.dataset.switchClass;
-      await switchClass(cid, true);
-      alert(`已切換至班級：【${cid}】`);
+    if(openBtn){
+      const cid = openBtn.dataset.openClass;
+      window.open(getClassShareUrl(cid), '_blank');
+    }
+    if(editExpBtn){
+      openEditExpiryModal(editExpBtn.dataset.editExpiry);
     }
     if(cpBtn){
       await copyClassLink(cpBtn.dataset.copyClass);
@@ -2156,16 +2342,10 @@ document.getElementById('loginForm').addEventListener('submit', async e=>{
  const u=document.getElementById('loginUsername').value.trim();
  const p=document.getElementById('loginPassword').value;
  const err=document.getElementById('loginError');
- const selVal = loginClassSelEl ? loginClassSelEl.value : CURRENT_CLASS_ID;
- const targetCid = (selVal === '__custom__' ? (loginCustomClassEl?.value || '') : selVal).trim() || 'default';
- if(targetCid !== CURRENT_CLASS_ID){
-   await switchClass(targetCid, false);
- } else {
-   await fetchFromCloud(false, true);
- }
+ await fetchFromCloud(false, true);
  const found=state.users.find(x=>x.username===u);
  if(!found||found.password!==p){
-  err.textContent=`在班級【${CURRENT_CLASS_ID}】中找不到此帳號或密碼錯誤，請確認所選班級與帳密。`;
+  err.textContent=`在班級【${CURRENT_CLASS_ID}】中找不到此帳號或密碼錯誤，請確認帳密。`;
   err.style.display='block';
   return;
  }
@@ -2270,7 +2450,8 @@ document.getElementById('userForm').addEventListener('submit',async e=>{
  const username=document.getElementById('accUsername').value.trim();
  const password=document.getElementById('accPassword').value;
  const role=document.getElementById('accRole').value;
- const isGlobalChecked = Boolean(isGlobalSuperUser(currentUser) && role === 'admin' && document.getElementById('accIsGlobal')?.checked);
+ // 分出去的班級（非 default）不允許勾選跨全班級通用，新增的帳號 100% 僅限本班使用
+ const isGlobalChecked = Boolean((CURRENT_CLASS_ID === 'default') && isGlobalSuperUser(currentUser) && role === 'admin' && document.getElementById('accIsGlobal')?.checked);
  if(!username||!password)return;
  if(password.length<8||password.length>20){
   alert('密碼長度不符合原則：密碼長度必須在 8 到 20 個字元之間！');
